@@ -1,0 +1,97 @@
+import { useRef } from "react";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import {
+  TypedUseSelectorHook,
+  useDispatch,
+  useSelector,
+  Provider,
+} from "react-redux";
+import globalReducer from "@/store";
+import { authApi, api, weatherApi, farmApi } from "@/store/api";
+import { setupListeners } from "@reduxjs/toolkit/query";
+import Network from "./network";
+import { Provider as PaperProvider } from 'react-native-paper';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from "redux-persist";
+import { PersistGate } from "redux-persist/integration/react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NotificationProvider } from "@/context/NotificationContext";
+// import { Provider as PaperProvider } from 'react-native-paper';
+
+/* REDUX PERSISTENCE */
+const persistConfig = {
+  key: "root",
+  storage: AsyncStorage,
+  whitelist: [],
+};
+const rootReducer = combineReducers({
+  global: globalReducer,
+  [authApi.reducerPath]: authApi.reducer,
+  [api.reducerPath]: api.reducer,
+  [weatherApi.reducerPath]: weatherApi.reducer,
+  [farmApi.reducerPath]: farmApi.reducer
+});
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+/* REDUX STORE */
+export const makeStore = () =>
+  configureStore({
+    reducer: persistedReducer,
+    middleware: (getDefault) =>
+      getDefault({
+        serializableCheck: {
+          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        },
+      })
+      .concat(api.middleware)
+      .concat(authApi.middleware)
+      .concat(weatherApi.middleware)
+      .concat(farmApi.middleware),
+  });
+
+/* REDUX TYPES */
+export type AppStore = ReturnType<typeof makeStore>;
+export type RootState = ReturnType<AppStore["getState"]>;
+export type AppDispatch = AppStore["dispatch"];
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+/* PROVIDER */
+export default function StoreProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const storeRef = useRef<AppStore | null>(null);
+  if (!storeRef.current) {
+    storeRef.current = makeStore();
+    setupListeners(storeRef.current.dispatch);
+  }
+  const persistor = persistStore(storeRef.current);
+
+  return (
+    <NotificationProvider>
+      <Provider store={storeRef.current}>
+        <PersistGate loading={null} persistor={persistor}>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <PaperProvider>
+              <Network>
+                {children}
+              </Network>
+            </PaperProvider>
+          </GestureHandlerRootView>
+        </PersistGate>
+      </Provider>
+    </NotificationProvider>
+  );
+}
