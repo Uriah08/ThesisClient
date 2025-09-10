@@ -36,10 +36,11 @@ export const api = createApi({
         body: profileData,
       }),
     }),
-    logout: build.mutation<void, void>({
-      query: () => ({
+    logout: build.mutation({
+      query: (data) => ({
         url: 'logout/',
         method: 'POST',
+        body: data
       }),
     }),
     changePassword: build.mutation({
@@ -106,7 +107,15 @@ export const notificationApi = createApi({
         url: 'register-token/',
         method: 'POST',
         body: data
-      })
+      }),
+      invalidatesTags: ['Notification']
+    }),
+    getNotifications: build.query({
+      query: () => ({
+        url: 'my-notifications/',
+        method: 'GET'
+      }),
+      providesTags: ['Notification']
     })
   })
 })
@@ -127,7 +136,8 @@ export const {
 } = authApi;
 
 export const {
-  useRegisterDeviceTokenMutation
+  useRegisterDeviceTokenMutation,
+  useGetNotificationsQuery
 } = notificationApi;
 
 export const {

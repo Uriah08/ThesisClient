@@ -8,6 +8,7 @@ import React, {
 import * as Notifications from "expo-notifications";
 import { registerPushNotifications } from "@/utils/lib/registerPushNotification";
 import { useRegisterDeviceTokenMutation } from "@/store/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -59,11 +60,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
           setExpoPushToken(token);
           setError(null);
 
-          try {
-            await registerDeviceToken({ token }).unwrap();
-          } catch (err) {
-            console.error("Error Passing token to backend:", err);
-          }
+          await AsyncStorage.setItem('expoPushToken', token)
         }
       })
       .catch((error: any) => {
