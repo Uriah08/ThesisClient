@@ -96,6 +96,21 @@ export const farmApi = createApi({
   }),
 })
 
+export const notificationApi = createApi({
+  reducerPath: 'notificationApi',
+  baseQuery: baseQueryWithAsyncAuth('notifications'),
+  tagTypes: ['Notification'],
+  endpoints: (build) => ({
+    registerDeviceToken: build.mutation({
+      query: (data) => ({
+        url: 'register-token/',
+        method: 'POST',
+        body: data
+      })
+    })
+  })
+})
+
 export const {
   useCreateFarmMutation,
   useJoinFarmMutation,
@@ -110,6 +125,10 @@ export const {
   useLoginMutation,
   useRegisterMutation
 } = authApi;
+
+export const {
+  useRegisterDeviceTokenMutation
+} = notificationApi;
 
 export const {
   useCompleteProfileMutation,

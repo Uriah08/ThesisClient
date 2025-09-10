@@ -7,12 +7,12 @@ import React, {
 } from "react";
 import * as Notifications from "expo-notifications";
 import { registerPushNotifications } from "@/utils/lib/registerPushNotification";
+import { useRegisterDeviceTokenMutation } from "@/store/api";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: false,
     shouldSetBadge: true,
-    shouldShowAlert: true,
     shouldShowBanner: true,
     shouldShowList: true,
   }),
@@ -48,14 +48,22 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notification, setNotification] = useState<Notifications.Notification | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [registerDeviceToken] = useRegisterDeviceTokenMutation();
 
   useEffect(() => {
     // Register for push notifications
     registerPushNotifications()
-      .then(token => {
+      .then(async (token) => {
         if (token) {
+          
           setExpoPushToken(token);
           setError(null);
+
+          try {
+            await registerDeviceToken({ token }).unwrap();
+          } catch (err) {
+            console.error("Error Passing token to backend:", err);
+          }
         }
       })
       .catch((error: any) => {
@@ -77,7 +85,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
       notificationListener.remove();
       responseListener.remove();
     };
-  }, []);
+  }, [registerDeviceToken]);
 
   return (
     <NotificationContext.Provider

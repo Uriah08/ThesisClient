@@ -7,7 +7,7 @@ import {
   Provider,
 } from "react-redux";
 import globalReducer from "@/store";
-import { authApi, api, weatherApi, farmApi } from "@/store/api";
+import { authApi, api, weatherApi, farmApi, notificationApi } from "@/store/api";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import Network from "./network";
 import { Provider as PaperProvider } from 'react-native-paper';
@@ -39,7 +39,8 @@ const rootReducer = combineReducers({
   [authApi.reducerPath]: authApi.reducer,
   [api.reducerPath]: api.reducer,
   [weatherApi.reducerPath]: weatherApi.reducer,
-  [farmApi.reducerPath]: farmApi.reducer
+  [farmApi.reducerPath]: farmApi.reducer,
+  [notificationApi.reducerPath]: notificationApi.reducer,
 });
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
@@ -56,7 +57,8 @@ export const makeStore = () =>
       .concat(api.middleware)
       .concat(authApi.middleware)
       .concat(weatherApi.middleware)
-      .concat(farmApi.middleware),
+      .concat(farmApi.middleware)
+      .concat(notificationApi.middleware),
   });
 
 /* REDUX TYPES */
@@ -80,9 +82,9 @@ export default function StoreProvider({
   const persistor = persistStore(storeRef.current);
 
   return (
-    <NotificationProvider>
-      <Provider store={storeRef.current}>
-        <PersistGate loading={null} persistor={persistor}>
+    <Provider store={storeRef.current}>
+      <PersistGate loading={null} persistor={persistor}>
+        <NotificationProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <PaperProvider>
               <Network>
@@ -90,8 +92,8 @@ export default function StoreProvider({
               </Network>
             </PaperProvider>
           </GestureHandlerRootView>
-        </PersistGate>
-      </Provider>
-    </NotificationProvider>
+        </NotificationProvider>
+      </PersistGate>
+    </Provider>
   );
 }
