@@ -72,6 +72,8 @@ const Login = () => {
       setPassword('');
       
     } catch (error: any) {
+      console.log(error);
+      
       if (error?.data?.detail) {
         Toast.show({
           type: 'error',

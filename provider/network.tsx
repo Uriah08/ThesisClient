@@ -91,15 +91,18 @@ const Network = ({ children }: { children: React.ReactNode }) => {
 
                                                           const printUser = async () => {
                                                             try {
+                                                              const expoToken = await AsyncStorage.getItem('expoPushToken');
                                                               const storedUser = await AsyncStorage.getItem('user');
                                                               const token = await AsyncStorage.getItem('authToken')
                                                               if (storedUser !== null && token !== null) {
                                                                 const parsedUser = JSON.parse(storedUser);
                                                                 console.log('User:', parsedUser);
                                                                 console.log('Token:', token);
+                                                                console.log('Expo Push Token:', expoToken);
                                                                 
                                                               } else {
                                                                 console.log('No user found in AsyncStorage.');
+                                                                console.log('Expo Push Token:', expoToken);
                                                               }
                                                             } catch (error) {
                                                               console.error('Error reading user from AsyncStorage:', error);

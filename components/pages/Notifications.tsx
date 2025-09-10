@@ -1,6 +1,7 @@
 import { View, Text, Image, Pressable } from 'react-native'
 import React from 'react'
 
+
 const Notifications = () => {
   return (
     <View className='flex bg-white gap-3'>

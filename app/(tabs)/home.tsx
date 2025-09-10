@@ -8,23 +8,40 @@ import {
 } from 'react-native'
 import { 
   useCallback, 
+  useEffect, 
   useRef, 
   useState 
 } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { useGetWeatherForecastQuery } from '@/store/api';
+import { useGetWeatherForecastQuery, useRegisterDeviceTokenMutation } from '@/store/api';
 import WeatherIcon from '@/components/containers/weather/WeatherIcon';
 import { MapPinCheckInsideIcon } from 'lucide-react-native';
 import WeatherDashboardBoxes from '@/components/containers/weather/WeatherDashboardBoxes';
 import WeatherAlert from '@/components/containers/weather/WeatherAlert';
 import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDrawer';
 import { ForecastItem } from '@/utils/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Home = () => {
   const { data, isLoading } = useGetWeatherForecastQuery();
   const drawerRef = useRef<BottomDrawerRef>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ForecastItem | null>(null);
+  const [registerDeviceToken] = useRegisterDeviceTokenMutation();
+
+  useEffect(() => {
+    const registerToken = async () => {
+      const expoToken = await AsyncStorage.getItem('expoPushToken');
+      try {
+        if (expoToken) {
+          await registerDeviceToken({ token: expoToken }).unwrap();
+        }
+      } catch (error) {
+        console.log('Error registering device token:', error);
+      }
+    }
+    registerToken();
+  },[registerDeviceToken])
   
     const handlePress = (item: ForecastItem) => {
       setSelectedItem(item);

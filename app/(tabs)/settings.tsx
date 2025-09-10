@@ -47,7 +47,8 @@ const Settings = () => {
 
     const handleLogout = async () => {
       try {
-        await logout().unwrap()
+        const expoToken = await AsyncStorage.getItem('expoPushToken');
+        await logout({ token: expoToken }).unwrap()
         
         await AsyncStorage.removeItem('user');
         await AsyncStorage.removeItem('authToken');
