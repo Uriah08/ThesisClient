@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithAsyncAuth } from "@/utils/lib/baseQueryAsyncAuth";
-import { Farm, WeatherData } from "@/utils/types";
+import { Farm, Recipient, WeatherData } from "@/utils/types";
 
 export const authApi = createApi({
   reducerPath: 'authApi',
@@ -110,7 +110,7 @@ export const notificationApi = createApi({
       }),
       invalidatesTags: ['Notification']
     }),
-    getNotifications: build.query({
+    getNotifications: build.query<Recipient[], void>({
       query: () => ({
         url: 'my-notifications/',
         method: 'GET'
