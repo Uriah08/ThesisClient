@@ -41,6 +41,12 @@ export default function RootLayout() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="notification"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </StoreProvider>
   );

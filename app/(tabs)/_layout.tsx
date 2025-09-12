@@ -18,6 +18,7 @@ import {
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';
 import { useDispatch } from 'react-redux';
 import { setScanTabPressed } from '@/store';
+import { useGetNotificationsQuery } from '@/store/api';
 
 const CameraTabBarButton = ({ children, onPress }: any) => {
   const pathname = usePathname()
@@ -77,10 +78,10 @@ const CustomTabBarButton = (props: any) => {
   }
 
   if (checking) return (
-          <View className='flex h-full w-full items-center justify-center bg-white'>
-            <ActivityIndicator size={50}/>
-          </View>
-        );
+    <View className='flex-1 items-center justify-center bg-white'>
+      <ActivityIndicator size={30} color="#155183" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
+    </View>
+  );
 
   return (
     <TouchableOpacity onPress={onPress} style={{ flex: 1 }} {...rest}>
@@ -90,6 +91,8 @@ const CustomTabBarButton = (props: any) => {
 };
 
 const AppLayout = () => {
+  const { data, isLoading } = useGetNotificationsQuery();
+  const notifications = data?.filter((notification) => !notification.read) || [];
   return (
     <Tabs
       screenOptions={{
@@ -140,24 +143,26 @@ const AppLayout = () => {
           tabBarIcon: ({ color, size }) => (
             <View style={{ position: 'relative' }}>
               <BellIcon color={color} size={size} />
-              <View
-                style={{
-                  position: 'absolute',
-                  top: -4,
-                  right: -4,
-                  backgroundColor: 'red',
-                  borderRadius: 8,
-                  minWidth: 16,
-                  height: 16,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingHorizontal: 2,
-                }}
-              >
-                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
-                  3
-                </Text>
-              </View>
+              {notifications.length === 0 || isLoading ? null : (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: -4,
+                    right: -4,
+                    backgroundColor: 'red',
+                    borderRadius: 8,
+                    minWidth: 16,
+                    height: 16,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 2,
+                  }}
+                >
+                  <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                    {notifications.length > 9 ? '9+' : notifications.length}
+                  </Text>
+                </View>
+              )}
             </View>
           ),
           tabBarButton: (props) => <CustomTabBarButton {...props} />,

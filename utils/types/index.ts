@@ -54,3 +54,22 @@ export type WeatherData = {
     clouds: number;
   }[];
 };
+
+export interface Notification {
+  id: number;
+  title: string;
+  type: "announcement" | "reminder" | "weather" | "people";
+  body: string;
+  data: Record<string, string>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Recipient {
+  id: number;
+  notification: Notification;
+  user: string;
+  read: boolean;
+  read_at: string | null;
+  created_at: string;
+}

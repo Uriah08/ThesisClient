@@ -132,8 +132,8 @@ const Home = () => {
   
 
   if (isLoading) return (
-    <View className='flex h-full w-full items-center justify-center bg-white'>
-      <ActivityIndicator size={50}/>
+    <View className='flex-1 items-center justify-center bg-white'>
+      <ActivityIndicator size={30} color="#155183" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
     </View>
   );
   
@@ -179,7 +179,7 @@ const Home = () => {
             <Text className='text-sm text-gray-500 ml-1' style={{ fontFamily: 'PoppinsRegular'}}>Lives in {data?.city.name}, {data?.city.country}</Text>
           </View>
 
-        <View className='h-80'></View>
+        {/* <View className='h-80'></View> */}
 
 
 

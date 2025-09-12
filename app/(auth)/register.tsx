@@ -86,7 +86,7 @@ const Register = () => {
 
   if (checking) return (
       <View className='flex-1 items-center justify-center'>
-        <ActivityIndicator size={50}/>
+        <ActivityIndicator size={30} color="#155183" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
       </View>
     );
 

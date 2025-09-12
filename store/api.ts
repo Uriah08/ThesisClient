@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithAsyncAuth } from "@/utils/lib/baseQueryAsyncAuth";
-import { Farm, WeatherData } from "@/utils/types";
+import { Farm, Recipient, WeatherData } from "@/utils/types";
 
 export const authApi = createApi({
   reducerPath: 'authApi',
@@ -110,12 +110,35 @@ export const notificationApi = createApi({
       }),
       invalidatesTags: ['Notification']
     }),
-    getNotifications: build.query({
+    getNotifications: build.query<Recipient[], void>({
       query: () => ({
         url: 'my-notifications/',
         method: 'GET'
       }),
       providesTags: ['Notification']
+    }),
+    getNotification: build.query<Recipient, number>({
+      query: (id) => ({
+        url: `my-notification?id=${id}`,
+        method: 'GET'
+      }),
+      providesTags: ['Notification']
+    }),
+    readNotifications: build.mutation({
+      query: ({ ids }) => ({
+        url: `read-notifications/`,
+        method: 'POST',
+        body: { ids }
+      }),
+      invalidatesTags: ['Notification']
+    }),
+    deleteNotification: build.mutation({
+      query: ({ ids }) => ({
+        url: 'delete-notifications/',
+        method: 'DELETE',
+        body: { ids }
+      }),
+      invalidatesTags: ['Notification']
     })
   })
 })
@@ -137,7 +160,10 @@ export const {
 
 export const {
   useRegisterDeviceTokenMutation,
-  useGetNotificationsQuery
+  useGetNotificationsQuery,
+  useGetNotificationQuery,
+  useReadNotificationsMutation,
+  useDeleteNotificationMutation
 } = notificationApi;
 
 export const {
