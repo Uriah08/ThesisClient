@@ -13,7 +13,7 @@ const Notification = () => {
     
   return (
     <View className="flex-1 bg-white relative">
-        <DeleteNotifications setVisible={setShowDelete} visible={showDelete} type="single"/>
+        <DeleteNotifications setVisible={setShowDelete} visible={showDelete} type="single" ids={data?.id ? [data.id] : []}/>
         <ChevronLeft onPress={() => router.push('/(tabs)/notification')} style={{ position: 'absolute', top: 50, left: 20}} color="black" size={32} /> 
             {isLoading ? (
                 <View className='flex-1 items-center justify-center'>
