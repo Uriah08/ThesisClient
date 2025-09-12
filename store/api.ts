@@ -116,6 +116,29 @@ export const notificationApi = createApi({
         method: 'GET'
       }),
       providesTags: ['Notification']
+    }),
+    getNotification: build.query<Recipient, number>({
+      query: (id) => ({
+        url: `my-notification?id=${id}`,
+        method: 'GET'
+      }),
+      providesTags: ['Notification']
+    }),
+    readNotifications: build.mutation({
+      query: ({ ids }) => ({
+        url: `read-notifications/`,
+        method: 'POST',
+        body: { ids }
+      }),
+      invalidatesTags: ['Notification']
+    }),
+    deleteNotification: build.mutation({
+      query: ({ ids }) => ({
+        url: 'delete-notifications/',
+        method: 'DELETE',
+        body: { ids }
+      }),
+      invalidatesTags: ['Notification']
     })
   })
 })
@@ -137,7 +160,10 @@ export const {
 
 export const {
   useRegisterDeviceTokenMutation,
-  useGetNotificationsQuery
+  useGetNotificationsQuery,
+  useGetNotificationQuery,
+  useReadNotificationsMutation,
+  useDeleteNotificationMutation
 } = notificationApi;
 
 export const {

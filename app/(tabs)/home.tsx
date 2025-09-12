@@ -133,7 +133,7 @@ const Home = () => {
 
   if (isLoading) return (
     <View className='flex-1 items-center justify-center bg-white'>
-      <ActivityIndicator color="#155183" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
+      <ActivityIndicator size={30} color="#155183" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
     </View>
   );
   
