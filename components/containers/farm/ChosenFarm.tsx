@@ -21,7 +21,7 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
     if (data) {
       (async () => {
         try {
-          await AsyncStorage.setItem('farm', JSON.stringify(data));
+          await AsyncStorage.setItem('farm', JSON.stringify({farm: data}));
           setSelectedFarm(data);
         } catch (error) {
           console.log(error);
@@ -56,7 +56,9 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
       }}>
         <Image 
         source={
-          selectedFarm?.image_url
+          data?.image_url
+            ? { uri: data.image_url }
+            : selectedFarm.image_url
             ? { uri: selectedFarm.image_url }
             : require('@/assets/images/create-farm.png')
         }
@@ -66,7 +68,7 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
         }}
         resizeMode="cover"/>
         <LinearGradient
-          colors={['#ffffff60', 'white']}
+          colors={['#ffffff10', 'white']}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={{

@@ -13,7 +13,7 @@ import { useGetFarmsQuery } from '@/store/api';
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';
 import { Farm as FarmType } from '@/utils/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import ChosenFarm from '@/components/containers/tab/ChosenFarm';
+import ChosenFarm from '@/components/containers/farm/ChosenFarm';
 
 const Farm = () => {
   const { user } = useAuthRedirect()
@@ -39,6 +39,8 @@ const Farm = () => {
       setLoading(true)
       try {
         const storedFarm = await AsyncStorage.getItem('farm');
+        console.log('FARM:',storedFarm);
+        
         if (storedFarm) {
           const parsed = JSON.parse(storedFarm);
           setSelectedFarm(parsed.farm);
