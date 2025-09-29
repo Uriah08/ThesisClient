@@ -1,7 +1,7 @@
-import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, TextInput, Pressable, ActivityIndicator, BackHandler } from 'react-native'
+import React, { useCallback, useState } from 'react'
 import { ChevronLeft } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useLoginMutation } from '@/store/api';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,6 +15,18 @@ const Login = () => {
   const [login, { isLoading }] = useLoginMutation();
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useFocusEffect(
+      useCallback(() => {
+        const onBackPress = () => {
+          return true;
+        };
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+        return () => {
+          backHandler.remove();
+        };
+      }, [])
+    );
   
     const validate = () => {
       const newErrors: { [key: string]: string } = {};

@@ -36,7 +36,7 @@ const Notification = () => {
               <View className='rounded-lg overflow-hidden' style={{
                     backgroundColor: '#e4e4e7'
                   }}>
-                <Pressable onPress={() => readAllNotifications()} android_ripple={{ color: '#71717a', borderless: false }}>
+                <Pressable disabled={notifications.filter((notif) => !notif.read).length === 0} onPress={() => readAllNotifications()} android_ripple={{ color: '#71717a', borderless: false }}>
                   <View className='flex-row gap-2 items-center p-2 rounded-lg justify-center'>
                     <MailOpen size={15} color={notifications.filter((notif) => !notif.read).length === 0 ? '#8f8f8f' : '#000000'}/>
                     <Text style={{ fontFamily: 'PoppinsMedium', color: notifications.filter((notif) => !notif.read).length === 0 ? '#8f8f8f' : '#000000'}} className='text-sm'>Mark All as Read</Text>

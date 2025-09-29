@@ -67,8 +67,16 @@ const Notifications = ({ notifications, isLoading }: NotificationProps) => {
       <View className='flex-col gap-3'>
         {notifications.length === 0 ? (
           <View className='flex-1 justify-center items-center gap-1' style={{ marginTop: 150 }}>
-            <Image source={require('@/assets/images/notification-icons/notification-cover.png')} style={{ width: 155, height: 155, opacity: 0.2}} resizeMode='contain'/>
-            <Text className='text-primary text-2xl' style={{ fontFamily: 'PoppinsBold', opacity: 0.2}}>No Notifications Yet</Text>
+            <Image
+              source={require('@/assets/images/hero-image.png')}
+              style={{ width: 200, height: 200, opacity: 0.5}}
+              resizeMode={'contain'}
+              />
+              <Text style={{
+                  fontSize: 20,
+                  fontFamily: 'PoppinsExtraBold',
+                  color: '#15518330'
+              }}>NO NOTIFICATIONS FOUND</Text>
           </View>
         ) : (
           notifications.map((notification) => (
