@@ -64,8 +64,7 @@ export default function Index() {
       </View>
       <Pressable 
         className='bg-white w-full py-[10px] rounded-full border border-zinc-300'
-        onPress={() => router.push('/test')}
-        // onPress={() => router.push('/(auth)/register')}
+        onPress={() => router.push('/(auth)/register')}
         >
         <Text 
           className='text-black text-center'

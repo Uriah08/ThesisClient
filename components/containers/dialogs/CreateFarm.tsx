@@ -7,13 +7,16 @@ import * as ImagePicker from 'expo-image-picker';
 import { useCreateFarmMutation } from '@/store/api';
 import { uploadImageToSupabase } from '@/utils/lib/supabase';
 import Toast from 'react-native-toast-message';
+import { Farm } from '@/utils/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type DialogsProps = {
   setVisible: (visible: boolean) => void;
   visible: boolean;
+  onSelect: (farm: Farm) => void;
 };
 
-const CreateFarm = ({setVisible, visible}: DialogsProps) => {
+const CreateFarm = ({setVisible, visible, onSelect}: DialogsProps) => {
     const [isFocused, setIsFocused] = useState('');
     const [createFarm, { isLoading }] = useCreateFarmMutation()
 
@@ -39,6 +42,7 @@ const CreateFarm = ({setVisible, visible}: DialogsProps) => {
           let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsEditing: true,
+            aspect: [4, 2],
             quality: 1,
           });
       
@@ -56,12 +60,16 @@ const CreateFarm = ({setVisible, visible}: DialogsProps) => {
             if (uploadedUrl) imageURL = uploadedUrl;
           } 
 
-          await createFarm({
+          const newFarm = await createFarm({
             name,
             description,
             password,
             ...(imageURL && { image_url: imageURL })
           }).unwrap()
+
+          await AsyncStorage.setItem('farm', JSON.stringify({ farm: newFarm }));
+
+          onSelect(newFarm);
 
           setName('')
           setDescription('')

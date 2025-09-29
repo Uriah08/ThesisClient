@@ -93,6 +93,13 @@ export const farmApi = createApi({
         method: 'GET',
       }),
       providesTags: ['Farm']
+    }),
+    getFarm: build.query<Farm, number>({
+      query: (id) => ({
+        url: `farm/${id}/`,
+        method: "GET"
+      }),
+      providesTags: ['Farm']
     })
   }),
 })
@@ -146,7 +153,8 @@ export const notificationApi = createApi({
 export const {
   useCreateFarmMutation,
   useJoinFarmMutation,
-  useGetFarmsQuery
+  useGetFarmsQuery,
+  useGetFarmQuery
 } = farmApi
 
 export const {

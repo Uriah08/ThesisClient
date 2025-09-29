@@ -1,5 +1,5 @@
-import { View, Text, Pressable, Image, ScrollView, TextInput } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, Pressable, Image, ScrollView, TextInput, ActivityIndicator } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { Filter, MapPlus, Plus, Search } from 'lucide-react-native';
 import Animated, {
   useSharedValue,
@@ -11,6 +11,9 @@ import JoinFarm from '@/components/containers/dialogs/JoinFarm';
 import GetFarm from '@/components/containers/farm/GetFarm';
 import { useGetFarmsQuery } from '@/store/api';
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';
+import { Farm as FarmType } from '@/utils/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import ChosenFarm from '@/components/containers/tab/ChosenFarm';
 
 const Farm = () => {
   const { user } = useAuthRedirect()
@@ -22,12 +25,32 @@ const Farm = () => {
   const [ownershipFilter, setOwnershipFilter] = useState<'all' | 'owned' | 'not_owned'>('all');
   const [search, setSearch] = useState('');
   const [showFilter, setShowFilter] = useState(false);
+  const [selectedFarm, setSelectedFarm] = useState<FarmType | null>(null);
+  const [loading, setLoading] = useState(false)
 
   const opacity1 = useSharedValue(0)
   const translateX1 = useSharedValue(30)
   const opacity2 = useSharedValue(0)
   const translateX2 = useSharedValue(30)
   const rotation = useSharedValue(0)
+
+  useEffect(() => {
+    const loadFarm = async () => {
+      setLoading(true)
+      try {
+        const storedFarm = await AsyncStorage.getItem('farm');
+        if (storedFarm) {
+          const parsed = JSON.parse(storedFarm);
+          setSelectedFarm(parsed.farm);
+        }
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false)
+      }
+    };
+    loadFarm();
+  }, []);
 
   const toggleButtons = () => {
     setActive(!active)
@@ -81,6 +104,16 @@ const Farm = () => {
     if (filterActive === 'latest') return new Date(a.create_at).getTime() - new Date(b.create_at).getTime();
     return 0;
   });
+
+  if (loading) return (
+      <View className='flex-1 items-center justify-center bg-white'>
+        <ActivityIndicator size={30} color="#155183" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
+      </View>
+    );
+
+  if (selectedFarm) {
+    return <ChosenFarm onBack={() => setSelectedFarm(null)} selectedFarm={selectedFarm} setSelectedFarm={setSelectedFarm}/>;
+  }
 
   return (
     <View className='flex-1 bg-white'>
@@ -139,10 +172,10 @@ const Farm = () => {
 )}
 
       <ScrollView className='mt-5'>
-        <GetFarm data={filteredFarms} isLoading={isLoading} />
+        <GetFarm data={filteredFarms} isLoading={isLoading} onSelect={(farm) => setSelectedFarm(farm)}/>
       </ScrollView>
 
-      <CreateFarm visible={createVisible} setVisible={setCreateVisible} />
+      <CreateFarm visible={createVisible} setVisible={setCreateVisible} onSelect={(farm) => setSelectedFarm(farm)}/>
       <JoinFarm visible={joinVisible} setVisible={setJoinVisible} />
 
       <View className="absolute bottom-5 right-5 items-end flex gap-3">
