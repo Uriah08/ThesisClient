@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useState, useCallback } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { useCompleteProfileMutation } from '@/store/api';
+import { useCompleteProfileMutation } from '@/store/userApi';
 import { Pencil } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';

@@ -3,7 +3,7 @@ import React from 'react'
 import Dialogs from './Dialog';
 import { Dialog } from 'react-native-paper';
 import { Trash } from 'lucide-react-native';
-import { useDeleteNotificationMutation } from '@/store/api';
+import { useDeleteNotificationMutation } from '@/store/notificationApi';
 import { router } from 'expo-router';
 
 type DialogsProps = {

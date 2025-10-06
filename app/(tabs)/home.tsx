@@ -13,7 +13,8 @@ import {
   useState 
 } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { useGetWeatherForecastQuery, useRegisterDeviceTokenMutation } from '@/store/api';
+import { useGetWeatherForecastQuery } from '@/store/weatherApi';
+import { useRegisterDeviceTokenMutation } from '@/store/notificationApi';
 import WeatherIcon from '@/components/containers/weather/WeatherIcon';
 import { MapPinCheckInsideIcon } from 'lucide-react-native';
 import WeatherDashboardBoxes from '@/components/containers/weather/WeatherDashboardBoxes';
@@ -21,6 +22,8 @@ import WeatherAlert from '@/components/containers/weather/WeatherAlert';
 import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDrawer';
 import { ForecastItem } from '@/utils/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Lesson from '@/components/containers/lessons/Lesson';
+import useAuthRedirect from '@/components/hooks/useAuthRedirect';
 
 const Home = () => {
   const { data, isLoading } = useGetWeatherForecastQuery();
@@ -28,6 +31,8 @@ const Home = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ForecastItem | null>(null);
   const [registerDeviceToken] = useRegisterDeviceTokenMutation();
+
+  const { user } = useAuthRedirect()
 
   useEffect(() => {
     const registerToken = async () => {
@@ -173,6 +178,14 @@ const Home = () => {
         </View>
         <ScrollView>
         <WeatherAlert pop={data?.first_item.pop} wind_speed={data?.first_item.wind_speed} clouds={data?.first_item.clouds}/>
+        <View className='flex flex-col px-5 pt-6'>
+          <Text className='text-2xl' style={{
+          fontFamily: 'PoppinsSemiBold'
+        }}>Hello, <Text className='text-primary'>{user?.username && user.username[0].toUpperCase() + user.username.slice(1)}!</Text></Text>
+          <Text className="mt-1 text-md text-gray-600" style={{ fontFamily: 'PoppinsRegular'}}>
+            Let’s make your SunDried Fish Farm thrive!
+          </Text>
+        </View>
         <WeatherDashboardBoxes pop={data?.first_item.pop} wind_speed={data?.first_item.wind_speed} clouds={data?.first_item.clouds}/>
         <View className='flex-row items-center justify-end px-5 mt-5'>
             <MapPinCheckInsideIcon size={15} color={'#6b7280'}/>
@@ -235,6 +248,8 @@ const Home = () => {
           </View>
         </ScrollView>
       </View>
+      <Lesson/>
+      <View style={{ marginBottom: 20}}/>
       </ScrollView>
       <BottomDrawer ref={drawerRef} onChange={(open) => setIsDrawerOpen(open)}>
         {selectedItem ? (

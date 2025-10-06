@@ -18,7 +18,7 @@ import {
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';
 import { useDispatch } from 'react-redux';
 import { setScanTabPressed } from '@/store';
-import { useGetNotificationsQuery } from '@/store/api';
+import { useGetNotificationsQuery } from '@/store/notificationApi';
 
 const CameraTabBarButton = ({ children, onPress }: any) => {
   const pathname = usePathname()

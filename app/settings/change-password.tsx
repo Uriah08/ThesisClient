@@ -2,7 +2,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-nativ
 import React, { useState } from 'react'
 import { ChevronLeft } from 'lucide-react-native'
 import { router } from 'expo-router'
-import { useChangePasswordMutation } from '@/store/api'
+import { useChangePasswordMutation } from '@/store/userApi'
 import Toast from 'react-native-toast-message'
 
 const ChangePassword = () => {
