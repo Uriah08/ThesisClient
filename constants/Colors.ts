@@ -24,3 +24,21 @@ export const Colors = {
     tabIconSelected: tintColorDark,
   },
 };
+
+export const modules = [
+  {
+    title: 'Module 1: Processing & Pre-Drying Preparation',
+    image: require('@/assets/images/module-wallpaper1.png'),
+    link: ''
+  },
+  {
+    title: 'Module 2: Checking Drying Stage',
+    image: require('@/assets/images/module-wallpaper2.png'),
+    link: ''
+  },
+  {
+    title: 'Module 3: Post-Drying & Storage',
+    image: require('@/assets/images/module-wallpaper3.png'),
+    link: ''
+  },
+]

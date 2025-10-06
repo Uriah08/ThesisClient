@@ -1,7 +1,7 @@
 import { View, Text, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import Notifications from '@/components/containers/notifications/Notifications'
-import { useGetNotificationsQuery, useReadNotificationsMutation } from '@/store/api';
+import { useGetNotificationsQuery, useReadNotificationsMutation } from '@/store/notificationApi';
 import { EllipsisVertical, MailOpen, Trash } from 'lucide-react-native';
 import DeleteNotifications from '@/components/containers/dialogs/DeleteNotifications';
 

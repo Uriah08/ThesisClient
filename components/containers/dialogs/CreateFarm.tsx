@@ -4,7 +4,7 @@ import Dialogs from './Dialog'
 import { Dialog } from 'react-native-paper';
 import { Eye, EyeClosed, ImagePlusIcon, MapPlusIcon } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useCreateFarmMutation } from '@/store/api';
+import { useCreateFarmMutation } from '@/store/farmApi';
 import { uploadImageToSupabase } from '@/utils/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { Farm } from '@/utils/types';

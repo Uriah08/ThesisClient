@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import * as Notifications from "expo-notifications";
 import { registerPushNotifications } from "@/utils/lib/registerPushNotification";
-import { useRegisterDeviceTokenMutation } from "@/store/api";
+import { useRegisterDeviceTokenMutation } from "@/store/notificationApi";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 Notifications.setNotificationHandler({

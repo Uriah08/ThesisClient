@@ -4,7 +4,7 @@ import Dialogs from './Dialog';
 import { Dialog } from 'react-native-paper';
 import { MapPlusIcon } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
-import { useJoinFarmMutation } from '@/store/api';
+import { useJoinFarmMutation } from '@/store/farmApi';
 
 type DialogsProps = {
   setVisible: (visible: boolean) => void;

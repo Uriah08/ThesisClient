@@ -2,7 +2,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator, BackHandler } from
 import React, { useCallback, useState } from 'react'
 import { ChevronLeft } from 'lucide-react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { useLoginMutation } from '@/store/api';
+import { useLoginMutation } from '@/store/authApi';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';

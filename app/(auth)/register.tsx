@@ -2,7 +2,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-nativ
 import React, { useState } from 'react'
 import { ChevronLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { useRegisterMutation } from '@/store/api';
+import { useRegisterMutation } from '@/store/authApi';
 import Toast from 'react-native-toast-message';
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';
 

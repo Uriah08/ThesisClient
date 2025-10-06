@@ -1,11 +1,12 @@
-import { Image, View } from 'react-native'
-import React, { useEffect } from 'react'
-import { ChevronLeft } from 'lucide-react-native'
+import { Image, TextInput, View, Text, Pressable } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { ChevronLeft, MapPlus, Search } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Toast from 'react-native-toast-message'
-import { useGetFarmQuery } from '@/store/api'
+import { useGetFarmQuery } from '@/store/farmApi'
 import { Farm } from '@/utils/types'
 import { LinearGradient } from 'expo-linear-gradient'
+import CreateSession from '../dialogs/CreateSession'
 
 type ChosenFarmProps = {
   onBack: () => void;
@@ -16,6 +17,8 @@ type ChosenFarmProps = {
 const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) => {
   
   const { data } = useGetFarmQuery(selectedFarm.id);
+
+  const [createVisible, setCreateVisible] = useState(false)
   
   useEffect(() => {
     if (data) {
@@ -51,7 +54,7 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
     <View className='flex-1 bg-white'>
       <View style={{
         width: "100%",
-        height: 250,
+        height: 200,
         position: "absolute"
       }}>
         <Image 
@@ -64,11 +67,11 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
         }
         style={{
           width: "100%",
-          height: 250,
+          height: 200,
         }}
         resizeMode="cover"/>
         <LinearGradient
-          colors={['#ffffff10', 'white']}
+          colors={['#ffffff40', 'white']}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={{
@@ -79,8 +82,41 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
         />
       </View>
       <View className='flex-1 w-full p-5'>
-        <View className='flex justify-center items-center' style={{ height: 40, width: 40, backgroundColor: "#ffffff80", marginTop: 40, marginLeft: 5, borderRadius: 999}}>
-          <ChevronLeft color={"#155183"} onPress={() => handleBack()}/>
+        <CreateSession visible={createVisible} setVisible={setCreateVisible} farmId={data?.id || selectedFarm.id}/>
+        <View className='flex-row justify-between items-center' style={{ marginTop: 30, marginLeft: 5 }}>
+            <View className='flex justify-center items-center' style={{ height: 40, width: 40, backgroundColor: "#ffffff80", borderRadius: 999}}>
+            <ChevronLeft color={"#155183"} onPress={() => handleBack()}/>
+          </View> 
+          <View className='flex-1 relative' style={{ margin: 8}}>
+            <TextInput
+            style={{ backgroundColor: "#ffffff90", height: 40, width: "100%", borderColor: '#a1a1aa' }}
+              className='rounded-full pl-12 text-base text-black border'
+              placeholder='Search session...'
+            />
+            <Search
+              style={{ position: 'absolute', top: 8, left: 12 }}
+              color={'#71717a'}
+            />
+          </View>
+        </View>
+        <View
+          className="absolute bottom-5 right-5 rounded-full"
+          style={{ overflow: "hidden" }}
+        >
+          <Pressable
+          onPress={() => setCreateVisible(true)}
+            android_ripple={{ color: "#ffffff50", borderless: false }}
+            className="flex flex-row items-center gap-3 px-5 bg-primary rounded-full"
+            style={{ paddingVertical: 10 }}
+          >
+            <Text
+              className="text-white"
+              style={{ fontFamily: "PoppinsSemiBold" }}
+            >
+              Create
+            </Text>
+            <MapPlus color={"#ffffff"} />
+          </Pressable>
         </View>
       </View>
     </View>

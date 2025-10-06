@@ -7,7 +7,7 @@ import {
   Provider,
 } from "react-redux";
 import globalReducer from "@/store";
-import { authApi, api, weatherApi, farmApi, notificationApi } from "@/store/api";
+// import { authApi, api, weatherApi, farmApi, notificationApi, sessionApi } from "@/store/api";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import Network from "./network";
 import { Provider as PaperProvider } from 'react-native-paper';
@@ -26,6 +26,7 @@ import {
 import { PersistGate } from "redux-persist/integration/react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NotificationProvider } from "@/context/NotificationContext";
+import { baseApi } from "@/store/baseApi";
 // import { Provider as PaperProvider } from 'react-native-paper';
 
 /* REDUX PERSISTENCE */
@@ -36,11 +37,13 @@ const persistConfig = {
 };
 const rootReducer = combineReducers({
   global: globalReducer,
-  [authApi.reducerPath]: authApi.reducer,
-  [api.reducerPath]: api.reducer,
-  [weatherApi.reducerPath]: weatherApi.reducer,
-  [farmApi.reducerPath]: farmApi.reducer,
-  [notificationApi.reducerPath]: notificationApi.reducer,
+  [baseApi.reducerPath]: baseApi.reducer,
+  // [authApi.reducerPath]: authApi.reducer,
+  // [api.reducerPath]: api.reducer,
+  // [weatherApi.reducerPath]: weatherApi.reducer,
+  // [farmApi.reducerPath]: farmApi.reducer,
+  // [notificationApi.reducerPath]: notificationApi.reducer,
+  // [sessionApi.reducerPath]: sessionApi.reducer,
 });
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
@@ -54,11 +57,13 @@ export const makeStore = () =>
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
       })
-      .concat(api.middleware)
-      .concat(authApi.middleware)
-      .concat(weatherApi.middleware)
-      .concat(farmApi.middleware)
-      .concat(notificationApi.middleware),
+      .concat(baseApi.middleware)
+      // .concat(api.middleware)
+      // .concat(authApi.middleware)
+      // .concat(weatherApi.middleware)
+      // .concat(farmApi.middleware)
+      // .concat(notificationApi.middleware)
+      // .concat(sessionApi.middleware)
   });
 
 /* REDUX TYPES */

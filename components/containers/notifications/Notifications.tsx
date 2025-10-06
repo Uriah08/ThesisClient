@@ -1,6 +1,6 @@
 import { View, Text, Image, Pressable, ScrollView } from 'react-native'
 import React from 'react'
-import { useReadNotificationsMutation } from '@/store/api'
+import { useReadNotificationsMutation } from '@/store/notificationApi';
 import SkeletonShimmer from '../SkeletonPlaceholder';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';

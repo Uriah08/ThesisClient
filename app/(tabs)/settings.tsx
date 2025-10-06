@@ -3,7 +3,7 @@ import React from 'react'
 import useAuthRedirect from '@/components/hooks/useAuthRedirect'
 import { CircleUserIcon, ChevronRight, RotateCcwKey, CircleQuestionMark, HelpCircleIcon, FileTextIcon, InfoIcon, LogOutIcon } from 'lucide-react-native'
 import { router } from 'expo-router'
-import { useLogoutMutation } from '@/store/api'
+import { useLogoutMutation } from '@/store/userApi'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const settingsMenu = [

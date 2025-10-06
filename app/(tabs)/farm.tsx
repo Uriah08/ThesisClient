@@ -9,7 +9,7 @@ import Animated, {
 import CreateFarm from '@/components/containers/dialogs/CreateFarm';
 import JoinFarm from '@/components/containers/dialogs/JoinFarm';
 import GetFarm from '@/components/containers/farm/GetFarm';
-import { useGetFarmsQuery } from '@/store/api';
+import { useGetFarmsQuery } from '@/store/farmApi';
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';
 import { Farm as FarmType } from '@/utils/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';

@@ -1,9 +1,9 @@
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const baseQueryWithAsyncAuth = (add: string) => {
+export const baseQueryWithAsyncAuth = () => {
   const rawBaseQuery = fetchBaseQuery({
-    baseUrl: `http://192.168.43.157:8000/api/${add}/`,
+    baseUrl: `http://192.168.43.157:8000/api/`,
   });
 
   return async (args: any, api: any, extraOptions: any) => {

@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { View, Text, ActivityIndicator } from "react-native";
-import { useGetNotificationQuery } from "@/store/api";
+import { useGetNotificationQuery } from "@/store/notificationApi";
 import { ChevronLeft, Trash } from "lucide-react-native";
 import NotificationIcon from "@/components/containers/notifications/NotificationIcon";
 import { useState } from "react";
