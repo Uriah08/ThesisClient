@@ -27,6 +27,7 @@ export type Farm = {
   image_url: string | null;
   members: number[];
   owner: number;
+  owner_name: string;
   create_at: Date
 };
 

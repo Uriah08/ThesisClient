@@ -7,6 +7,7 @@ import { useGetFarmQuery } from '@/store/farmApi'
 import { Farm } from '@/utils/types'
 import { LinearGradient } from 'expo-linear-gradient'
 import CreateSession from '../dialogs/CreateSession'
+import PieChartComponent from '../charts/PieChart'
 
 type ChosenFarmProps = {
   onBack: () => void;
@@ -98,6 +99,16 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
               color={'#71717a'}
             />
           </View>
+        </View>
+
+        <Text className='text-3xl mt-5 truncattext-zinc-700' style={{ color: '#3f3f46',fontFamily: 'PoppinsBold'}}>
+          {data?.name || selectedFarm.name}
+        </Text>
+        <Text className='text-zinc-700 mt-2' style={{ paddingBottom: 10,color: '#3f3f46',fontFamily: 'PoppinsRegular'}}>Created by {(data?.owner_name || selectedFarm.owner_name)[0].toUpperCase() + (data?.owner_name || selectedFarm.owner_name).slice(1)}!</Text>
+        <View className='flex flex-row justify-between p-5'>
+          <PieChartComponent/>
+          <PieChartComponent/>
+          <PieChartComponent/>
         </View>
         <View
           className="absolute bottom-5 right-5 rounded-full"

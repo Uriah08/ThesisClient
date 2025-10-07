@@ -27,7 +27,7 @@ const WeatherDashboardBoxes = ({ pop, wind_speed, clouds}: WeatherData) => {
           <View className='p-3 flex bg-primary gap-2' style={{ width: '30%', borderRadius: 12 }}>
             <View className='flex-row items-center gap-1' style={{ gap: 5}}>
             <Cloudy size={30} color={'#ffffff'}/>
-            <Text className='text-sm text-white' style={{ fontFamily: 'PoppinsRegular'}}>Cloudy</Text>
+            <Text className='text-sm text-white' style={{ fontFamily: 'PoppinsRegular'}}>Cloud</Text>
             </View>
             <Text className='text-white' style={{ fontFamily: 'PoppinsBold', fontSize: 17 }}>{clouds}<Text className='text-sm' style={{ fontFamily: 'PoppinsRegular'}}>%</Text></Text>
           </View>

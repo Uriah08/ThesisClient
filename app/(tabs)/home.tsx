@@ -4,7 +4,8 @@ import {
   Text, 
   ActivityIndicator, 
   ScrollView, 
-  Pressable 
+  Pressable, 
+  RefreshControl
 } from 'react-native'
 import { 
   useCallback, 
@@ -24,15 +25,36 @@ import { ForecastItem } from '@/utils/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Lesson from '@/components/containers/lessons/Lesson';
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';
+import AreaChartComponent from '@/components/containers/charts/AreaChart';
 
 const Home = () => {
-  const { data, isLoading } = useGetWeatherForecastQuery();
+  const { data, isLoading, refetch } = useGetWeatherForecastQuery();
   const drawerRef = useRef<BottomDrawerRef>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ForecastItem | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [chartKey, setChartKey] = useState(0);
   const [registerDeviceToken] = useRegisterDeviceTokenMutation();
 
+  const rainData = data?.future_forecast.map((item: any) => ({
+    value: item.pop * 100,
+  }))
+
+  const cloudData = data?.future_forecast.map((item: any) => ({
+    value: Math.min(item.clouds, 100),
+  }))
+
   const { user } = useAuthRedirect()
+
+  const onRefresh = async () => {
+    await refetch();
+    setRefreshing(true);
+    setChartKey(prev => prev + 1);
+
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
 
   useEffect(() => {
     const registerToken = async () => {
@@ -176,12 +198,16 @@ const Home = () => {
         </View>
 
         </View>
-        <ScrollView>
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl style={{ zIndex: -1}} colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
+          }>
         <WeatherAlert pop={data?.first_item.pop} wind_speed={data?.first_item.wind_speed} clouds={data?.first_item.clouds}/>
         <View className='flex flex-col px-5 pt-6'>
           <Text className='text-2xl' style={{
           fontFamily: 'PoppinsSemiBold'
-        }}>Hello, <Text className='text-primary'>{user?.username && user.username[0].toUpperCase() + user.username.slice(1)}!</Text></Text>
+        }}>Hello <Text className='text-primary'>{user?.username && user.username[0].toUpperCase() + user.username.slice(1)}!</Text></Text>
           <Text className="mt-1 text-md text-gray-600" style={{ fontFamily: 'PoppinsRegular'}}>
             Let’s make your SunDried Fish Farm thrive!
           </Text>
@@ -192,6 +218,10 @@ const Home = () => {
             <Text className='text-sm text-gray-500 ml-1' style={{ fontFamily: 'PoppinsRegular'}}>Lives in {data?.city.name}, {data?.city.country}</Text>
           </View>
 
+        <View style={{ paddingTop: 18, paddingBottom: 10, paddingRight: 18, paddingLeft: 10}}>
+          <AreaChartComponent chartKey={chartKey} title={'Rain Meter'} description={'Next 48 Hours'} sideLabel data={rainData} data2={cloudData}/>
+        </View>
+
         {/* <View className='h-80'></View> */}
 
 
@@ -201,14 +231,47 @@ const Home = () => {
 
 
         <View style={{ 
-        marginBottom: 10,  
-        paddingTop: 8 
+        marginBottom: 10,   
         }} className="gap-3 bg-white">
         <Text className="text-lg px-5" style={{ fontFamily: 'PoppinsSemiBold' }}>
           Weather Forecast
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View className="flex-row gap-3">
+            {data?.first_item &&  (
+              <Pressable onPress={() => handlePress(data.first_item)}>
+                <View
+                  style={{ 
+                    borderRadius: 16, 
+                    borderColor: '#d4d4d8', 
+                    width: 75, 
+                    height:120, 
+                    padding: 8,
+                    marginLeft: 18, 
+                    marginRight: 1 }}
+                  className={`p-1 border border-zinc-300 flex items-center w-20 h-32`}
+                >
+                  <Text className="text-black text-xs">
+                    {new Date(data.first_item.datetime).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                    })}
+                  </Text>
+                  <Text
+                    className="text-xs text-zinc-500"
+                    style={{ fontFamily: 'PoppinsMedium' }}
+                  >
+                    {formatToPHT(data.first_item.datetime)}
+                  </Text>
+                  <WeatherIcon iconCode={data.first_item.icon} style={{ width: 35, height: 35, marginTop: 8 }} />
+                  <Text style={{ fontFamily: 'PoppinsMedium' }} className="mt-3 text-base text-primary">
+                    {Math.round(data.first_item.temperature ?? 0)}
+                    <Text className="text-xs" style={{ fontFamily: 'PoppinsRegular' }}>
+                      °C
+                    </Text>
+                  </Text>
+                </View>
+              </Pressable>
+            )}
             {data?.future_forecast.map((item, index) => (
               <Pressable key={index} onPress={() => handlePress(item)}>
                 <View
@@ -217,12 +280,9 @@ const Home = () => {
                     borderColor: '#d4d4d8', 
                     width: 75, 
                     height:120, 
-                    padding: 8,
-                    marginLeft: index === 0 ? 18 : 0, 
+                    padding: 8, 
                     marginRight: index === data.future_forecast.length - 1 ? 18 : 0 }}
-                  className={`p-1 border border-zinc-300 flex items-center w-20 h-32 ${
-                    index === 0 ? 'ml-5' : ''
-                  } ${index === data.future_forecast.length - 1 ? 'mr-5' : ''}`}
+                  className={`p-1 border border-zinc-300 flex items-center w-20 h-32  ${index === data.future_forecast.length - 1 ? 'mr-5' : ''}`}
                 >
                   <Text className="text-black text-xs">
                     {new Date(item.datetime).toLocaleDateString('en-US', {
