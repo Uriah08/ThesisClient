@@ -3,6 +3,8 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
+import { Gauge, MapPlus, Settings, Users } from "lucide-react-native";
+
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
 
@@ -40,5 +42,24 @@ export const modules = [
     title: 'Module 3: Post-Drying & Storage',
     image: require('@/assets/images/module-wallpaper3.png'),
     link: ''
+  },
+]
+
+export const farmMenu = [
+  {
+    title: "Home",
+    icon: Gauge
+  },
+  {
+    title: "Sessions",
+    icon: MapPlus
+  },
+  {
+    title: "Members",
+    icon: Users
+  },
+  {
+    title: "Settings",
+    icon: Settings
   },
 ]

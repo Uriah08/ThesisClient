@@ -27,6 +27,7 @@ export type Farm = {
   image_url: string | null;
   members: number[];
   owner: number;
+  owner_name: string;
   create_at: Date
 };
 
@@ -73,3 +74,15 @@ export interface Recipient {
   read_at: string | null;
   created_at: string;
 }
+
+export type FarmSession = {
+  id: number;
+  farm: number;
+  farm_name: string;
+  name: string;
+  description: string;
+  status: string;
+  start_time: string | null;
+  end_time: string | null;
+  created_at: string;
+};

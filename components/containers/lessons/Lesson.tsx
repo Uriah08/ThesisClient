@@ -12,7 +12,7 @@ const Lesson = () => {
       </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className='mt-3'>
         {modules.map((item, i) => (
-          <View key={i} className={`p-5 ml-5 flex flex-col gap-2 ${i === modules.length - 1 ? 'mr-5' : ''}`} style={{ borderWidth: 1, borderColor: '#d4d4d8', borderRadius: 10, maxWidth: 240 }}>
+          <View key={i} className={`p-5 ml-5 flex flex-col gap-2 ${i === modules.length - 1 ? 'mr-5' : ''}`} style={{ borderWidth: 1, borderColor: '#d4d4d8', borderRadius: 10, maxWidth: 240, marginRight: i === modules.length - 1 ? 20 : 0, marginLeft: 20 }}>
             <Image source={item.image} style={{ width: 200, height: 150, borderRadius: 10}} resizeMode="cover"/>
             <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15}}>{item.title}</Text>
             <Pressable>
