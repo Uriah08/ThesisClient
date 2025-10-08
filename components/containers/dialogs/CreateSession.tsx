@@ -54,7 +54,7 @@ const CreateSession = ({ setVisible, visible, farmId }: DialogProps) => {
         const newErrors: { [key: string]: string } = {};
 
         if (!name.trim()) {
-          newErrors.name = 'First name is required.';
+          newErrors.name = 'Session name is required.';
         }
 
         setErrors(newErrors);

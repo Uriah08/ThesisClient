@@ -1,3 +1,4 @@
+import { FarmSession } from "@/utils/types";
 import { baseApi } from "./baseApi";
 
 export const sessionApi = baseApi.injectEndpoints({
@@ -10,8 +11,18 @@ export const sessionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Session"],
     }),
+    getFarmSessions: build.query<FarmSession[], number>({
+      query: (farmId) => ({
+        url: `sessions/get/${farmId}/`,
+        method: 'GET'
+      }),
+      providesTags: ["Session"],
+    })
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
-export const { useCreateSessionMutation } = sessionApi;
+export const { 
+  useCreateSessionMutation,
+  useGetFarmSessionsQuery
+} = sessionApi;

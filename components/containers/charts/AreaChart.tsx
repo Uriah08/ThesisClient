@@ -31,12 +31,12 @@ const AreaChartComponent = ({ title, description, sideLabel, data, data2, chartK
           {description}
         </Text>
         <View className='flex-row gap-3'>
-          <View className='flex-row gap-2 items-center flex'>
-          <View className='bg-primary' style={{ height: 8, width: 8, borderRadius: 99}}/>
+          <View className='flex-row items-center flex' style={{ gap: 4}}>
+          <View className='bg-primary' style={{ height: 8, width: 8, borderRadius: 99, marginBottom: 3}}/>
           <Text className='text-zinc-500' style={{ fontFamily: 'PoppinsRegular', fontSize: 10 }}>Rain</Text>
         </View>
-        <View className='flex-row gap-2 items-center flex'>
-          <View className='bg-[#aaaaaa]' style={{ height: 8, width: 8, borderRadius: 99, backgroundColor: '#aaaaaa'}}/>
+        <View className='flex-row items-center flex' style={{ gap: 4}}>
+          <View className='bg-[#aaaaaa]' style={{ height: 8, width: 8, borderRadius: 99, marginBottom: 3, backgroundColor: '#aaaaaa'}}/>
           <Text className='text-zinc-500' style={{ fontFamily: 'PoppinsRegular', fontSize: 10 }}>Cloud</Text>
         </View>
         </View>

@@ -7,7 +7,11 @@ import { useGetFarmQuery } from '@/store/farmApi'
 import { Farm } from '@/utils/types'
 import { LinearGradient } from 'expo-linear-gradient'
 import CreateSession from '../dialogs/CreateSession'
-import PieChartComponent from '../charts/PieChart'
+import { farmMenu } from '@/constants/Colors'
+import Sessions from './farm-tabs/Sessions'
+import Home from './farm-tabs/Home'
+import Members from './farm-tabs/Members'
+import Settings from './farm-tabs/Settings'
 
 type ChosenFarmProps = {
   onBack: () => void;
@@ -20,6 +24,7 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
   const { data } = useGetFarmQuery(selectedFarm.id);
 
   const [createVisible, setCreateVisible] = useState(false)
+  const [active, setActive] = useState('Home')
   
   useEffect(() => {
     if (data) {
@@ -82,13 +87,13 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
           }}
         />
       </View>
-      <View className='flex-1 w-full p-5'>
+      <View className='flex-1 w-full'>
         <CreateSession visible={createVisible} setVisible={setCreateVisible} farmId={data?.id || selectedFarm.id}/>
-        <View className='flex-row justify-between items-center' style={{ marginTop: 30, marginLeft: 5 }}>
+        <View className='flex-row justify-between items-center px-5 pt-5 gap-3' style={{ marginTop: 30 }}>
             <View className='flex justify-center items-center' style={{ height: 40, width: 40, backgroundColor: "#ffffff80", borderRadius: 999}}>
             <ChevronLeft color={"#155183"} onPress={() => handleBack()}/>
           </View> 
-          <View className='flex-1 relative' style={{ margin: 8}}>
+          <View className='flex-1 relative'>
             <TextInput
             style={{ backgroundColor: "#ffffff90", height: 40, width: "100%", borderColor: '#a1a1aa' }}
               className='rounded-full pl-12 text-base text-black border'
@@ -101,15 +106,42 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
           </View>
         </View>
 
-        <Text className='text-3xl mt-5 truncattext-zinc-700' style={{ color: '#3f3f46',fontFamily: 'PoppinsBold'}}>
+        <Text className='text-3xl mt-5 truncattext-zinc-700 px-5' style={{ color: '#3f3f46',fontFamily: 'PoppinsBold'}}>
           {data?.name || selectedFarm.name}
         </Text>
-        <Text className='text-zinc-700 mt-2' style={{ paddingBottom: 10,color: '#3f3f46',fontFamily: 'PoppinsRegular'}}>Created by {(data?.owner_name || selectedFarm.owner_name)[0].toUpperCase() + (data?.owner_name || selectedFarm.owner_name).slice(1)}!</Text>
-        <View className='flex flex-row justify-between p-5'>
-          <PieChartComponent/>
-          <PieChartComponent/>
-          <PieChartComponent/>
+        <View className='flex-row gap-3 justify-between mt-5 px-5'>
+          {farmMenu.map((item) => (
+            <Pressable onPress={() => setActive(item.title)} key={item.title} className='flex-col' style={{ gap: 3}}>
+              <LinearGradient
+                colors={active === item.title ? ['#155183', '#5295cc'] : ['#f4f4f5', '#f4f4f5']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{
+                  paddingVertical: 8,
+                  marginTop: 20,
+                  borderRadius: 999,
+                  paddingHorizontal: 20,
+                  overflow: 'hidden',
+                }}
+              >
+                <item.icon color={active === item.title ? '#ffffff' : '#52525b'} size={17}/>
+              </LinearGradient>
+              <View className='flex-col items-center'>
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12}} className={`${active === item.title ? 'text-primary' : 'text-zinc-600'} text-center`}>{item.title}</Text>
+                <LinearGradient 
+                  colors={active === item.title ? ['#155183', '#5295cc'] : ['#ffffff', '#ffffff']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  className={`h-1 ${active === item.title ? 'bg-primary' : ''}`} 
+                  style={{ height: 2, width: 35, borderRadius: 2, marginTop: 4}}/>
+              </View>
+            </Pressable>
+          ))}
         </View>
+        {active === 'Home' && <Home/>}
+        {active === 'Sessions' && <Sessions farmId={data?.id || selectedFarm.id}/>}
+        {active === 'Members' && <Members/>}
+        {active === 'Settings' && <Settings/>}
         <View
           className="absolute bottom-5 right-5 rounded-full"
           style={{ overflow: "hidden" }}
