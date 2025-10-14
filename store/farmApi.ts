@@ -1,5 +1,5 @@
 import { baseApi } from "./baseApi";
-import { Farm } from "@/utils/types";
+import { Farm, Members } from "@/utils/types";
 
 export const farmApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -33,8 +33,14 @@ export const farmApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Farm"],
     }),
+    getMembers: build.query<Members[], number>({
+      query: (id) => ({
+        url: `farms/members/${id}/`,
+        method: "GET",
+      }),
+    })
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {
@@ -42,4 +48,5 @@ export const {
   useJoinFarmMutation,
   useGetFarmsQuery,
   useGetFarmQuery,
+  useGetMembersQuery
 } = farmApi;

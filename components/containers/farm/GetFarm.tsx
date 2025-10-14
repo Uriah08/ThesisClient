@@ -10,8 +10,9 @@ type FarmProps = {
     data: Farm[]
     isLoading: boolean
     onSelect: (farm: Farm) => void;
+    isFetching: boolean
 }
-const GetFarm = ({ data, isLoading, onSelect }: FarmProps) => {
+const GetFarm = ({ data, isLoading, onSelect, isFetching }: FarmProps) => {
   
 
   const handleClick = async (farm : Farm) => {
@@ -30,7 +31,7 @@ const GetFarm = ({ data, isLoading, onSelect }: FarmProps) => {
 
   return (
     <View className="w-full h-full gap-5 px-5">
-      {isLoading ? (
+      {isLoading || isFetching ? (
         <View className="flex gap-5">
           <SkeletonShimmer height={110} borderRadius={16} />
           <SkeletonShimmer height={110} borderRadius={16} />

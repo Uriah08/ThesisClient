@@ -52,6 +52,7 @@ const Settings = () => {
         
         await AsyncStorage.removeItem('user');
         await AsyncStorage.removeItem('authToken');
+        await AsyncStorage.removeItem('farm');
     
         router.replace('/login');
       } catch (error) {

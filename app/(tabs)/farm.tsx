@@ -18,7 +18,7 @@ import ChosenFarm from '@/components/containers/farm/ChosenFarm';
 const Farm = () => {
   const { user } = useAuthRedirect()
 
-  const { data, isLoading } = useGetFarmsQuery();
+  const { data, refetch, isLoading, isFetching } = useGetFarmsQuery();
   const farms = data ?? []
   const [active, setActive] = useState(false);
   const [filterActive, setFilterActive] = useState('newest')
@@ -52,7 +52,8 @@ const Farm = () => {
       }
     };
     loadFarm();
-  }, []);
+    refetch()
+  }, [refetch]);
 
   const toggleButtons = () => {
     setActive(!active)
@@ -174,7 +175,7 @@ const Farm = () => {
 )}
 
       <ScrollView className='mt-5'>
-        <GetFarm data={filteredFarms} isLoading={isLoading} onSelect={(farm) => setSelectedFarm(farm)}/>
+        <GetFarm data={filteredFarms} isLoading={isLoading} onSelect={(farm) => setSelectedFarm(farm)} isFetching={isFetching}/>
       </ScrollView>
 
       <CreateFarm visible={createVisible} setVisible={setCreateVisible} onSelect={(farm) => setSelectedFarm(farm)}/>

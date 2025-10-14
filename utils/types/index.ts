@@ -86,3 +86,12 @@ export type FarmSession = {
   end_time: string | null;
   created_at: string;
 };
+
+export type Members = {
+  id: number,
+  username: string,
+  email: string
+  profile_picture: string
+  first_name: string
+  last_name: string
+}

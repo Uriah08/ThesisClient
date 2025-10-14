@@ -140,8 +140,8 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
         </View>
         {active === 'Home' && <Home/>}
         {active === 'Sessions' && <Sessions farmId={data?.id || selectedFarm.id}/>}
-        {active === 'Members' && <Members/>}
-        {active === 'Settings' && <Settings/>}
+        {active === 'Members' && <Members farmId={data?.id || selectedFarm.id} ownerId={data?.owner || selectedFarm.owner}/>}
+        {active === 'Settings' && <Settings farmId={data?.id || selectedFarm.id}/>}
         <View
           className="absolute bottom-5 right-5 rounded-full"
           style={{ overflow: "hidden" }}
