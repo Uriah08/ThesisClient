@@ -95,3 +95,16 @@ export type Members = {
   first_name: string
   last_name: string
 }
+
+export type Detection = {
+  box: number[];
+  class: string;
+  confidence: number;
+  label: string;
+};
+
+export type Detections = {
+  detections: Detection[];
+  image_url: string;
+};
+
