@@ -1,13 +1,20 @@
-import { View, Text, Pressable, ScrollView } from 'react-native'
-import React from 'react'
+import { View, Text, Pressable, ScrollView, TextInput } from 'react-native'
+import React, { useEffect } from 'react'
 import { useGetFarmSessionsQuery } from '@/store/sessionApi'
 import SkeletonShimmer from '../../SkeletonPlaceholder'
+import Session from './session-tabs/Session'
+import { FarmSession } from '@/utils/types'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { router } from 'expo-router'
+import { Search } from 'lucide-react-native'
 
 type Props = {
   farmId: number
 }
 const Sessions = ({ farmId }: Props) => {
   const { data: sessions = [], isLoading } = useGetFarmSessionsQuery(farmId);
+  const [chosenSession, setChosenSession] = React.useState<FarmSession | null>(null);
+  const [loading, setLoading] = React.useState(false);
 
   const sortedSessions = [...sessions].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -15,6 +22,46 @@ const Sessions = ({ farmId }: Props) => {
 
   const activeSessions = sortedSessions.filter((session) => session.status === 'active');
   const inactiveSessions = sortedSessions.filter((session) => session.status === 'inactive' || session.status === 'finished');
+
+  useEffect(() => {
+    const loadSession = async () => {
+      setLoading(true)
+      try {
+        const storedSession = await AsyncStorage.getItem('session');
+        console.log('SESSION:',storedSession);
+
+        if (storedSession) {
+          const parsed = JSON.parse(storedSession);
+          setChosenSession(parsed.session);
+        }
+
+        if (!storedSession) {
+          router.replace('/(tabs)/farm')
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadSession();
+  },[])
+
+  const pickSession = async (session: FarmSession) => {
+    try {
+      await AsyncStorage.setItem('session', JSON.stringify({ session }));
+      setChosenSession(session)
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  if(chosenSession) {
+    return (
+      <Session session={chosenSession} onBack={() => setChosenSession(null)}/>
+    )
+  }
   
   return (
     <View className='flex-1 flex flex-col'>
@@ -35,10 +82,21 @@ const Sessions = ({ farmId }: Props) => {
           </View>
         </View>
       </View>
+      <View className='relative p-5'>
+          <TextInput
+          style={{ backgroundColor: "#ffffff60", height: 40, width: "100%", borderColor: '#d4d4d8' }}
+            className='rounded-full pl-12 text-base text-black border'
+            placeholder='Search session...'
+          />
+          <Search
+            style={{ position: 'absolute', top: 25, left: 28 }}
+            color={'#d4d4d8'}
+          />
+        </View>
       <ScrollView showsVerticalScrollIndicator={false} className='flex-1 px-5'>
         <Text className='text-zinc-400 mt-3' style={{ fontFamily: 'PoppinsMedium', color: '#a1a1aa', fontSize: 12}}>Active</Text>
       <View className='flex gap-3 flex-col'>
-        {isLoading ? (
+        {isLoading || loading ? (
           <>
           <SkeletonShimmer width={'100%'} height={70} style={{ marginTop: 10 }}/>
           <SkeletonShimmer width={'100%'} height={70}/>
@@ -62,7 +120,7 @@ const Sessions = ({ farmId }: Props) => {
                   padding: 10,
                 }}
                 className="flex flex-col border-zinc-300"
-                onPress={() => console.log('Pressed:', item.name)}
+                onPress={() => pickSession(item)}
               >
                 <View className="flex flex-row justify-between items-center">
                   <View className="flex flex-row items-center gap-3">
@@ -186,7 +244,7 @@ const Sessions = ({ farmId }: Props) => {
                   padding: 10,
                 }}
                 className="flex flex-col border-zinc-300"
-                onPress={() => console.log('Pressed:', item.name)}
+                onPress={() => pickSession(item)}
               >
                 <View className="flex flex-row justify-between items-center">
                   <View className="flex flex-row items-center gap-3">

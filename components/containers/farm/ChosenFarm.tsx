@@ -1,6 +1,6 @@
-import { Image, TextInput, View, Text, Pressable } from 'react-native'
+import { Image, View, Text, Pressable } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { ChevronLeft, MapPlus, Search } from 'lucide-react-native'
+import { ChevronLeft, MapPlus } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Toast from 'react-native-toast-message'
 import { useGetFarmQuery } from '@/store/farmApi'
@@ -12,6 +12,7 @@ import Sessions from './farm-tabs/Sessions'
 import Home from './farm-tabs/Home'
 import Members from './farm-tabs/Members'
 import Settings from './farm-tabs/Settings'
+import { router } from 'expo-router'
 
 type ChosenFarmProps = {
   onBack: () => void;
@@ -32,6 +33,10 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
         try {
           await AsyncStorage.setItem('farm', JSON.stringify({farm: data}));
           setSelectedFarm(data);
+
+          if(!data) {
+            router.replace('/(tabs)/farm')
+          }
         } catch (error) {
           console.log(error);
           Toast.show({
@@ -93,7 +98,7 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
             <View className='flex justify-center items-center' style={{ height: 40, width: 40, backgroundColor: "#ffffff80", borderRadius: 999}}>
             <ChevronLeft color={"#155183"} onPress={() => handleBack()}/>
           </View> 
-          <View className='flex-1 relative'>
+          {/* <View className='flex-1 relative'>
             <TextInput
             style={{ backgroundColor: "#ffffff90", height: 40, width: "100%", borderColor: '#a1a1aa' }}
               className='rounded-full pl-12 text-base text-black border'
@@ -103,7 +108,7 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
               style={{ position: 'absolute', top: 8, left: 12 }}
               color={'#71717a'}
             />
-          </View>
+          </View> */}
         </View>
 
         <Text className='text-3xl mt-5 truncattext-zinc-700 px-5' style={{ color: '#3f3f46',fontFamily: 'PoppinsBold'}}>

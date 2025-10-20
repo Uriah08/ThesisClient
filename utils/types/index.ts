@@ -108,3 +108,7 @@ export type Detections = {
   image_url: string;
 };
 
+export type Photo = {
+  uri: string;
+  base64?: string;
+};
