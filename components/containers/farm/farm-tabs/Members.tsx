@@ -1,7 +1,8 @@
-import { View, Text, ScrollView, Image } from 'react-native'
+import { View, Text, ScrollView, Image, TextInput } from 'react-native'
 import React from 'react'
 import { useGetMembersQuery } from '@/store/farmApi'
 import SkeletonShimmer from '../../SkeletonPlaceholder'
+import { Search } from 'lucide-react-native'
 
 type Props = {
   farmId: number
@@ -16,8 +17,19 @@ const Members = ({ farmId, ownerId }: Props) => {
   return (
     <View className='flex-1 flex flex-col'>
       <Text className='text-xl text-zinc-700 mt-3 px-5' style={{ fontFamily: 'PoppinsBold', color: '#3f3f46'}}>Members</Text>
+      <View className='relative p-5'>
+        <TextInput
+        style={{ backgroundColor: "#ffffff60", height: 40, width: "100%", borderColor: '#d4d4d8' }}
+          className='rounded-full pl-12 text-base text-black border'
+          placeholder='Search user...'
+        />
+        <Search
+          style={{ position: 'absolute', top: 25, left: 28 }}
+          color={'#d4d4d8'}
+        />
+      </View>
       <ScrollView showsVerticalScrollIndicator={false} className='flex-1 px-5'>
-        <Text className='text-zinc-400 mt-3' style={{ fontFamily: 'PoppinsMedium', color: '#a1a1aa', fontSize: 12}}>Admin</Text>
+        <Text className='text-zinc-400' style={{ fontFamily: 'PoppinsMedium', color: '#a1a1aa', fontSize: 12}}>Admin</Text>
         {isLoading ? (
           <View className='flex flex-row items-center gap-3 mt-3'>
             <SkeletonShimmer style={{ width: 50, height: 50, borderRadius: 999 }}/>

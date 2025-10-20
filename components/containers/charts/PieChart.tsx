@@ -3,18 +3,18 @@ import { View, Text, Animated } from 'react-native';
 import { PieChart } from 'react-native-gifted-charts';
 import { Easing } from 'react-native-reanimated';
 
-const PieChartComponent = () => {
-  const [progress, setProgress] = useState(0);
+const PieChartComponent = ({ value }: { value: number }) => {
+  const [progress, setProgress] = useState(value);
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(animatedValue, {
-      toValue: 70,
+      toValue: value,
       duration: 1000,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
-  }, [animatedValue]);
+  }, [animatedValue, value]);
 
   useEffect(() => {
     const listener = animatedValue.addListener(({ value }) => {

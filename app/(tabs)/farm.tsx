@@ -45,6 +45,7 @@ const Farm = () => {
           const parsed = JSON.parse(storedFarm);
           setSelectedFarm(parsed.farm);
         }
+        
       } catch (err) {
         console.log(err);
       } finally {
