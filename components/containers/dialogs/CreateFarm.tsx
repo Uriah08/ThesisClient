@@ -67,9 +67,12 @@ const CreateFarm = ({setVisible, visible, onSelect}: DialogsProps) => {
             ...(imageURL && { image_url: imageURL })
           }).unwrap()
 
-          await AsyncStorage.setItem('farm', JSON.stringify({ farm: newFarm }));
-
-          onSelect(newFarm);
+          await AsyncStorage.setItem('farm', JSON.stringify({ farm: newFarm.farm }));
+          const storedFarm = await AsyncStorage.getItem('farm');
+          if (storedFarm) {
+            const parsedFarm = JSON.parse(storedFarm);
+            onSelect(parsedFarm.farm);
+          }
 
           setName('')
           setDescription('')

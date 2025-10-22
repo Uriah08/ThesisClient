@@ -64,6 +64,7 @@ const Login = () => {
           address: response.address || '',
           is_complete: response.is_complete || false,
           profile_picture: response.profile_picture || '',
+          mobile_number: response.mobile_number || '',
         })
       );
 

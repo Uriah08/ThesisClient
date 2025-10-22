@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Image, ScrollView, TextInput, ActivityIndicator } from 'react-native'
+import { View, Text, Pressable, Image, ScrollView, TextInput, ActivityIndicator, RefreshControl } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Filter, MapPlus, Plus, Search } from 'lucide-react-native';
 import Animated, {
@@ -27,6 +27,16 @@ const Farm = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [selectedFarm, setSelectedFarm] = useState<FarmType | null>(null);
   const [loading, setLoading] = useState(false)
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const onRefresh = async () => {
+    await refetch();
+    setRefreshing(true);
+
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
 
   const opacity1 = useSharedValue(0)
   const translateX1 = useSharedValue(30)
@@ -175,7 +185,11 @@ const Farm = () => {
   </View>
 )}
 
-      <ScrollView className='mt-5'>
+      <ScrollView className='mt-5'
+      refreshControl={
+        <RefreshControl style={{ zIndex: -1}} colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      >
         <GetFarm data={filteredFarms} isLoading={isLoading} onSelect={(farm) => setSelectedFarm(farm)} isFetching={isFetching}/>
       </ScrollView>
 

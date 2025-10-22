@@ -1,6 +1,6 @@
 import { Image, View, Text, Pressable } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { ChevronLeft, MapPlus } from 'lucide-react-native'
+import { ChevronLeft } from 'lucide-react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Toast from 'react-native-toast-message'
 import { useGetFarmQuery } from '@/store/farmApi'
@@ -12,7 +12,6 @@ import Sessions from './farm-tabs/Sessions'
 import Home from './farm-tabs/Home'
 import Members from './farm-tabs/Members'
 import Settings from './farm-tabs/Settings'
-import { router } from 'expo-router'
 
 type ChosenFarmProps = {
   onBack: () => void;
@@ -28,15 +27,12 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
   const [active, setActive] = useState('Home')
   
   useEffect(() => {
+    
     if (data) {
       (async () => {
         try {
           await AsyncStorage.setItem('farm', JSON.stringify({farm: data}));
           setSelectedFarm(data);
-
-          if(!data) {
-            router.replace('/(tabs)/farm')
-          }
         } catch (error) {
           console.log(error);
           Toast.show({
@@ -46,11 +42,12 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
         }
       })();
     }
-  }, [data, setSelectedFarm]);
+  }, [data, setSelectedFarm, onBack]);
     
     const handleBack = async () => {
         try {
             await AsyncStorage.removeItem('farm')
+            await AsyncStorage.removeItem('session')
             onBack();
         } catch (error) {
             console.log(error);
@@ -98,17 +95,6 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
             <View className='flex justify-center items-center' style={{ height: 40, width: 40, backgroundColor: "#ffffff80", borderRadius: 999}}>
             <ChevronLeft color={"#155183"} onPress={() => handleBack()}/>
           </View> 
-          {/* <View className='flex-1 relative'>
-            <TextInput
-            style={{ backgroundColor: "#ffffff90", height: 40, width: "100%", borderColor: '#a1a1aa' }}
-              className='rounded-full pl-12 text-base text-black border'
-              placeholder='Search session...'
-            />
-            <Search
-              style={{ position: 'absolute', top: 8, left: 12 }}
-              color={'#71717a'}
-            />
-          </View> */}
         </View>
 
         <Text className='text-3xl mt-5 truncattext-zinc-700 px-5' style={{ color: '#3f3f46',fontFamily: 'PoppinsBold'}}>
@@ -147,25 +133,6 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
         {active === 'Sessions' && <Sessions farmId={data?.id || selectedFarm.id}/>}
         {active === 'Members' && <Members farmId={data?.id || selectedFarm.id} ownerId={data?.owner || selectedFarm.owner}/>}
         {active === 'Settings' && <Settings farmId={data?.id || selectedFarm.id}/>}
-        <View
-          className="absolute bottom-5 right-5 rounded-full"
-          style={{ overflow: "hidden" }}
-        >
-          <Pressable
-          onPress={() => setCreateVisible(true)}
-            android_ripple={{ color: "#ffffff50", borderless: false }}
-            className="flex flex-row items-center gap-3 px-5 bg-primary rounded-full"
-            style={{ paddingVertical: 10 }}
-          >
-            <Text
-              className="text-white"
-              style={{ fontFamily: "PoppinsSemiBold" }}
-            >
-              Create
-            </Text>
-            <MapPlus color={"#ffffff"} />
-          </Pressable>
-        </View>
       </View>
     </View>
   )
