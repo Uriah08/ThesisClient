@@ -8,6 +8,7 @@ import {
 } from "react-redux";
 import globalReducer from "@/store";
 // import { authApi, api, weatherApi, farmApi, notificationApi, sessionApi } from "@/store/api";
+import { authApi } from "@/store/authApi";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import Network from "./network";
 import { Provider as PaperProvider } from 'react-native-paper';
@@ -38,7 +39,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   global: globalReducer,
   [baseApi.reducerPath]: baseApi.reducer,
-  // [authApi.reducerPath]: authApi.reducer,
+  [authApi.reducerPath]: authApi.reducer,
   // [api.reducerPath]: api.reducer,
   // [weatherApi.reducerPath]: weatherApi.reducer,
   // [farmApi.reducerPath]: farmApi.reducer,
@@ -58,6 +59,7 @@ export const makeStore = () =>
         },
       })
       .concat(baseApi.middleware)
+      .concat(authApi.middleware)
       // .concat(api.middleware)
       // .concat(authApi.middleware)
       // .concat(weatherApi.middleware)

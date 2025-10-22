@@ -17,6 +17,20 @@ export const sessionApi = baseApi.injectEndpoints({
         method: 'GET'
       }),
       providesTags: ["Session"],
+    }),
+    getSessionById: build.query<FarmSession, number>({
+      query: (id) => ({
+        url: `sessions/get/id/${id}/`,
+        method: 'GET'
+      }),
+      providesTags: ["Session"],
+    }),
+    activateSession: build.mutation({
+      query: (id) => ({
+        url: `sessions/status/${id}/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Session"],
     })
   }),
   overrideExisting: true,
@@ -24,5 +38,7 @@ export const sessionApi = baseApi.injectEndpoints({
 
 export const { 
   useCreateSessionMutation,
-  useGetFarmSessionsQuery
+  useGetFarmSessionsQuery,
+  useGetSessionByIdQuery,
+  useActivateSessionMutation
 } = sessionApi;

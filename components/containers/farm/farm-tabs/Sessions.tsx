@@ -1,20 +1,33 @@
-import { View, Text, Pressable, ScrollView, TextInput } from 'react-native'
-import React, { useEffect } from 'react'
+import { View, Text, Pressable, ScrollView, TextInput, RefreshControl } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { useGetFarmSessionsQuery } from '@/store/sessionApi'
 import SkeletonShimmer from '../../SkeletonPlaceholder'
 import Session from './session-tabs/Session'
 import { FarmSession } from '@/utils/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
-import { Search } from 'lucide-react-native'
+import { MapPlus, Search } from 'lucide-react-native'
+import CreateSession from '../../dialogs/CreateSession'
+import SessionStatus from './session-tabs/SessionStatus'
 
 type Props = {
   farmId: number
 }
 const Sessions = ({ farmId }: Props) => {
-  const { data: sessions = [], isLoading } = useGetFarmSessionsQuery(farmId);
+  const { data: sessions = [], isLoading, refetch } = useGetFarmSessionsQuery(farmId);
   const [chosenSession, setChosenSession] = React.useState<FarmSession | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [createVisible, setCreateVisible] = useState(false)
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    await refetch();
+    setRefreshing(true);
+
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
 
   const sortedSessions = [...sessions].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -65,6 +78,26 @@ const Sessions = ({ farmId }: Props) => {
   
   return (
     <View className='flex-1 flex flex-col'>
+      <View
+        className="absolute bottom-5 right-5 rounded-full"
+        style={{ overflow: "hidden", zIndex: 999 }}
+      >
+        <Pressable
+        onPress={() => setCreateVisible(true)}
+          android_ripple={{ color: "#ffffff50", borderless: false }}
+          className="flex flex-row items-center gap-3 px-5 bg-primary rounded-full"
+          style={{ paddingVertical: 10 }}
+        >
+          <Text
+            className="text-white"
+            style={{ fontFamily: "PoppinsSemiBold" }}
+          >
+            Create
+          </Text>
+          <MapPlus color={"#ffffff"} />
+        </Pressable>
+      </View>
+      <CreateSession visible={createVisible} setVisible={setCreateVisible} farmId={farmId}/>
       <View className='flex flex-row justify-between items-center mt-3 px-5'>
         <Text className='text-xl text-zinc-700' style={{ fontFamily: 'PoppinsBold', color: '#3f3f46'}}>Sessions</Text>
         <View className='flex flex-row items-center gap-3'>
@@ -93,7 +126,11 @@ const Sessions = ({ farmId }: Props) => {
             color={'#d4d4d8'}
           />
         </View>
-      <ScrollView showsVerticalScrollIndicator={false} className='flex-1 px-5'>
+      <ScrollView showsVerticalScrollIndicator={false} className='flex-1 px-5'
+      refreshControl={
+        <RefreshControl style={{ zIndex: -1}} colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      >
         <Text className='text-zinc-400 mt-3' style={{ fontFamily: 'PoppinsMedium', color: '#a1a1aa', fontSize: 12}}>Active</Text>
       <View className='flex gap-3 flex-col'>
         {isLoading || loading ? (
@@ -130,15 +167,7 @@ const Sessions = ({ farmId }: Props) => {
                     >
                       {item.name}
                     </Text>
-                    <View
-                      style={{
-                        height: 8,
-                        width: 8,
-                        borderRadius: 99,
-                        marginBottom: 3,
-                        backgroundColor: '#52525b',
-                      }}
-                    />
+                    <SessionStatus sessionStatus={item.status}/>
                   </View>
                   <Text
                     className="text-zinc-400"
@@ -254,15 +283,7 @@ const Sessions = ({ farmId }: Props) => {
                     >
                       {item.name}
                     </Text>
-                    <View
-                      style={{
-                        height: 8,
-                        width: 8,
-                        borderRadius: 99,
-                        marginBottom: 3,
-                        backgroundColor: '#52525b',
-                      }}
-                    />
+                    <SessionStatus sessionStatus={item.status}/>
                   </View>
                   <Text
                     className="text-zinc-400"

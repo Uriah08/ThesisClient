@@ -1,5 +1,5 @@
-import { View, Text, Image, Pressable, ScrollView } from 'react-native'
-import React from 'react'
+import { View, Text, Image, Pressable, ScrollView, RefreshControl } from 'react-native'
+import React, { useState } from 'react'
 import { useReadNotificationsMutation } from '@/store/notificationApi';
 import SkeletonShimmer from '../SkeletonPlaceholder';
 import dayjs from 'dayjs';
@@ -37,10 +37,21 @@ const formatTimeAgo = (dateString: string) => {
 type NotificationProps = {
   notifications: Recipient[],
   isLoading: boolean
+  refetch: () => void
 }
 
-const Notifications = ({ notifications, isLoading }: NotificationProps) => {
+const Notifications = ({ notifications, isLoading, refetch }: NotificationProps) => {
   const [ readNotifications ] = useReadNotificationsMutation();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    await refetch();
+    setRefreshing(true);
+
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
 
   const readNotifcation = async (ids: number[], read: boolean) => {
     try {
@@ -48,7 +59,7 @@ const Notifications = ({ notifications, isLoading }: NotificationProps) => {
         await readNotifications({ ids }).unwrap();
       }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
@@ -63,7 +74,11 @@ const Notifications = ({ notifications, isLoading }: NotificationProps) => {
   }
   
   return (
-    <ScrollView className='p-5'>
+    <ScrollView className='p-5'
+    refreshControl={
+      <RefreshControl style={{ zIndex: -1}} colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
+    }
+    >
       <View className='flex-col gap-3'>
         {notifications.length === 0 ? (
           <View className='flex-1 justify-center items-center gap-1' style={{ marginTop: 150 }}>

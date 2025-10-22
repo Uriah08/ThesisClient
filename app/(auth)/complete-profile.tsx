@@ -20,6 +20,7 @@ import Toast from 'react-native-toast-message';
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { uploadImageToSupabase } from '@/utils/lib/supabase';
+import CountryPicker, { Country, CountryCode } from "react-native-country-picker-modal";
 
 const CompleteProfile = () => {
   const { checking, user } = useAuthRedirect()
@@ -33,12 +34,22 @@ const CompleteProfile = () => {
 
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [mobileNumber, setMobileNumber] = useState('')
   const [address] = useState('Labac')
   const [date, setDate] = useState<Date | null>(null);
   const formattedDate = date ? new Date(date).toISOString().split('T')[0] : '';
 
   const [image, setImage] = useState<string | null>(null);
 
+  const [countryCode, setCountryCode] = useState<CountryCode>("PH");
+  const [callingCode, setCallingCode] = useState("+63");
+  const [visible, setVisible] = useState(false);
+
+  const onSelect = (country: Country) => {
+    setCountryCode(country.cca2);
+    setCallingCode("+" + country.callingCode[0]);
+    setVisible(false);
+  };
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -47,16 +58,17 @@ const CompleteProfile = () => {
 
     let imageURL = ''
     
-    try {
+    try { 
       if (image) {
-      const uploadedUrl = await uploadImageToSupabase(image, 'profile', setSupabaseLoading);
-      if (uploadedUrl) imageURL = uploadedUrl;
-    }
+        const uploadedUrl = await uploadImageToSupabase(image, 'profile', setSupabaseLoading);
+        if (uploadedUrl) imageURL = uploadedUrl;
+      }
 
       const response = await completeProfile({
         first_name: firstName,
         last_name: lastName,
         birthday: formattedDate,
+        mobile_number: callingCode + mobileNumber,
         address,
         ...(imageURL && { profile_picture: imageURL }),
       }).unwrap();
@@ -78,6 +90,7 @@ const CompleteProfile = () => {
           address: response.address || '',
           is_complete: response.is_complete || false,
           profile_picture: response.profile_picture || '',
+          mobile_number: response.mobile_number || '',
         })
       );
 
@@ -157,6 +170,10 @@ const CompleteProfile = () => {
       newErrors.lastName = 'Last name is required.';
     } else if (!nameRegex.test(lastName)) {
       newErrors.lastName = 'Last name should not contain numbers or special characters.';
+    }
+
+    if(!mobileNumber.trim()) {
+      newErrors.mobileNumber = 'Mobile number is required.';
     }
 
     if (!date) {
@@ -282,6 +299,55 @@ const CompleteProfile = () => {
         {errors.birthday && (
           <Text className="text-error mt-1 ml-1 text-sm w-full">{errors.birthday}</Text>
         )}
+        <View className="w-full mt-5">
+      <View
+        className={`flex-row items-center rounded-md border ${
+          isFocused === "no"
+            ? "border-2 border-black"
+            : "border border-zinc-300"
+        }`}
+      >
+        <Pressable
+          onPress={() => setVisible(true)}
+          className="flex-row items-center"
+        >
+          <CountryPicker
+            withFilter
+            withFlag
+            withCallingCode
+            withEmoji
+            withModal
+            countryCode={countryCode}
+            visible={visible}
+            onSelect={onSelect}
+            onClose={() => setVisible(false)}
+          />
+          <Text className="text-base text-black">{callingCode}</Text>
+        </Pressable>
+
+        <View className="w-[1px] h-6 bg-gray-300 mx-2" />
+
+        <TextInput
+          maxLength={10}
+          editable={true}
+          selectTextOnFocus={false}
+          className="flex-1 text-base text-black"
+          onFocus={() => setIsFocused("no")}
+          onBlur={() => setIsFocused("")}
+          placeholder="912 345 6789"
+          placeholderTextColor="#9ca3af"
+          keyboardType="phone-pad"
+          value={mobileNumber}
+          onChangeText={setMobileNumber}
+        />
+      </View>
+
+      {errors?.mobileNumber && (
+        <Text className="text-error mt-1 ml-1 text-sm w-full">
+          {errors.mobileNumber}
+        </Text>
+      )}
+    </View>
         <TextInput
           editable={false}
           selectTextOnFocus={false}

@@ -40,6 +40,7 @@
     "expo-navigation-bar": "~4.2.7",
     "expo-notifications": "~0.31.4",
     "expo-router": "~5.1.4",
+    "expo-sharing": "~13.1.5",
     "expo-splash-screen": "~0.30.10",
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "~0.4.5",
@@ -50,6 +51,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
+    "react-native-country-picker-modal": "^2.0.0",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-gifted-charts": "^1.4.64",
     "react-native-image-viewing": "^0.2.2",
@@ -62,8 +64,7 @@
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
     "react-redux": "^9.2.0",
-    "redux-persist": "^6.0.0",
-    "expo-sharing": "~13.1.5"
+    "redux-persist": "^6.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

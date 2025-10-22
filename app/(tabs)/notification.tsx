@@ -6,14 +6,14 @@ import { EllipsisVertical, MailOpen, Trash } from 'lucide-react-native';
 import DeleteNotifications from '@/components/containers/dialogs/DeleteNotifications';
 
 const Notification = () => {
-  const { data, isLoading } = useGetNotificationsQuery();
+  const { data, isLoading, refetch } = useGetNotificationsQuery();
   const [readNotifications] = useReadNotificationsMutation();
   const notifications = data || [];
   const [showDialog, setShowDialog] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
 
   const readAllNotifications = async () => {
-    const ids = notifications.filter((notif) => !notif.read).map((notif) => notif.id)
+    const ids = notifications.filter((notif: any) => !notif.read).map((notif) => notif.id)
     try {
       await readNotifications({ ids }).unwrap()
       setShowDialog(false)
@@ -56,7 +56,7 @@ const Notification = () => {
             </View>
           )}
       </View>
-      <Notifications notifications={notifications} isLoading={isLoading}/>
+      <Notifications notifications={notifications} isLoading={isLoading} refetch={refetch}/>
     </View>
   )
 }
