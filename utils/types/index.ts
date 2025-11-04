@@ -112,3 +112,29 @@ export type Photo = {
   uri: string;
   base64?: string;
 };
+
+export type Tray = {
+  id: number;
+  farm: number;
+  farm_name: string;
+  session: number;
+  session_name: string;
+  name: string;
+  created_at: string
+  finished_at: string | null;
+  created_by: number;
+  created_by_username: string;
+  created_by_profile_picture: string | null;
+};
+
+export type TrayProgress = {
+  id: number;
+  tray: number;
+  title: string;
+  description?: string;
+  image?: string;
+  datetime: string;
+  created_by: number;
+  created_by_username: string;
+  created_by_profile_picture: string | null;
+}

@@ -72,7 +72,7 @@ const Sessions = ({ farmId }: Props) => {
 
   if(chosenSession) {
     return (
-      <Session session={chosenSession} onBack={() => setChosenSession(null)}/>
+      <Session farmId={farmId} session={chosenSession} onBack={() => setChosenSession(null)}/>
     )
   }
   

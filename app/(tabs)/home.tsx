@@ -5,7 +5,8 @@ import {
   ActivityIndicator, 
   ScrollView, 
   Pressable, 
-  RefreshControl
+  RefreshControl,
+  Image
 } from 'react-native'
 import { 
   useCallback, 
@@ -32,9 +33,19 @@ const Home = () => {
   const drawerRef = useRef<BottomDrawerRef>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ForecastItem | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [chartKey, setChartKey] = useState(0);
   const [registerDeviceToken] = useRegisterDeviceTokenMutation();
+  
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    await refetch();
+    setRefreshing(true);
+    setChartKey(prev => prev + 1);
+
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
 
   const rainData = data?.future_forecast.map((item: any) => ({
     value: item.pop * 100,
@@ -46,15 +57,6 @@ const Home = () => {
 
   const { user } = useAuthRedirect()
 
-  const onRefresh = async () => {
-    await refetch();
-    setRefreshing(true);
-    setChartKey(prev => prev + 1);
-
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
-  };
 
   useEffect(() => {
     const registerToken = async () => {
@@ -167,9 +169,10 @@ const Home = () => {
   return (
     <View className='flex-1 bg-white'>
           <View className='flex-row justify-between items-center mt-14 p-5'>
-          <Text className='text-5xl' style={{
+            <Image source={require('@/assets/images/main-icon.png')} style={{ width: 120, height: 63 }} resizeMode='cover'/>
+          {/* <Text className='text-5xl' style={{
           fontFamily: 'PoppinsSemiBold'
-        }}>To<Text className='text-primary'>You</Text></Text>
+        }}>To<Text className='text-primary'>You</Text></Text> */}
 
         <View
           style={{
