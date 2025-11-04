@@ -4,6 +4,6 @@ import { baseQueryWithAsyncAuth } from "@/utils/lib/baseQueryAsyncAuth";
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithAsyncAuth(),
-  tagTypes: ["Farm", "Session", "Notification"],
+  tagTypes: ["Farm", "Session", "Notification", "Tray"],
   endpoints: () => ({}),
 });

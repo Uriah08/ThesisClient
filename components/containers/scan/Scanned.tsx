@@ -1,23 +1,26 @@
 import { View, Text, Image, Animated, Easing, Pressable, ScrollView } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, Download, ImageUp, ScanSearch, Share } from 'lucide-react-native';
+import { ChevronLeft, Download, GitCommitVertical, ImageUp, ScanSearch, Share } from 'lucide-react-native';
 import { useScanMutation } from '@/store/scanApi';
 import Toast from 'react-native-toast-message';
 import { Detections, Photo } from '@/utils/types';
 import ImageViewing from "react-native-image-viewing";
 import BarChartComponent from '../charts/BarChart';
-import PieChartComponent from '../charts/PieChart';
 
 import * as ImagePicker from 'expo-image-picker'
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
+import AddCameraProgress from '../dialogs/AddCameraProgress';
+import { useLocalSearchParams } from 'expo-router';
 
 type Props = {
   photo: { uri: string; base64?: string } | null;
   setPhoto: React.Dispatch<React.SetStateAction<{ uri: string; base64?: string } | null>>;
+  type: 'tray' | null;
 };
 
-const Scanned = ({ photo, setPhoto }: Props) => {
+const Scanned = ({ photo, setPhoto, type }: Props) => {
+  const { id } = useLocalSearchParams();
   const scanAnim = useRef(new Animated.Value(0)).current;
   const [scan, { isLoading }] = useScanMutation();
   const [annotatedPhoto, setAnnotatedPhoto] = useState<string | null>(null);
@@ -26,8 +29,7 @@ const Scanned = ({ photo, setPhoto }: Props) => {
   const [image, setImage] = useState<Photo | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-
-  const confidenceAvg = (detections && detections?.detections.reduce((sum, item) => sum + item.confidence, 0) / detections?.detections.length || 0).toFixed(2);
+  const [show, setShow] = useState(false)
 
   const imageUri = annotatedPhoto || image?.uri || photo?.uri;
 
@@ -35,6 +37,14 @@ const Scanned = ({ photo, setPhoto }: Props) => {
     acc[item.label] = (acc[item.label] || 0) + 1;
     return acc;
   }, {});
+
+  const statuses = [
+  { color: '#155183', label: 'Wet' },
+  { color: '#c47f00', label: 'Partially Dry' },
+  { color: '#bab32f', label: 'Almost Dry' },
+  { color: '#127312', label: 'Fully Dry' },
+  { color: '#961515', label: 'Reject' },
+];
 
 
   const pickImage = async () => {
@@ -156,8 +166,45 @@ const Scanned = ({ photo, setPhoto }: Props) => {
     outputRange: [0, 400],
   });
 
+  // Compute dryness percentages and make it descriptive
+    const totalCount = labelCounts
+      ? Object.values(labelCounts).reduce((sum, val) => sum + val, 0)
+      : 0;
+
+    let drynessDescription = 'No detections available';
+
+    if (totalCount > 0) {
+      // Compute and sort percentages (highest first)
+      const sorted = Object.entries(labelCounts!)
+        .map(([label, count]) => ({
+          label: label
+            .replace(/_/g, ' ')
+            .toLowerCase()
+            .replace(/\b\w/g, (c) => c.toUpperCase()),
+          percentage: ((count / totalCount) * 100).toFixed(1),
+        }))
+        .sort((a, b) => Number(b.percentage) - Number(a.percentage));
+
+      // Build readable summary
+      const mainLabel = sorted[0];
+      const others = sorted.slice(1);
+
+      if (others.length === 0) {
+        drynessDescription = `The scanned image shows that all detected fish are ${mainLabel.label} (${mainLabel.percentage}%).`;
+      } else {
+        const otherParts = others
+          .map((o) => `${o.label.toLowerCase()} (${o.percentage}%)`)
+          .join(', ');
+
+        drynessDescription = `The scanned image shows that most fish are ${mainLabel.label} (${mainLabel.percentage}%), while some are ${otherParts}.`;
+      }
+    }
+
   return (
     <View className='flex-1 bg-white'>
+      <AddCameraProgress setVisible={setShow} visible={show} trayId={Number(id)} image={imageUri}
+      defaultDescription={drynessDescription}
+      />
       <ChevronLeft onPress={() => setPhoto(null)} style={{ top: 51, left: 20, position: 'absolute' }} />
       <View className="w-full items-center" style={{ marginTop: 50, marginBottom: 20 }}>
         <Text className="text-lg text-zinc-800" style={{ fontFamily: 'PoppinsSemiBold' }}>
@@ -178,19 +225,43 @@ const Scanned = ({ photo, setPhoto }: Props) => {
                     style={{ borderRadius: 5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 20 }}
                 >
                     <Download color={'#ffffff'} />
-                    <Text className='text-white' style={{ fontFamily: 'PoppinsRegular' }}>
-                    {saved ? 'Saved' : saving ? 'Saving...' : 'Save'}
+                    <Text className='text-white' style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>
+                    {saved ? 'Saved' : saving ? 'Saving...' : 'Save on Device'}
                     </Text>
                 </Pressable>
                 </View>
 
                 <View style={{ borderRadius: 5, overflow: 'hidden', width: '48%' }}>
-                <Pressable android_ripple={{ color: '#969696' }} className='flex-row gap-3' style={{ borderWidth: 1, borderColor: '#a1a1aa', borderRadius: 5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 20 }}>
-                    <Share color={'#a1a1aa'} />
-                    <Text style={{ fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>Share</Text>
+                <Pressable
+                    onPress={saveAnnotatedImageInDevice}
+                    disabled={saved || saving}
+                    android_ripple={{ color: '#0c3b62' }}
+                    className='flex-row gap-3 bg-primary'
+                    style={{ borderRadius: 5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 20 }}
+                >
+                    <Share color={'#ffffff'} />
+                    <Text className='text-white' style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>
+                    Share
+                    </Text>
                 </Pressable>
                 </View>
             </View>
+            {type === 'tray' && (
+              <View style={{ borderRadius: 5, overflow: 'hidden', paddingHorizontal: 18, paddingBottom: 18 }}>
+                <Pressable
+                    onPress={() => setShow(true)}
+                    disabled={saved || saving}
+                    android_ripple={{ color: '#0c3b62' }}
+                    className='flex-row gap-3 bg-primary'
+                    style={{ borderRadius: 5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 20 }}
+                >
+                    <GitCommitVertical color={'#ffffff'} />
+                    <Text className='text-white' style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>
+                     Save as Progress
+                    </Text>
+                </Pressable>
+                </View>
+            )}
             </>
         ) : (
             <>
@@ -264,26 +335,44 @@ const Scanned = ({ photo, setPhoto }: Props) => {
         doubleTapToZoomEnabled={true}
         presentationStyle="overFullScreen"
       />
-      {(detections || annotatedPhoto) && (
-        <View className='flex mt-5' style={{ paddingVertical: 20 }}>
-          <Text className='text-center text-lg' style={{ fontFamily: 'PoppinsSemiBold'}}>System <Text className='text-primary'>Analysis</Text></Text>
-          <View className='flex-row gap-3 items-center mt-5' style={{ paddingHorizontal: 20 }}>
-            <PieChartComponent value={Number(confidenceAvg) * 100}/>
-            <View className='flex-1 flex-col gap-2'>
-              <Text className='text-2xl' style={{ fontFamily: 'PoppinsExtraBold' }}>
-                Confidence <Text className='text-primary'>Level</Text>
-              </Text>
-              <Text
-                className='text-sm'
-                style={{
-                  fontFamily: 'PoppinsRegular',
-                }}
-              >
-                The model is <Text className='text-green-600'>{(Number(confidenceAvg) * 100)}%</Text> confident about the result.
-              </Text>
-            </View>
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          rowGap: 2,
+          columnGap: 10,
+          paddingHorizontal: 17,
+        }}
+      >
+        {statuses.map((item, index) => (
+          <View
+            key={index}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 5,
+            }}
+          >
+            <View
+              style={{
+                borderRadius: 99,
+                backgroundColor: item.color,
+                height: 8,
+                width: 8,
+              }}
+            />
+            <Text
+              className="text-zinc-500"
+              style={{ fontFamily: 'PoppinsRegular', fontSize: 10 }}
+            >
+              {item.label}
+            </Text>
           </View>
-          <View className='mt-5'>
+        ))}
+      </View>
+      {(detections || annotatedPhoto) && (
+        <View style={{ paddingVertical: 20 }}>
+          <View>
             <BarChartComponent data={labelCounts}/>
           </View>
         </View>

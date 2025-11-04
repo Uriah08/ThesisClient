@@ -37,11 +37,11 @@ const ActivateSession = ({ setVisible, visible, sessionId, sessionStatus }: Dial
     }
 
   return (
-    <Dialogs onVisible={setVisible} visible={visible} title='Activate Session'>
+    <Dialogs onVisible={setVisible} visible={visible} title={sessionStatus === 'inactive' ? 'Activate Session' : 'Finish Session'}>
         <Dialog.Content>
             <View className='flex-row gap-3 justify-center items-center bg-zinc-200 p-2 rounded-full' style={{ marginBottom: 15 }}>
                 <AlertCircle color={'#155183'}/>
-                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>This Process cannot be undone.</Text>
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>This process cannot be undone.</Text>
             </View>
             <Text style={{ fontFamily: 'PoppinsRegular' }}>Are you sure you want to {sessionStatus === 'inactive' ? 'activate' : 'finish'} this session?</Text>
             <View
@@ -93,7 +93,7 @@ const ActivateSession = ({ setVisible, visible, sessionId, sessionStatus }: Dial
                         fontFamily: 'PoppinsRegular',
                     }}
                     >
-                    {sessionStatus === 'inactive' ? 'Activate': 'Finished'}
+                    {sessionStatus === 'inactive' ? 'Activate': 'Finish'}
                     </Text>
                 </Pressable>
             </View>
