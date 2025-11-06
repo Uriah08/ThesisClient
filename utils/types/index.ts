@@ -85,6 +85,7 @@ export type FarmSession = {
   start_time: string | null;
   end_time: string | null;
   created_at: string;
+  trays_count: number
 };
 
 export type Members = {
@@ -113,13 +114,23 @@ export type Photo = {
   base64?: string;
 };
 
+export type FarmTray = {
+  id: number;
+  farm: number;
+  farm_name: string;
+  name: string;
+  created_at: string;
+  status: string;
+  description: string
+}
+
 export type Tray = {
   id: number;
   farm: number;
   farm_name: string;
   session: number;
   session_name: string;
-  name: string;
+  tray_name: string;
   created_at: string
   finished_at: string | null;
   created_by: number;

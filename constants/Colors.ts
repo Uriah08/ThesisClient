@@ -3,7 +3,7 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
-import { Gauge, MapPlus, Settings, Users } from "lucide-react-native";
+import { Gauge, MapPlus, PanelsLeftRightIcon, Settings, Users } from "lucide-react-native";
 
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
@@ -49,6 +49,10 @@ export const farmMenu = [
   {
     title: "Home",
     icon: Gauge
+  },
+  {
+    title: "Trays",
+    icon: PanelsLeftRightIcon
   },
   {
     title: "Sessions",

@@ -196,6 +196,7 @@ const AddCameraProgress = ({ setVisible, visible, trayId, image, defaultDescript
                         alignItems: 'center',
                         gap: 8,
                     }}
+                    disabled={isLoading || supabaseLoading}
                     >
                     {isLoading || supabaseLoading ? (
                         <ActivityIndicator size={15} color={'#ffffff'}/>
@@ -208,7 +209,7 @@ const AddCameraProgress = ({ setVisible, visible, trayId, image, defaultDescript
                             fontFamily: 'PoppinsRegular',
                         }}
                         >
-                        Create
+                        Add
                         </Text>
                     </Pressable>
                 </View>

@@ -14,6 +14,7 @@ import useAuthRedirect from '@/components/hooks/useAuthRedirect';
 import { Farm as FarmType } from '@/utils/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ChosenFarm from '@/components/containers/farm/ChosenFarm';
+import Lesson from '@/components/containers/lessons/Lesson';
 
 const Farm = () => {
   const { user } = useAuthRedirect()
@@ -132,7 +133,7 @@ const Farm = () => {
   return (
     <View className='flex-1 bg-white'>
       <View className='mt-10 pt-5 px-5 flex gap-5'>
-        <Text className='text-3xl' style={{ fontFamily: 'PoppinsBold' }}>Farms</Text>
+        <Text className='text-3xl' style={{ fontFamily: 'PoppinsBold' }}>Drying Farms</Text>
         <View className='flex-row gap-3 items-center w-full justify-between'>
           <View className='w-[85%] relative'>
             <TextInput
@@ -190,6 +191,7 @@ const Farm = () => {
         <RefreshControl style={{ zIndex: -1}} colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
       }
       >
+        <Lesson/>
         <GetFarm data={filteredFarms} isLoading={isLoading} onSelect={(farm) => setSelectedFarm(farm)} isFetching={isFetching}/>
       </ScrollView>
 

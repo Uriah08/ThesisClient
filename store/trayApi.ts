@@ -39,7 +39,29 @@ export const trayApi = baseApi.injectEndpoints({
                 method: "GET",
             }),
             providesTags: ["Tray"],
-        })
+        }),
+        harvestTray: builder.mutation({
+            query: (trayId) => ({
+                url: `trays/harvest/${trayId}/`,
+                method: 'POST'
+            }),
+            invalidatesTags: ["Tray"]
+        }),
+        renameTray: builder.mutation({
+            query: ({ name, trayId }) => ({
+                url: `trays/rename/${trayId}/`,
+                method: 'PATCH',
+                body: { name },
+            }),
+            invalidatesTags: ["Tray"]
+        }),
+        deleteTray: builder.mutation({
+            query: (trayId) => ({
+                url: `trays/delete/${trayId}/`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ["Tray"],
+        }),
     }),
     overrideExisting: true,
 })
@@ -49,5 +71,7 @@ export const {
     useGetSessionTrayQuery,
     useGetTrayByIdQuery,
     useCreateTrayProgressMutation,
-    useGetTrayProgressQuery
+    useGetTrayProgressQuery,
+    useHarvestTrayMutation,
+    useDeleteTrayMutation
 } = trayApi;

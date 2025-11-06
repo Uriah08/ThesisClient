@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Pressable } from 'react-native'
 import React from 'react'
-import { FishSymbol, Smartphone } from 'lucide-react-native'
+import { Smartphone } from 'lucide-react-native'
 
 type Props = {
   farmId: number}

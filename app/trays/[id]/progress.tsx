@@ -2,7 +2,7 @@ import { View, Text, ActivityIndicator, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { router, useLocalSearchParams } from "expo-router";
 import { useGetTrayByIdQuery, useGetTrayProgressQuery } from '@/store/trayApi';
-import { ChevronLeft} from 'lucide-react-native';
+import { ChevronLeft, CircleCheck} from 'lucide-react-native';
 import ProgressSteps from '@/components/containers/farm/tray/ProgressSteps';
 import AddProgress from '@/components/containers/dialogs/AddProgress';
 
@@ -35,9 +35,15 @@ const Tray = () => {
         <View className='flex-row gap-5 p-5 mt-10 items-center justify-between'>
           <View className='gap-5 flex-row items-center'>
             <ChevronLeft color={"#27272a"} size={28} onPress={() => router.back()}/>
-            <Text className='text-2xl text-zinc-800' style={{ fontFamily: "PoppinsBold" }}>{data?.name}</Text>
+            <Text className='text-2xl text-zinc-800' style={{ fontFamily: "PoppinsBold" }}>{data?.tray_name}</Text>
           </View>
-          <View
+          {data?.finished_at ? (
+            <View className='flex-row items-center' style={{ gap: 4}}>
+              <CircleCheck size={14} color={'#a1a1aa'}/>
+              <Text className='text-zinc-400' style={{ fontSize: 12, fontFamily: 'PoppinsMedium', marginTop: 2}}>Harvested</Text>
+            </View>
+          ) : (
+            <View
           className="rounded-full"
           style={{ overflow: "hidden", zIndex: 999 }}
         >
@@ -55,8 +61,9 @@ const Tray = () => {
             </Text>
           </Pressable>
         </View>
+          )}
         </View>
-        <ProgressSteps refreshing={refreshing} onRefresh={onRefresh} loading={progressLoading} created_at={data?.created_at} owner={data?.created_by_username} owner_pfp={data?.created_by_profile_picture} progress={progress}/>
+        <ProgressSteps refreshing={refreshing} onRefresh={onRefresh} loading={progressLoading} created_at={data?.created_at} finished_at={data?.finished_at} owner={data?.created_by_username} owner_pfp={data?.created_by_profile_picture} progress={progress}/>
     </View>
   )
 }

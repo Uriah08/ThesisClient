@@ -9,8 +9,12 @@ import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
 import Scanned from '@/components/containers/scan/Scanned';
 import { Photo } from '@/utils/types';
+import { useLocalSearchParams } from 'expo-router';
+import { useGetTrayByIdQuery } from '@/store/trayApi';
 
 const ScanPage = () => {
+  const { id } = useLocalSearchParams();
+  const { data, isLoading } = useGetTrayByIdQuery(Number(id))
   const dispatch = useDispatch();
   const scanTabPressed = useSelector((state: any) => state.global.scanTabPressed);
 
@@ -147,7 +151,7 @@ const ScanPage = () => {
 
   if(photo) {
     return(
-      <Scanned photo={photo} setPhoto={setPhoto} type={'tray'}/>
+      <Scanned photo={photo} setPhoto={setPhoto} type={'tray'} finished={data?.finished_at} isLoading={isLoading}/>
     )
   }
 

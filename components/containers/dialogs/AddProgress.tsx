@@ -2,12 +2,12 @@ import { View, Text, Pressable, TextInput, Image } from 'react-native'
 import React, { useState} from 'react'
 import Dialogs from './Dialog'
 import { ActivityIndicator, Dialog } from 'react-native-paper'
-import { ImagePlusIcon, Plus } from 'lucide-react-native';
+import { AlertCircle, CheckCircle, ImagePlusIcon, Plus } from 'lucide-react-native';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadImageToSupabase } from '@/utils/lib/supabase';
-import { useCreateTrayProgressMutation } from '@/store/trayApi';
+import { useCreateTrayProgressMutation, useHarvestTrayMutation } from '@/store/trayApi';
 
 type DialogsProps = {
   setVisible: (visible: boolean) => void;
@@ -26,6 +26,7 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
     const [supabaseLoading, setSupabaseLoading] = useState(false)
 
     const [createTrayProgress, { isLoading }] = useCreateTrayProgressMutation()
+    const [harvestTray, { isLoading: harvestLoading }] = useHarvestTrayMutation();
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -60,6 +61,27 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                 } else {
                 console.log('Unexpected error:', error);
                 }  
+            }
+        }
+    
+        const handleHarvest = async () => {
+            try {
+                await harvestTray(trayId).unwrap()
+                Toast.show({
+                    type: 'success',
+                    text1: 'Tray Harvested Successfully',
+                });
+                setVisible(false);
+                setIsFocused('')
+            } catch (error: any) {
+                console.log(error);
+                                  
+                if (error?.data?.detail) {
+                Toast.show({
+                    type: 'error',
+                    text1: error.data.detail,
+                });
+                } 
             }
         }
     
@@ -189,6 +211,7 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                             alignItems: 'center',
                             gap: 8,
                         }}
+                        disabled={isLoading || supabaseLoading}
                         >
                         {isLoading || supabaseLoading ? (
                             <ActivityIndicator size={15} color={'#ffffff'}/>
@@ -202,6 +225,65 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                             }}
                             >
                             Create
+                            </Text>
+                        </Pressable>
+                    </View>
+                </View>
+            ) : focus === 'harvest' ? (
+                <View>
+                    <View className='flex-row gap-3 justify-center items-center bg-zinc-200 p-2 rounded-full' style={{ marginBottom: 15 }}>
+                        <AlertCircle color={'#155183'}/>
+                        <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>This process cannot be undone.</Text>
+                    </View>
+                    <Text style={{ fontFamily: 'PoppinsRegular' }}>Are you sure you want to harvest this tray?</Text>
+                    <View
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        marginTop: 20,
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                        gap: 10,
+                    }}
+                    >
+                    <Pressable onPress={() => setVisible(false)} className='border border-zinc-300 p-2 rounded-lg'
+                        style={{
+                            borderWidth: 1,
+                            borderColor: '#d4d4d8',
+                            paddingHorizontal: 12,
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                        }}>
+                        <Text className='text-zinc-500' style={{
+                        fontFamily: 'PoppinsRegular'
+                        }}>Cancel</Text>
+                        </Pressable>
+                        <Pressable
+                        onPress={handleHarvest}
+                        style={{
+                            backgroundColor: '#155183',
+                            paddingHorizontal: 12,
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 8,
+                        }}
+                        disabled={isLoading}
+                        >
+                            {harvestLoading ? (
+                                <ActivityIndicator size={15} color={'#ffffff'}/>
+                            ) : (
+                                <CheckCircle color={'#ffffff'} size={15} />
+                            )}
+                        <Text
+                            className="text-white"
+                            style={{
+                                fontFamily: 'PoppinsRegular',
+                            }}
+                            >
+                            Harvest
                             </Text>
                         </Pressable>
                     </View>
@@ -246,6 +328,7 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                     style={{ overflow: "hidden", borderRadius: 8 }}
                 >
                     <Pressable
+                    onPress={() => setFocus('harvest')}
                     android_ripple={{ color: "#ffffff50", borderless: false }}
                     className={`flex flex-row items-center gap-3 px-5 bg-primary rounded-lg justify-center`}
                     style={{ paddingVertical: 10 }}
