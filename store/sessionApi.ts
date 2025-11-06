@@ -30,8 +30,23 @@ export const sessionApi = baseApi.injectEndpoints({
         url: `sessions/status/${id}/`,
         method: "POST",
       }),
+      invalidatesTags: ["Session","Tray"],
+    }),
+    renameSession: build.mutation({
+      query: ({ name, sessionId }) => ({
+          url: `sessions/rename/${sessionId}/`,
+          method: 'PATCH',
+          body: { name },
+      }),
+      invalidatesTags: ["Session"]
+    }),
+    deleteSession: build.mutation({
+      query: (sessionId) => ({
+        url: `sessions/delete/${sessionId}/`,
+        method: 'DELETE',
+      }),
       invalidatesTags: ["Session"],
-    })
+    }),
   }),
   overrideExisting: true,
 });
@@ -40,5 +55,7 @@ export const {
   useCreateSessionMutation,
   useGetFarmSessionsQuery,
   useGetSessionByIdQuery,
-  useActivateSessionMutation
+  useActivateSessionMutation,
+  useRenameSessionMutation,
+  useDeleteSessionMutation
 } = sessionApi;

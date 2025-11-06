@@ -30,7 +30,7 @@ const GetFarm = ({ data, isLoading, onSelect, isFetching }: FarmProps) => {
   }
 
   return (
-    <View className="w-full h-full gap-5 px-5">
+    <View className="w-full h-full gap-5 px-5 mt-5">
       {isLoading || isFetching ? (
         <View className="flex gap-5">
           <SkeletonShimmer height={110} borderRadius={16} />

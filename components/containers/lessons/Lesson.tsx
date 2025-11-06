@@ -1,29 +1,126 @@
-import { View, Text, Image } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
+import { View, Text, ImageBackground, Dimensions, Pressable } from 'react-native'
+import Carousel from 'react-native-reanimated-carousel'
 import { modules } from '@/constants/Colors'
-import { Pressable, ScrollView } from 'react-native-gesture-handler'
-import { CircleCheck } from 'lucide-react-native'
+import { ArrowRight } from 'lucide-react-native'
+
+const { width } = Dimensions.get('window')
 
 const Lesson = () => {
+  const [currentIndex, setCurrentIndex] = useState(0)
+
   return (
-    <View className='mt-5 mb-5'>
-      <Text className="text-lg px-5" style={{ fontFamily: 'PoppinsSemiBold' }}>
-        Drying Education
-      </Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className='mt-3'>
-        {modules.map((item, i) => (
-          <View key={i} className={`p-5 ml-5 flex flex-col gap-2 ${i === modules.length - 1 ? 'mr-5' : ''}`} style={{ borderWidth: 1, borderColor: '#d4d4d8', borderRadius: 10, maxWidth: 240, marginRight: i === modules.length - 1 ? 20 : 0, marginLeft: 20 }}>
-            <Image source={item.image} style={{ width: 200, height: 150, borderRadius: 10}} resizeMode="cover"/>
-            <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15}}>{item.title}</Text>
-            <Pressable>
-                <View className='flex-row justify-between items-center'>
-                    <Text className='bg-[#bddae9]' style={{ color: '#1b7fb4',backgroundColor: '#bddae9',borderWidth: 1, borderColor: '#1b7fb4', fontSize: 12, fontFamily: 'Poppins', paddingVertical: 5, paddingHorizontal: 20, borderRadius: 9999}}>Read More...</Text>
-                    <CircleCheck color={'#d4d4d8'}/>
-                </View>
-            </Pressable>
+    <View className="mb-5">
+      {/* Top Row: Label + Dots */}
+      <View className="flex-row items-center justify-between px-5 mb-2">
+        <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 16 }}>Modules</Text>
+
+        <View className="flex-row items-center">
+          {modules.map((_, i) => (
+            <View
+              key={i}
+              style={{
+                width: i === currentIndex ? 10 : 6,
+                height: 6,
+                borderRadius: 99,
+                marginHorizontal: 3,
+                backgroundColor: i === currentIndex ? '#1b7fb4' : '#d4d4d8',
+              }}
+            />
+          ))}
         </View>
-        ))}
-      </ScrollView>
+      </View>
+
+      <Carousel
+        loop
+        autoPlay
+        autoPlayInterval={10000}
+        width={width * 0.90}
+        height={130}
+        data={modules}
+        scrollAnimationDuration={800}
+        onSnapToItem={(index) => setCurrentIndex(index)}
+        style={{ alignSelf: 'center', padding: 18, gap: 5 }}
+        renderItem={({ item }) => (
+          <View
+            style={{
+              width: '100%',
+              borderRadius: 12,
+              overflow: 'hidden',
+              backgroundColor: '#000',
+            }}
+          >
+            <ImageBackground
+              source={item.image}
+              style={{
+                width: '100%',
+                height: '100%',
+                justifyContent: 'flex-end',
+              }}
+              imageStyle={{ borderRadius: 12 }}
+              resizeMode="cover"
+            >
+              {/* dark overlay to improve contrast */}
+              <View
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0,0,0,0.32)',
+                }}
+              />
+
+              {/* content inside image */}
+              <View style={{ paddingHorizontal: 18, paddingVertical: 14 }}>
+                <Text
+                  style={{
+                    color: '#fff',
+                    fontFamily: 'PoppinsSemiBold',
+                    fontSize: 18,
+                    marginBottom: 6,
+                    maxWidth: '92%',
+                  }}
+                >
+                  {item.title}
+                </Text>
+
+                <Pressable
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(27,127,180,0.95)',
+                    alignSelf: 'flex-start',
+                    paddingHorizontal: 14,
+                    paddingVertical: 7,
+                    borderRadius: 9999,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.15,
+                    shadowRadius: 6,
+                    elevation: 2,
+                  }}
+                  onPress={() => {
+                    /* handle read more action: navigate or open modal */
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: '#fff',
+                      fontFamily: 'PoppinsSemiBold',
+                      fontSize: 13,
+                      marginRight: 6,
+                    }}
+                  >
+                    Read More
+                  </Text>
+                  <ArrowRight color="#fff" size={14} />
+                </Pressable>
+              </View>
+            </ImageBackground>
+          </View>
+        )}
+      />
     </View>
   )
 }

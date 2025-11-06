@@ -43,7 +43,11 @@ const ActivateSession = ({ setVisible, visible, sessionId, sessionStatus }: Dial
                 <AlertCircle color={'#155183'}/>
                 <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>This process cannot be undone.</Text>
             </View>
-            <Text style={{ fontFamily: 'PoppinsRegular' }}>Are you sure you want to {sessionStatus === 'inactive' ? 'activate' : 'finish'} this session?</Text>
+            <Text style={{ fontFamily: 'PoppinsRegular' }}>
+                Are you sure you want to {sessionStatus === 'inactive' ? 'activate' : 'finish'} this session?
+                {sessionStatus === 'active' ? ' All your trays will be harvested.' : ''}
+            </Text>
+
             <View
             style={{
                 display: 'flex',

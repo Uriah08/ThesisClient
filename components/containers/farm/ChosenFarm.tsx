@@ -12,6 +12,7 @@ import Sessions from './farm-tabs/Sessions'
 import Home from './farm-tabs/Home'
 import Members from './farm-tabs/Members'
 import Settings from './farm-tabs/Settings'
+import Trays from './farm-tabs/Trays'
 
 type ChosenFarmProps = {
   onBack: () => void;
@@ -118,7 +119,7 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
                 <item.icon color={active === item.title ? '#ffffff' : '#52525b'} size={17}/>
               </LinearGradient>
               <View className='flex-col items-center'>
-                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12}} className={`${active === item.title ? 'text-primary' : 'text-zinc-600'} text-center`}>{item.title}</Text>
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10}} className={`${active === item.title ? 'text-primary' : 'text-zinc-600'} text-center`}>{item.title}</Text>
                 <LinearGradient 
                   colors={active === item.title ? ['#155183', '#5295cc'] : ['#ffffff', '#ffffff']}
                   start={{ x: 0, y: 0 }}
@@ -130,6 +131,7 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
           ))}
         </View>
         {active === 'Home' && <Home/>}
+        {active === 'Trays' && <Trays farmId={data?.id || selectedFarm.id}/>}
         {active === 'Sessions' && <Sessions farmId={data?.id || selectedFarm.id}/>}
         {active === 'Members' && <Members farmId={data?.id || selectedFarm.id} ownerId={data?.owner || selectedFarm.owner}/>}
         {active === 'Settings' && <Settings farmId={data?.id || selectedFarm.id}/>}

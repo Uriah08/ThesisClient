@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const baseQueryWithAsyncAuth = () => {
   const rawBaseQuery = fetchBaseQuery({
-    // baseUrl: `http://10.192.136.217:8000/api/`,
+    // baseUrl: `http://192.168.0.165:8000/api/`,
     baseUrl: `http://192.168.43.157:8000/api/`, // MOBILE HOTSPOT
   });
 

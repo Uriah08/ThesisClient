@@ -80,7 +80,7 @@ const TrayLayout = () => {
             <Tabs.Screen
                 name="progress"
                 options={{
-                    title: 'Progress',
+                    title: 'Status',
                     headerShown: false,
                     tabBarIcon: ({ color, size }) => <GitCommitVertical color={color} size={size} />,
                     tabBarButton: (props) => <CustomTabBarButton {...props} />,

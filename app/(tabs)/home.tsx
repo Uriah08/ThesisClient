@@ -24,7 +24,6 @@ import WeatherAlert from '@/components/containers/weather/WeatherAlert';
 import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDrawer';
 import { ForecastItem } from '@/utils/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Lesson from '@/components/containers/lessons/Lesson';
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';
 import AreaChartComponent from '@/components/containers/charts/AreaChart';
 
@@ -170,10 +169,6 @@ const Home = () => {
     <View className='flex-1 bg-white'>
           <View className='flex-row justify-between items-center mt-14 p-5'>
             <Image source={require('@/assets/images/main-icon.png')} style={{ width: 120, height: 63 }} resizeMode='cover'/>
-          {/* <Text className='text-5xl' style={{
-          fontFamily: 'PoppinsSemiBold'
-        }}>To<Text className='text-primary'>You</Text></Text> */}
-
         <View
           style={{
             width: 50,
@@ -225,13 +220,7 @@ const Home = () => {
           <AreaChartComponent chartKey={chartKey} title={'Rain Meter'} description={'Next 48 Hours'} sideLabel data={rainData} data2={cloudData}/>
         </View>
 
-        {/* <View className='h-80'></View> */}
-
-
-
         {/* ########################################       WEATHER FORECAST      ######################################## */}
-
-
 
         <View style={{ 
         marginBottom: 10,   
@@ -311,7 +300,7 @@ const Home = () => {
           </View>
         </ScrollView>
       </View>
-      <Lesson/>
+      {/* <Lesson/> */}
       <View style={{ marginBottom: 20}}/>
       </ScrollView>
       <BottomDrawer ref={drawerRef} onChange={(open) => setIsDrawerOpen(open)}>

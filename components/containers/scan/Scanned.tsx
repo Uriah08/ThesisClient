@@ -16,10 +16,12 @@ import { useLocalSearchParams } from 'expo-router';
 type Props = {
   photo: { uri: string; base64?: string } | null;
   setPhoto: React.Dispatch<React.SetStateAction<{ uri: string; base64?: string } | null>>;
-  type: 'tray' | null;
+  type?: 'tray' | null;
+  finished?: string | null | undefined
+  isLoading?: boolean
 };
 
-const Scanned = ({ photo, setPhoto, type }: Props) => {
+const Scanned = ({ photo, setPhoto, type, finished, isLoading: loading }: Props) => {
   const { id } = useLocalSearchParams();
   const scanAnim = useRef(new Animated.Value(0)).current;
   const [scan, { isLoading }] = useScanMutation();
@@ -246,7 +248,7 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
                 </Pressable>
                 </View>
             </View>
-            {type === 'tray' && (
+            {(type === 'tray' && !finished && !loading) && (
               <View style={{ borderRadius: 5, overflow: 'hidden', paddingHorizontal: 18, paddingBottom: 18 }}>
                 <Pressable
                     onPress={() => setShow(true)}
@@ -336,6 +338,7 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
         presentationStyle="overFullScreen"
       />
       <View
+      className='justify-between mt-2'
         style={{
           flexDirection: 'row',
           flexWrap: 'wrap',
