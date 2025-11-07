@@ -20,8 +20,8 @@ type Props = {
   owner_pfp?: string | null;
   progress?: TrayProgress[];
   loading: boolean;
-  refreshing: boolean;
-  onRefresh: () => void;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 };
 
 export default function BottomToTopProgress({
@@ -116,7 +116,7 @@ export default function BottomToTopProgress({
         <RefreshControl
           style={{ zIndex: -1 }}
           colors={['#155183']}
-          refreshing={refreshing}
+          refreshing={refreshing || false}
           onRefresh={onRefresh}
         />
       }

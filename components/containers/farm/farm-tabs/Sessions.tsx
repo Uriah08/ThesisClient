@@ -6,7 +6,7 @@ import Session from './session-tabs/Session'
 import { FarmSession } from '@/utils/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
-import { MapPlus, Search } from 'lucide-react-native'
+import { FilterIcon, MapPlus, Search } from 'lucide-react-native'
 import CreateSession from '../../dialogs/CreateSession'
 import SessionStatus from './session-tabs/SessionStatus'
 
@@ -157,12 +157,12 @@ const Sessions = ({ farmId }: Props) => {
       >
         {title}
       </Text>
-      <View className="flex gap-3 flex-col">
+      <View className="flex flex-col">
         {isLoading || loading ? (
-          <>
+          <View className='flex gap-3'>
             <SkeletonShimmer width={'100%'} height={80} style={{ marginTop: 10 }} />
             <SkeletonShimmer width={'100%'} height={80} />
-          </>
+          </View>
         ) : items.length === 0 ? (
           <View className="flex flex-col justify-center items-center">
             <Text
@@ -224,14 +224,22 @@ const Sessions = ({ farmId }: Props) => {
       </View>
 
       {/* Search */}
-      <View className="relative p-5">
-        <TextInput
-          style={{ backgroundColor: '#ffffff60', height: 40, borderColor: '#d4d4d8' }}
-          className="rounded-full pl-12 text-base text-black border"
-          placeholder="Search session..."
-        />
-        <Search style={{ position: 'absolute', top: 25, left: 28 }} color="#d4d4d8" />
-      </View>
+      <View className='flex-row gap-3 w-full p-5'>
+          <View className='relative flex-1'>
+            <TextInput
+            style={{ backgroundColor: "#ffffff60", height: 40, width: "100%", borderColor: '#d4d4d8' }}
+              className='rounded-full pl-12 text-base text-black border'
+              placeholder='Search session...'
+            />
+            <Search
+              style={{ position: 'absolute', top: 8, left: 14 }}
+              color={'#d4d4d8'}
+            />
+          </View>
+          <View className='flex items-center justify-center' style={{ backgroundColor: '#155183', borderRadius: 10, padding: 8 }}>
+            <FilterIcon color={'#ffffff'} size={20}/>
+          </View>
+        </View>
 
       <ScrollView
         className="flex-1 px-5"

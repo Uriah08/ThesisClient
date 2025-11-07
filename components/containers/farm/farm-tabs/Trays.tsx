@@ -4,6 +4,7 @@ import { FilterIcon, PanelsLeftRightIcon, Search } from 'lucide-react-native'
 import CreateTray from '../../dialogs/CreateTray'
 import { useGetFarmTraysQuery } from '@/store/farmTrayApi'
 import SkeletonShimmer from '../../SkeletonPlaceholder'
+import { router } from 'expo-router'
 
 type Props = {
   farmId: number}
@@ -95,12 +96,12 @@ const Trays = ({ farmId }: Props) => {
               }}
             >
                 <Pressable
-                  // onPress={() =>
-                  //   router.push({
-                  //     pathname: "/trays/[id]/progress",
-                  //     params: { id: tray.id.toString() },
-                  //   })
-                  // }
+                  onPress={() =>
+                    router.push({
+                      pathname: "/tray/[id]/dashboard",
+                      params: { id: tray.id.toString() },
+                    })
+                  }
                   android_ripple={{ color: "#00000010", borderless: false }}
                   className="bg-white shadow-sm flex gap-2"
                   style={{ paddingVertical: 10, paddingHorizontal: 10 }}

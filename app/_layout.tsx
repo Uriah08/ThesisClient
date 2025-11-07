@@ -42,6 +42,12 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="tray/[id]"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="settings"
           options={{
             headerShown: false,

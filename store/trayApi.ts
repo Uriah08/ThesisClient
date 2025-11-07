@@ -62,6 +62,13 @@ export const trayApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Tray"],
         }),
+        getFarmTrayHistory: builder.query<Tray[], number>({
+            query: (trayId) => ({
+                url: `trays/get/history/${trayId}/`,
+                method: "GET",
+            }),
+            providesTags: ["Tray"],
+        }),
     }),
     overrideExisting: true,
 })
@@ -72,6 +79,8 @@ export const {
     useGetTrayByIdQuery,
     useCreateTrayProgressMutation,
     useGetTrayProgressQuery,
+    useLazyGetTrayProgressQuery,
     useHarvestTrayMutation,
-    useDeleteTrayMutation
+    useDeleteTrayMutation,
+    useGetFarmTrayHistoryQuery
 } = trayApi;

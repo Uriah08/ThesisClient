@@ -13,10 +13,11 @@ export type BottomDrawerRef = {
 type BottomDrawerProps = {
   onChange?: (isOpen: boolean) => void;
   children?: React.ReactNode;
+  type: 'full' | 'none';
 };
 
 const BottomDrawer = forwardRef<BottomDrawerRef, BottomDrawerProps>(
-  ({ onChange, children }, ref) => {
+  ({ onChange, children, type }, ref) => {
     const bottomSheetRef = useRef<BottomSheet>(null);
 
 
@@ -39,6 +40,7 @@ const BottomDrawer = forwardRef<BottomDrawerRef, BottomDrawerProps>(
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
+        snapPoints={type === 'full' ? ['95%'] : []}
         enablePanDownToClose
         onChange={handleSheetChange}
         backdropComponent={(props) => (
