@@ -18,11 +18,19 @@ export const farmTrayApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Tray"],
         }),
+        getFarmTrayById: builder.query<FarmTray, number>({
+            query: (trayId) => ({
+                url: `tray/get/tray/${trayId}/`,
+                method: "GET",
+            }),
+            providesTags: ["Tray"],
+        }),
     }),
     overrideExisting: true,
 })
 
 export const { 
     useCreateFarmTrayMutation,
-    useGetFarmTraysQuery
+    useGetFarmTraysQuery,
+    useGetFarmTrayByIdQuery,
 } = farmTrayApi;

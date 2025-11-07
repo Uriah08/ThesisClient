@@ -303,7 +303,7 @@ const Home = () => {
       {/* <Lesson/> */}
       <View style={{ marginBottom: 20}}/>
       </ScrollView>
-      <BottomDrawer ref={drawerRef} onChange={(open) => setIsDrawerOpen(open)}>
+      <BottomDrawer ref={drawerRef} onChange={(open) => setIsDrawerOpen(open)} type='none'>
         {selectedItem ? (
           <View style={{ alignItems: 'center', padding: 16, zIndex: 99999, marginBottom: 18 }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
