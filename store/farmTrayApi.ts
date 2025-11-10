@@ -25,6 +25,28 @@ export const farmTrayApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Tray"],
         }),
+        maintenance: builder.mutation({
+            query: (trayId) => ({
+                url: `tray/maintenance/${trayId}/`,
+                method: "PATCH",
+            }),
+            invalidatesTags: ["Tray"],
+        }),
+        renameFarmTray: builder.mutation({
+            query: ({ name, trayId }) => ({
+                url: `tray/rename/${trayId}/`,
+                method: 'PATCH',
+                body: { name },
+            }),
+            invalidatesTags: ["Tray"]
+        }),
+        deleteFarmTray: builder.mutation({
+            query: (trayId) => ({
+                url: `tray/delete/${trayId}/`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ["Tray"],
+        }),
     }),
     overrideExisting: true,
 })
@@ -33,4 +55,7 @@ export const {
     useCreateFarmTrayMutation,
     useGetFarmTraysQuery,
     useGetFarmTrayByIdQuery,
+    useMaintenanceMutation,
+    useDeleteFarmTrayMutation,
+    useRenameFarmTrayMutation
 } = farmTrayApi;

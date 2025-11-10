@@ -59,6 +59,30 @@ export default function RootLayout() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="farm-settings/edit/[id]"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="farm-settings/change/[id]"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="farm-settings/block/[id]"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="farm-settings/announcement/[id]"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </StoreProvider>
   );

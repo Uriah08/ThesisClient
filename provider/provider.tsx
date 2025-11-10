@@ -7,7 +7,6 @@ import {
   Provider,
 } from "react-redux";
 import globalReducer from "@/store";
-// import { authApi, api, weatherApi, farmApi, notificationApi, sessionApi } from "@/store/api";
 import { authApi } from "@/store/authApi";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import Network from "./network";
@@ -40,11 +39,6 @@ const rootReducer = combineReducers({
   global: globalReducer,
   [baseApi.reducerPath]: baseApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
-  // [api.reducerPath]: api.reducer,
-  // [weatherApi.reducerPath]: weatherApi.reducer,
-  // [farmApi.reducerPath]: farmApi.reducer,
-  // [notificationApi.reducerPath]: notificationApi.reducer,
-  // [sessionApi.reducerPath]: sessionApi.reducer,
 });
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
@@ -60,12 +54,6 @@ export const makeStore = () =>
       })
       .concat(baseApi.middleware)
       .concat(authApi.middleware)
-      // .concat(api.middleware)
-      // .concat(authApi.middleware)
-      // .concat(weatherApi.middleware)
-      // .concat(farmApi.middleware)
-      // .concat(notificationApi.middleware)
-      // .concat(sessionApi.middleware)
   });
 
 /* REDUX TYPES */

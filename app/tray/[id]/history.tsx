@@ -14,7 +14,7 @@ const History = () => {
   const { data, isLoading } = useGetFarmTrayHistoryQuery(Number(id));
   const [ trigger, { data: progress, isFetching: progressLoading }] = useLazyGetTrayProgressQuery()
 
-  console.log('FARM TRAY:',data);
+  const finishedTrays = data?.filter((item) => item.finished_at !== null) ?? [];
   
   const [selectedItem, setSelectedItem] = useState<Tray | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -63,7 +63,7 @@ const History = () => {
               <SkeletonShimmer style={{ height: 60, borderRadius: 7, marginTop: 12 }}/>
             </View>
           ) : (
-            data?.map((tray, index) => (
+            finishedTrays?.map((tray, index) => (
               <View key={tray.id} style={{ overflow: 'hidden', borderRadius: 7, marginTop: 10 }}>
                 <Pressable onPress={() => handlePress(tray)} android_ripple={{ color: 'rgba(0,0,0,0.1)' }} className='p-3 flex' style={{ borderWidth: 1, borderColor: '#d4d4d8', borderRadius: 7, marginTop: index === 0 ? 0 : 3}}>
                   <View className='flex-row justify-between items-center'>
