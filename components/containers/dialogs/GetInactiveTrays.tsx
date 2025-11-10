@@ -132,10 +132,10 @@ const InactiveTrays = ({ setVisible, visible, farmId, sessionId }: DialogsProps)
             ))
           ) : (
             <Text
-              className="text-center text-zinc-500"
-              style={{ fontFamily: 'PoppinsRegular', marginTop: 20 }}
+              className="text-center text-zinc-300"
+              style={{ fontFamily: 'PoppinsBold', marginTop: 8 }}
             >
-              No inactive trays found.
+              NO INACTIVE TRAYS.
             </Text>
           )}
         </ScrollView>

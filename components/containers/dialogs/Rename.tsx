@@ -5,11 +5,12 @@ import { Dialog } from 'react-native-paper'
 import { Pen } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 import { useRenameSessionMutation } from '@/store/sessionApi';
+import { useRenameFarmTrayMutation } from '@/store/farmTrayApi';
 
 type DialogsProps = {
   setVisible: (visible: boolean) => void;
   visible: boolean;
-  type: 'tray' | 'session'
+  type: 'tray' | 'session' | 'farm-tray'
   defaultValue?: string
   trayId?: number
   sessionId?: number
@@ -17,6 +18,7 @@ type DialogsProps = {
 
 const RenameClass = ({ setVisible, visible, type, defaultValue, trayId, sessionId }: DialogsProps) => {
     const [renameSession, { isLoading}] = useRenameSessionMutation();
+    const [renameFarmTray, { isLoading: farmTrayLoading}] = useRenameFarmTrayMutation();
     const [name, setName] = useState(defaultValue)
     const [isFocused, setIsFocused] = useState('')
 
@@ -25,9 +27,15 @@ const RenameClass = ({ setVisible, visible, type, defaultValue, trayId, sessionI
     const handleRename = async () => {
         if(!validate()) return
         try {
+          if(type === 'session') {
             await renameSession({name, sessionId}).unwrap()
             setName('')
             setVisible(false)
+          } else if(type === 'farm-tray') {
+            await renameFarmTray({name, trayId}).unwrap()
+            setName('')
+            setVisible(false)
+          }
         } catch (error: any) {
             console.log(error?.data?.detail);
                 
@@ -62,7 +70,7 @@ const RenameClass = ({ setVisible, visible, type, defaultValue, trayId, sessionI
       };
 
   return (
-    <Dialogs onVisible={setVisible} visible={visible} title={type === 'tray' ? 'Rename Tray' : 'Rename Session'}>
+    <Dialogs onVisible={setVisible} visible={visible} title={(type === 'tray' || type === 'farm-tray') ? 'Rename Tray' : 'Rename Session'}>
       <Dialog.Content>
         <TextInput
             className={`rounded-md p-3 text-base text-black ${ 
@@ -112,9 +120,9 @@ const RenameClass = ({ setVisible, visible, type, defaultValue, trayId, sessionI
                   gap: 8,
               }}
               onPress={handleRename}
-              disabled={isLoading}
+              disabled={isLoading || farmTrayLoading}
               >
-                {isLoading ? (
+                {isLoading || farmTrayLoading ? (
                     <ActivityIndicator size={15} color="#ffffff" />
                 ) : (
                      <Pen color={'#ffffff'} size={15} />
