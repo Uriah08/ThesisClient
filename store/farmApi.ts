@@ -38,6 +38,21 @@ export const farmApi = baseApi.injectEndpoints({
         url: `farms/members/${id}/`,
         method: "GET",
       }),
+    }),
+    editFarm: build.mutation({
+      query: (farmData) => ({
+        url: "farms/edit/",
+        method: "PATCH",
+        body: farmData,
+      }),
+      invalidatesTags: ["Farm"],
+    }),
+    farmChangePassword: build.mutation({
+      query: (farmData) => ({
+        url: "farms/change-password/",
+        method: "PATCH",
+        body: farmData,
+      }),
     })
   }),
   overrideExisting: true,
@@ -48,5 +63,7 @@ export const {
   useJoinFarmMutation,
   useGetFarmsQuery,
   useGetFarmQuery,
-  useGetMembersQuery
+  useGetMembersQuery,
+  useEditFarmMutation,
+  useFarmChangePasswordMutation
 } = farmApi;

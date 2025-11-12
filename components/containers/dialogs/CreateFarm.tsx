@@ -52,7 +52,7 @@ const CreateFarm = ({setVisible, visible, onSelect}: DialogsProps) => {
         };
 
       const handleSubmit = async () => {
-        if (!validate()) return;
+        if (!validate()) return
         let imageURL = ''
         try {
           if (image) {

@@ -40,3 +40,59 @@ export async function uploadImageToSupabase(
     onLoading?.(false);
   }
 }
+
+export async function replaceImageInSupabase(
+  localUri: string,
+  folder: string,
+  oldImageUrl?: string,
+  onLoading?: (isLoading: boolean) => void
+): Promise<string | null> {
+  try {
+    onLoading?.(true);
+
+    if (oldImageUrl) {
+      try {
+        const urlParts = oldImageUrl.split('/');
+        const filePath = urlParts.slice(-2).join('/');
+        const deleteUrl = `${SUPABASE_URL}/storage/v1/object/${SUPABASE_BUCKET}/${filePath}`;
+
+        await fetch(deleteUrl, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+        });
+      } catch (deleteError) {
+        console.warn('Failed to delete old image:', deleteError);
+      }
+    }
+
+    const fileName = localUri.split('/').pop();
+    const fileExt = fileName?.split('.').pop()?.toLowerCase();
+    const contentType =
+      fileExt === 'jpg' || fileExt === 'jpeg' ? 'image/jpeg' : 'image/png';
+
+    const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${SUPABASE_BUCKET}/${folder}/${fileName}`;
+    const { uri } = await FileSystem.getInfoAsync(localUri);
+
+    const uploadResult = await FileSystem.uploadAsync(uploadUrl, uri, {
+      httpMethod: 'PUT',
+      headers: {
+        'Content-Type': contentType,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    });
+
+    if (uploadResult.status !== 200) {
+      console.error('Upload failed:', uploadResult.body);
+      return null;
+    }
+
+    return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/${folder}/${fileName}`;
+  } catch (err) {
+    console.error('Image replacement error:', err);
+    return null;
+  } finally {
+    onLoading?.(false);
+  }
+}
