@@ -32,6 +32,8 @@ const Scanned = ({ photo, setPhoto, type, finished, isLoading: loading }: Props)
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [show, setShow] = useState(false)
+  const [fishCount, setFishCount] = useState(0);
+  const [rejectCount, setRejectCount] = useState(0);
 
   const imageUri = annotatedPhoto || image?.uri || photo?.uri;
 
@@ -132,7 +134,21 @@ const Scanned = ({ photo, setPhoto, type, finished, isLoading: loading }: Props)
 
       if (result.image_url) {
         setAnnotatedPhoto(result.image_url);
-        setDetections(result)
+        setDetections(result);
+
+        const fishDetected = result.detections.filter(
+          (d: any) => d.class === 'fish'
+        ).length;
+
+        const rejectDetected = result.detections.filter(
+          (d: any) => d.class === 'reject'
+        ).length;
+
+        setFishCount(fishDetected);
+        setRejectCount(rejectDetected);
+
+        console.log('Fish detected:', fishDetected);
+        console.log('Rejects detected:', rejectDetected);
       }
     } catch (error: any) {
       Toast.show({
@@ -205,7 +221,7 @@ const Scanned = ({ photo, setPhoto, type, finished, isLoading: loading }: Props)
   return (
     <View className='flex-1 bg-white'>
       <AddCameraProgress setVisible={setShow} visible={show} trayId={Number(id)} image={imageUri}
-      defaultDescription={drynessDescription}
+      defaultDescription={drynessDescription} rejects={rejectCount} detected={fishCount}
       />
       <ChevronLeft onPress={() => setPhoto(null)} style={{ top: 51, left: 20, position: 'absolute' }} />
       <View className="w-full items-center" style={{ marginTop: 50, marginBottom: 20 }}>

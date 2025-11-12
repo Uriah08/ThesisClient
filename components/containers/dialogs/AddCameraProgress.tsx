@@ -15,9 +15,11 @@ type DialogsProps = {
   trayId: number
   image: string | undefined
   defaultDescription?: string
+  rejects?: number
+  detected?: number
 };
 
-const AddCameraProgress = ({ setVisible, visible, trayId, image, defaultDescription }: DialogsProps) => {
+const AddCameraProgress = ({ setVisible, visible, trayId, image, defaultDescription, rejects, detected }: DialogsProps) => {
     const [isFocused, setIsFocused] = useState('');
     const [title, setTitle] = useState('Tray Status')
     const [description, setDescription] = useState(defaultDescription || '')
@@ -81,6 +83,8 @@ const AddCameraProgress = ({ setVisible, visible, trayId, image, defaultDescript
       description,
       image: imageURL,
       tray: trayId,
+      rejects,
+      detected
     }).unwrap();
 
     setVisible(false);
