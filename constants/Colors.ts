@@ -67,3 +67,6 @@ export const farmMenu = [
     icon: Settings
   },
 ]
+
+// export const apiUrl = '192.168.43.157' // MOBILE HOTSPOT
+export const apiUrl = '192.168.1.26' // MY WIFI

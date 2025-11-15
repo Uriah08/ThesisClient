@@ -36,15 +36,18 @@ const Dashboard = () => {
             <ArrowLeft color="#000" size={26} />
             </Pressable>
         </View>
-
-        <Text
-          className='text-3xl'
-          style={{
-            fontFamily: 'PoppinsBold',
-          }}
-        >
-          Dashboard
-        </Text>
+        
+        <View className='flex-row items-center gap-3'>
+            <Text
+              className='text-3xl'
+              style={{
+                fontFamily: 'PoppinsBold',
+              }}
+            >
+              {data?.name.length === 15 ? `${data.name.slice(0, 15)}...` : data?.name}
+            </Text>
+            <View className=''></View>
+        </View>
       </View>
     </View>
   )

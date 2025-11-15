@@ -1,7 +1,9 @@
 import { View, Text, ScrollView, Pressable } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import { ChevronRight, Megaphone, Pen, RotateCcwKey, Smartphone, Trash, UserLock } from 'lucide-react-native'
 import { router } from 'expo-router'
+import DeleteFarm from '../../dialogs/DeleteFarm'
+import { Farm } from '@/utils/types'
 
 type Menu = {
   icon: any,
@@ -9,41 +11,49 @@ type Menu = {
   route?: "/farm-settings/edit/[id]" | "/farm-settings/announcement/[id]" | "/farm-settings/change/[id]" | "/farm-settings/block/[id]"
 }
 
-const settingsMenu: Menu[] = [
-  {
-    icon: Pen,
-    label: 'Edit Farm',
-    route: '/farm-settings/edit/[id]'
-  },
-  {
-    icon: Megaphone,
-    label: 'Announcements',
-    route: '/farm-settings/announcement/[id]'
-  },
-  {
-    icon: RotateCcwKey,
-    label: 'Change Password',
-    route: '/farm-settings/change/[id]'
-  },
-];
-
-const dangerMenu: Menu[] = [
-    {
-    icon: UserLock,
-    label: 'Blocklist',
-    route: '/farm-settings/block/[id]'
-  },
-  {
-    icon: Trash,
-    label: 'Delete',
-  }
-]
-
 type Props = {
-  farmId: number}
-const Settings = ({ farmId }: Props) => {
+  farmId: number
+  owner: boolean
+  setSelectedFarm: (farm: Farm | null) => void
+  onBack: () => void
+}
+
+const Settings = ({ farmId, owner, setSelectedFarm, onBack }: Props) => {
+
+  const settingsMenu: Menu[] = [
+    {
+      icon: Pen,
+      label: 'Edit Farm',
+      route: '/farm-settings/edit/[id]'
+    },
+    {
+      icon: Megaphone,
+      label: 'Announcements',
+      route: '/farm-settings/announcement/[id]'
+    },
+    {
+      icon: RotateCcwKey,
+      label: 'Change Password',
+      route: '/farm-settings/change/[id]'
+    },
+  ];
+
+  const dangerMenu: Menu[] = [
+      {
+      icon: UserLock,
+      label: 'Blocklist',
+      route: '/farm-settings/block/[id]'
+    },
+    {
+      icon: Trash,
+      label: owner ? 'Delete' : 'Leave',
+    }
+  ]
+
+  const [showDelete, setShowDelete] = useState(false)
   return (
     <View className='flex-1 flex flex-col'>
+      <DeleteFarm visible={showDelete} setVisible={setShowDelete} farmId={farmId} type={owner ? 'delete' : 'leave'} setSelectedFarm={setSelectedFarm} onBack={onBack}/>
       <View className='flex flex-row justify-between items-center mt-3 px-5'>
         <Text className='text-xl text-zinc-700' style={{ fontFamily: 'PoppinsBold', color: '#3f3f46'}}>Settings</Text>
         <View className='flex flex-row items-center bg-zinc-200 px-2' style={{ paddingVertical: 1, borderRadius: 5, gap: 3}}>
@@ -93,18 +103,19 @@ const Settings = ({ farmId }: Props) => {
           <Pressable
             key={i}
             onPress={() =>
-              item.route &&
+              {item.route &&
               router.push({
                 pathname: item.route,
                 params: { id: farmId.toString() },
               })
+              if(item.label === 'Delete' || item.label === 'Leave') setShowDelete(true)}
             }
             className="flex flex-row items-center"
             android_ripple={{ color: '#d3d3d3', borderless: false }}
             style={{
               justifyContent: 'space-between',
               borderTopWidth: 1,
-              borderBottomWidth: item.label === 'Delete' ? 1 : 0,
+              borderBottomWidth: item.label === 'Delete' || item.label === 'Leave' ? 1 : 0,
               borderColor: '#e8e8e8',
               paddingVertical: 20,
               paddingLeft: 10
@@ -122,43 +133,6 @@ const Settings = ({ farmId }: Props) => {
             <ChevronRight size={18} />
           </Pressable>
         ))}
-        {/* <View className='mt-3' style={{ overflow: 'hidden', borderRadius: 7}}>
-          <Pressable android_ripple={{ color: '#7f1d1d' }} style={{ paddingVertical: 8, paddingHorizontal: 15, backgroundColor: '#b91c1c', borderRadius: 7 }}>
-            <Text className='text-center text-white' style={{ fontFamily: 'PoppinsMedium' }}>Leave Farm</Text>
-          </Pressable>
-        </View> */}
-        {/* <View
-          className="flex flex-row items-start gap-3 mt-2 p-3 rounded-lg"
-          style={{
-            backgroundColor: '#fee2e2',
-            borderWidth: 1,
-            borderColor: '#fca5a5',
-          }}
-        >
-          <TriangleAlert size={18} color={'#b91c1c'} />
-          <View className="flex-1">
-            <Text
-              style={{
-                fontFamily: 'PoppinsMedium',
-                fontSize: 13,
-                color: '#7f1d1d',
-                marginBottom: 2,
-              }}
-            >
-              You’re about to leave this farm
-            </Text>
-            <Text
-              style={{
-                fontFamily: 'PoppinsRegular',
-                fontSize: 12,
-                color: '#7f1d1d',
-              }}
-            >
-              Leaving this farm will permanently remove all your related data, including your tray information, session history, and any changes you’ve made. 
-              This action cannot be undone — please confirm before proceeding.
-            </Text>
-          </View>
-        </View> */}
       </ScrollView>
     </View>
   )

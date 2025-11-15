@@ -5,12 +5,12 @@ import { Platform, TouchableNativeFeedback, TouchableOpacity, View } from 'react
 import { useDispatch } from 'react-redux'
 import { setScanTabPressed } from '@/store'
 
-const CameraTabBarButton = ({ children, onPress }: any) => {
+const CameraTabBarButton = ({ children, onPress, id }: any) => {
   const pathname = usePathname()
   const dispatch = useDispatch();
-
+  
   const handlePress = () => {
-    if (pathname === '/scan') {
+    if (pathname === `/trays/${id}/scan`) {
       dispatch(setScanTabPressed(true));
     }
     onPress?.();
@@ -93,7 +93,7 @@ const TrayLayout = () => {
                     title: 'Scan',
                     headerShown: false,
                     tabBarIcon: ({ color, size }) => <Aperture color={'#ffffff'} size={28} />,
-                    tabBarButton: (props) => <CameraTabBarButton {...props} />,
+                    tabBarButton: (props) => <CameraTabBarButton {...props} id={id} />,
                     tabBarLabel: () => null
                 }}
                 initialParams={{ id }}

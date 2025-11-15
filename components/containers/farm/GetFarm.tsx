@@ -40,7 +40,7 @@ const GetFarm = ({ data, isLoading, onSelect, isFetching }: FarmProps) => {
       ) : (
         data?.length === 0 ? (
             <View className='flex-1 items-center justify-center' style={{
-                height: 500
+                height: 350
             }}>
                 <Image
                 source={require('@/assets/images/hero-image.png')}

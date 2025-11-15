@@ -9,13 +9,15 @@ import { useDeleteSessionMutation } from '@/store/sessionApi'
 import Toast from 'react-native-toast-message'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useDeleteFarmTrayMutation } from '@/store/farmTrayApi'
+import { useDeleteAnnouncementMutation } from '@/store/farmApi'
 
 type DialogsProps = {
   setVisible: (visible: boolean) => void
   visible: boolean
-  type: 'tray' | 'session' | 'farm-tray'
+  type: 'tray' | 'session' | 'farm-tray' | 'announcement'
   trayId?: number
   sessionId?: number
+  announcementId?: number
   onBack?: () => void
 }
 
@@ -26,10 +28,12 @@ const DeleteClass = ({
   trayId,
   sessionId,
   onBack,
+  announcementId
 }: DialogsProps) => {
   const [deleteTray, { isLoading: trayLoading }] = useDeleteTrayMutation()
   const [deleteSession, { isLoading: sessionLoading }] = useDeleteSessionMutation()
   const [deleteFarmTray, { isLoading: farmTrayLoading }] = useDeleteFarmTrayMutation()
+  const [deleteAnnouncement, { isLoading: announcementLoading }] = useDeleteAnnouncementMutation()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleDeleteTray = async () => {
@@ -48,6 +52,9 @@ const DeleteClass = ({
         await deleteFarmTray(trayId).unwrap()
         setVisible(false)
         router.push('/(tabs)/farm')
+      } else if (type === 'announcement') {
+        await deleteAnnouncement(announcementId).unwrap()
+        setVisible(false)
       }
     } catch (error: any) {
       if (error?.data?.detail) {
@@ -61,17 +68,19 @@ const DeleteClass = ({
   }
 
   return (
-    <Dialogs onVisible={setVisible} visible={visible} title={`Delete ${(type === 'tray' || type === 'farm-tray') ? 'Tray' : 'Session'}`}>
+    <Dialogs onVisible={setVisible} visible={visible} title={`Delete ${(type === 'tray' || type === 'farm-tray') ? 'Tray' : type === 'announcement' ? 'Announcement' : 'Session'}`}>
       <Dialog.Content>
-        <View className="flex-row gap-3 justify-center items-center bg-zinc-200 p-2 rounded-full mb-4">
-          <AlertCircle color={'#b91c1c'} />
-          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>
-            This process cannot be undone. {'\n'}All your changes will be lost.
-          </Text>
-        </View>
+        {type !== 'announcement' && (
+          <View className="flex-row gap-3 justify-center items-center bg-zinc-200 p-2 rounded-full mb-4">
+            <AlertCircle color={'#b91c1c'} />
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>
+              This process cannot be undone. {'\n'}All your changes will be lost.
+            </Text>
+          </View>
+        )}
 
         <Text style={{ fontFamily: 'PoppinsRegular', marginBottom: 10 }}>
-          Are you sure you want to delete this {(type === 'tray' || type === 'farm-tray') ? 'tray' : 'session'}?
+          Are you sure you want to delete this {(type === 'tray' || type === 'farm-tray') ? 'tray' : type === 'announcement' ? 'announcement' : 'session'}?
         </Text>
 
         {errorMessage && (
@@ -144,9 +153,9 @@ const DeleteClass = ({
               alignItems: 'center',
               gap: 8,
             }}
-            disabled={trayLoading || sessionLoading || farmTrayLoading}
+            disabled={trayLoading || sessionLoading || farmTrayLoading || announcementLoading}
           >
-            {trayLoading || sessionLoading || farmTrayLoading  ? (
+            {trayLoading || sessionLoading || farmTrayLoading || announcementLoading  ? (
               <ActivityIndicator size={15} color="#ffffff" />
             ) : (
               <Trash color={'#ffffff'} size={15} />

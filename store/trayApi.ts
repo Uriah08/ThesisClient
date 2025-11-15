@@ -9,7 +9,7 @@ export const trayApi = baseApi.injectEndpoints({
                 method: "POST",
                 body: data
             }),
-            invalidatesTags: ["Tray"],
+            invalidatesTags: ["Tray", "Session"],
         }),
         getSessionTray: builder.query<Tray[], number>({
             query: (sessionId) => ({

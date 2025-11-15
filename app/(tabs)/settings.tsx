@@ -66,7 +66,7 @@ const Settings = () => {
       <Text className='mt-10 text-3xl p-5' style={{
         fontFamily: 'PoppinsBold'
       }}>Settings</Text>
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{
             marginHorizontal: 20
         }}>

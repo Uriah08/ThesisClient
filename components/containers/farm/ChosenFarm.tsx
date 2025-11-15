@@ -13,6 +13,7 @@ import Home from './farm-tabs/Home'
 import Members from './farm-tabs/Members'
 import Settings from './farm-tabs/Settings'
 import Trays from './farm-tabs/Trays'
+import useAuthRedirect from '@/components/hooks/useAuthRedirect'
 
 type ChosenFarmProps = {
   onBack: () => void;
@@ -21,8 +22,10 @@ type ChosenFarmProps = {
 };
 
 const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) => {
-  
+  const { user } = useAuthRedirect();
   const { data } = useGetFarmQuery(selectedFarm.id);
+
+  const isOwner = user?.id === data?.owner
 
   const [createVisible, setCreateVisible] = useState(false)
   const [active, setActive] = useState('Home')
@@ -134,7 +137,7 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
         {active === 'Trays' && <Trays farmId={data?.id || selectedFarm.id}/>}
         {active === 'Sessions' && <Sessions farmId={data?.id || selectedFarm.id}/>}
         {active === 'Members' && <Members farmId={data?.id || selectedFarm.id} ownerId={data?.owner || selectedFarm.owner}/>}
-        {active === 'Settings' && <Settings farmId={data?.id || selectedFarm.id}/>}
+        {active === 'Settings' && <Settings farmId={data?.id || selectedFarm.id} owner={isOwner} setSelectedFarm={setSelectedFarm} onBack={onBack}/>}
       </View>
     </View>
   )

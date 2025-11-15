@@ -148,9 +148,9 @@ const History = () => {
               <ActivityIndicator size={30} color="#155183" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', margin: 100 }} />
             </View>
           ) : (
-            <View className='flex-1 w-full'>
+            <ScrollView className='flex-1 w-full' contentContainerStyle={{ flexGrow: 1, paddingBottom: 80 }}>
               <ProgressSteps loading={progressLoading} created_at={selectedItem?.created_at} finished_at={selectedItem?.finished_at} owner={selectedItem?.created_by_username} owner_pfp={selectedItem?.created_by_profile_picture} progress={progress}/>
-            </View>
+            </ScrollView>
           )}
         </BottomDrawer>
     </View>

@@ -149,3 +149,17 @@ export type TrayProgress = {
   created_by_username: string;
   created_by_profile_picture: string | null;
 }
+
+export type Announcement =  {
+  id: number;
+  farm: number;
+  title: string;
+  content: string;
+  status: string;
+  created_by: number;
+  created_at: string;
+  expires_at: string | null;
+  created_by_username: string;
+  created_by_profile_picture: string | null;
+}
+
