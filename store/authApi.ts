@@ -1,10 +1,10 @@
+import { apiUrl } from "@/constants/Colors";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
-    // baseUrl: "http://192.168.0.165:8000/api/"
-    baseUrl: "http://192.168.43.157:8000/api/",
+    baseUrl: `http://${apiUrl}:8000/api/`,
   }),
   endpoints: (build) => ({
     login: build.mutation({

@@ -16,7 +16,7 @@ export const sessionApi = baseApi.injectEndpoints({
         url: `sessions/get/${farmId}/`,
         method: 'GET'
       }),
-      providesTags: ["Session"],
+      providesTags: ["Session", "Tray"],
     }),
     getSessionById: build.query<FarmSession, number>({
       query: (id) => ({

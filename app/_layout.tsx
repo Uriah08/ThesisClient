@@ -78,7 +78,7 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="farm-settings/announcement/[id]"
+          name="farm-settings/announcement"
           options={{
             headerShown: false,
           }}

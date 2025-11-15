@@ -22,7 +22,7 @@ import { useGetNotificationsQuery } from '@/store/notificationApi';
 
 const CameraTabBarButton = ({ children, onPress }: any) => {
   const pathname = usePathname()
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
   const handlePress = () => {
     if (pathname === '/scan') {

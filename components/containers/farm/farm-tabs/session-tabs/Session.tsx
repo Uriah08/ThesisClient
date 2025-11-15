@@ -135,7 +135,17 @@ const Session = ({ session, onBack, farmId }: { session : FarmSession, onBack: (
               <Check size={14} color={'#a1a1aa'}/>
               <Text className='text-zinc-400' style={{ fontFamily: 'PoppinsRegular', fontSize: 12}}>Finished</Text>
             </View>) : (
-            <Pressable onPress={() => setActivateVisible(true)} android_ripple={{ color: "#ffffff50", borderless: false }} className='gap-2 flex-row items-center' style={{ backgroundColor: '#155183', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 9999 }}>
+            <Pressable 
+            onPress={() => 
+            setActivateVisible(true)} 
+            android_ripple={{ color: "#ffffff50", borderless: false }} 
+            className='gap-2 flex-row items-center' 
+            style={{ 
+              backgroundColor: '#155183', 
+              paddingVertical: 6, 
+              paddingHorizontal: 12, 
+              borderRadius: 9999 
+              }}>
               {currentStatus === 'inactive' ? (<Play size={14} color={'#ffffff'}/>): (<CheckCircle size={14} color={'#ffffff'}/>)}
               <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#ffffff' }}>{currentStatus === 'active' ? 'Finish' : 'Start'}</Text>
             </Pressable>

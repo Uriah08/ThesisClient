@@ -3,7 +3,7 @@ import React, {
   useImperativeHandle,
   useRef,
 } from 'react';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 
 export type BottomDrawerRef = {
   open: () => void;
@@ -40,7 +40,7 @@ const BottomDrawer = forwardRef<BottomDrawerRef, BottomDrawerProps>(
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
-        snapPoints={type === 'full' ? ['95%'] : []}
+        snapPoints={type === 'full' ? ['50%'] : []}
         enablePanDownToClose
         onChange={handleSheetChange}
         backdropComponent={(props) => (
@@ -52,11 +52,14 @@ const BottomDrawer = forwardRef<BottomDrawerRef, BottomDrawerProps>(
         />
         )}
       >
-        <BottomSheetView
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+        <BottomSheetScrollView
+          contentContainerStyle={{flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+          keyboardShouldPersistTaps="handled"
         >
           {children}
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheet>
     );
   }

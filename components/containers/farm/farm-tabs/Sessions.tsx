@@ -6,77 +6,104 @@ import Session from './session-tabs/Session'
 import { FarmSession } from '@/utils/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
-import { FilterIcon, MapPlus, Search } from 'lucide-react-native'
+import { FilterIcon, MapPlus, Search, TriangleAlert } from 'lucide-react-native'
 import CreateSession from '../../dialogs/CreateSession'
 import SessionStatus from './session-tabs/SessionStatus'
 
 type Props = { farmId: number }
 
-const SessionCard = ({
-  item,
-  onSelect,
-}: {
+type SessionCardProps = {
   item: FarmSession
   onSelect: (session: FarmSession) => void
-}) => (
-  <View style={{ overflow: 'hidden', borderRadius: 10, marginTop: 10 }}>
-    <Pressable
-      android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
-      style={{
-        borderRadius: 10,
-        borderWidth: 1,
-        padding: 10,
-        borderColor: '#d4d4d8',
-      }}
-      onPress={() => onSelect(item)}
-    >
-      <View className="flex flex-row justify-between items-center">
-        <View className="flex flex-row items-center gap-3">
-          <Text className="text-zinc-500" style={{ fontFamily: 'PoppinsSemiBold' }}>
-            {item.name}
-          </Text>
-          <SessionStatus sessionStatus={item.status} />
-        </View>
-        <Text
-          className="text-zinc-400"
-          style={{ fontFamily: 'PoppinsMedium', fontSize: 11 }}
-        >
-          {new Date(item.created_at).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </Text>
-      </View>
+}
 
-      <Text
-        style={{ marginBottom: 5, fontFamily: 'PoppinsRegular', fontSize: 12 }}
-        className="text-zinc-500"
+const SessionCard = ({ item, onSelect }: SessionCardProps) => {
+  const createdAt = new Date(item.created_at)
+  const now = new Date()
+  const diffInTime = now.getTime() - createdAt.getTime()
+  const diffInDays = diffInTime / (1000 * 3600 * 24)
+
+  const showTriangleAlert = diffInDays > 2
+
+  return (
+    <View style={{ overflow: 'hidden', borderRadius: 10, marginTop: 10 }}>
+      <Pressable
+        android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
+        style={{
+          borderRadius: 10,
+          borderWidth: 1,
+          padding: 10,
+          borderColor: '#d4d4d8',
+        }}
+        onPress={() => onSelect(item)}
       >
-        Trays: {item.trays_count}
-      </Text>
-
-      <View className="gap-3 flex flex-row">
-        {['Start', 'End'].map((label) => (
-          <View key={label} className="flex flex-row gap-2">
-            <Text
-              className="bg-primary text-white"
-              style={{
-                fontFamily: 'PoppinsRegular',
-                fontSize: 10,
-                paddingHorizontal: 5,
-                borderRadius: 5,
-              }}
-            >
-              {label}
+        <View className="flex flex-row justify-between items-center">
+          <View className="flex flex-row items-center gap-3">
+            <Text className="text-zinc-500" style={{ fontFamily: 'PoppinsSemiBold' }}>
+              {item.name}
             </Text>
-            <Text
-              className="text-zinc-400"
-              style={{ fontFamily: 'PoppinsMedium', fontSize: 10 }}
-            >
-              {label === 'Start'
-                ? item.start_time
-                  ? new Date(item.start_time).toLocaleString('en-US', {
+            <SessionStatus sessionStatus={item.status} />
+          </View>
+
+          <Text
+            className="text-zinc-400"
+            style={{ fontFamily: 'PoppinsMedium', fontSize: 11 }}
+          >
+            {createdAt.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </Text>
+        </View>
+        <View className='flex-row gap-3'>
+          <Text
+            style={{ marginBottom: 5, fontFamily: 'PoppinsRegular', fontSize: 12 }}
+            className="text-zinc-500"
+          >
+            Trays: {item.trays_count}
+          </Text>
+          {showTriangleAlert || item.status === 'active' && 
+          <View className='flex-row gap-2'>
+            <TriangleAlert size={15} color={'#ca8a04'} />
+            <Text className='text-zinc-500' style={{
+              marginBottom: 5, fontFamily: 'PoppinsRegular', fontSize: 12
+            }}>Harvest Now</Text>
+          </View>
+          }
+        </View>
+
+        <View className="gap-3 flex flex-row">
+          {['Start', 'End'].map((label) => (
+            <View key={label} className="flex flex-row gap-2">
+              <Text
+                className="bg-primary text-white"
+                style={{
+                  fontFamily: 'PoppinsRegular',
+                  fontSize: 10,
+                  paddingHorizontal: 5,
+                  borderRadius: 5,
+                }}
+              >
+                {label}
+              </Text>
+              <Text
+                className="text-zinc-400"
+                style={{ fontFamily: 'PoppinsMedium', fontSize: 10 }}
+              >
+                {label === 'Start'
+                  ? item.start_time
+                    ? new Date(item.start_time).toLocaleString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })
+                    : '-'
+                  : item.end_time
+                  ? new Date(item.end_time).toLocaleString('en-US', {
                       hour: 'numeric',
                       minute: '2-digit',
                       hour12: true,
@@ -84,25 +111,15 @@ const SessionCard = ({
                       day: 'numeric',
                       year: 'numeric',
                     })
-                  : '-'
-                : item.end_time
-                ? new Date(item.end_time).toLocaleString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true,
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })
-                : '-'}
-
-            </Text>
-          </View>
-        ))}
-      </View>
-    </Pressable>
-  </View>
-)
+                  : '-'}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </Pressable>
+    </View>
+  )
+}
 
 const Sessions = ({ farmId }: Props) => {
   const { data: sessions = [], isLoading, refetch } = useGetFarmSessionsQuery(farmId)
