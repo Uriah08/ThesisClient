@@ -4,7 +4,7 @@ import { PieChart } from 'react-native-gifted-charts';
 import { Easing } from 'react-native-reanimated';
 
 const PieChartComponent = ({ value }: { value: number }) => {
-  const [progress, setProgress] = useState(value);
+  const [progress, setProgress] = useState(55);
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

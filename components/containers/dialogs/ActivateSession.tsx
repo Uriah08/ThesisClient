@@ -37,14 +37,14 @@ const ActivateSession = ({ setVisible, visible, sessionId, sessionStatus }: Dial
     }
 
   return (
-    <Dialogs onVisible={setVisible} visible={visible} title={sessionStatus === 'inactive' ? 'Activate Session' : 'Finish Session'}>
+    <Dialogs onVisible={setVisible} visible={visible} title={sessionStatus === 'inactive' ? 'Start Session' : 'Finish Session'}>
         <Dialog.Content>
             <View className='flex-row gap-3 justify-center items-center bg-zinc-200 p-2 rounded-full' style={{ marginBottom: 15 }}>
                 <AlertCircle color={'#155183'}/>
                 <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>This process cannot be undone.</Text>
             </View>
             <Text style={{ fontFamily: 'PoppinsRegular' }}>
-                Are you sure you want to {sessionStatus === 'inactive' ? 'activate' : 'finish'} this session?
+                Are you sure you want to {sessionStatus === 'inactive' ? 'start' : 'finish'} this session?
                 {sessionStatus === 'active' ? ' All your trays will be harvested.' : ''}
             </Text>
 
@@ -97,7 +97,7 @@ const ActivateSession = ({ setVisible, visible, sessionId, sessionStatus }: Dial
                         fontFamily: 'PoppinsRegular',
                     }}
                     >
-                    {sessionStatus === 'inactive' ? 'Activate': 'Finish'}
+                    {sessionStatus === 'inactive' ? 'Start': 'Finish'}
                     </Text>
                 </Pressable>
             </View>

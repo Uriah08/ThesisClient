@@ -1,5 +1,5 @@
 import { baseApi } from "./baseApi";
-import { Announcement, Farm, Members } from "@/utils/types";
+import { Announcement, Farm, FarmDashboard, Members } from "@/utils/types";
 
 export const farmApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -113,6 +113,13 @@ export const farmApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: ["Farm"],
+    }),
+    getFarmDashboard: build.query<FarmDashboard, number>({
+      query: (id) => ({
+        url: `farms/dashboard/${id}/`,
+        method: "GET",
+      }),
+      providesTags: ["Farm", "Tray", "Session"],
     })
   }),
   overrideExisting: true,
@@ -133,5 +140,6 @@ export const {
   useGetBlockedUsersQuery,
   useUnblockUserMutation,
   useLeaveFarmMutation,
-  useDeleteFarmMutation
+  useDeleteFarmMutation,
+  useGetFarmDashboardQuery
 } = farmApi;

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tabs, useLocalSearchParams } from 'expo-router'
-import { Gauge, History, SettingsIcon } from 'lucide-react-native'
+import { History, PanelsLeftRightIcon, SettingsIcon } from 'lucide-react-native'
 import { Platform, TouchableNativeFeedback, View } from 'react-native'
 
 const CustomTabBarButton = (props: any) => {
@@ -42,9 +42,9 @@ const TrayLayout = () => {
             <Tabs.Screen
                 name="dashboard"
                 options={{
-                    title: 'Dashboard',
+                    title: 'Tray',
                     headerShown: false,
-                    tabBarIcon: ({ color, size }) => <Gauge color={color} size={size} />,
+                    tabBarIcon: ({ color, size }) => <PanelsLeftRightIcon color={color} size={size} />,
                     tabBarButton: (props) => <CustomTabBarButton {...props} />,
                 }}
                 initialParams={{ id }}

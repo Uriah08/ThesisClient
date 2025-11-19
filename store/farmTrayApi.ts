@@ -1,4 +1,4 @@
-import { FarmTray } from "@/utils/types";
+import { FarmTray, TrayDashboard } from "@/utils/types";
 import { baseApi } from "./baseApi";
 
 export const farmTrayApi = baseApi.injectEndpoints({
@@ -47,6 +47,13 @@ export const farmTrayApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Tray"],
         }),
+        trayDashboard: builder.query<TrayDashboard, number>({
+            query: (id) => ({
+                url: `tray/dashboard/${id}/`,
+                method: 'GET',
+            }),
+            providesTags: ['Tray'],
+        })
     }),
     overrideExisting: true,
 })
@@ -57,5 +64,6 @@ export const {
     useGetFarmTrayByIdQuery,
     useMaintenanceMutation,
     useDeleteFarmTrayMutation,
-    useRenameFarmTrayMutation
+    useRenameFarmTrayMutation,
+    useTrayDashboardQuery
 } = farmTrayApi;
