@@ -133,7 +133,7 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
             </Pressable>
           ))}
         </View>
-        {active === 'Home' && <Home/>}
+        {active === 'Home' && <Home farmId={data?.id || selectedFarm.id}/>}
         {active === 'Trays' && <Trays farmId={data?.id || selectedFarm.id}/>}
         {active === 'Sessions' && <Sessions farmId={data?.id || selectedFarm.id}/>}
         {active === 'Members' && <Members farmId={data?.id || selectedFarm.id} ownerId={data?.owner || selectedFarm.owner}/>}

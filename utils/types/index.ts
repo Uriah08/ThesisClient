@@ -163,3 +163,41 @@ export type Announcement =  {
   created_by_profile_picture: string | null;
 }
 
+export interface FarmDashboard {
+  id: number;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  session_counts_by_day: SessionCountByDay[];
+  tray_count: number
+  announcement_count: number
+  session_trays_count_by_day: SessionTrayCountByDay[]
+  detected_and_reject_by_day: Detected[]
+  recent_harvested_trays: Tray[]
+}
+
+export interface SessionCountByDay {
+  created_at: string;
+  count: number;
+}
+
+export interface SessionTrayCountByDay {
+  created_at: string;
+  count: number;
+}
+
+export interface Detected {
+  day: string;
+  detected: number;
+  rejects: number;
+}
+
+export interface TrayDashboard {
+  id: number;
+  name: string;
+  status: string;
+  created_at: string
+  session_tray_count: SessionTrayCountByDay[]
+  detected_and_reject_by_day: Detected[]
+  recent_harvested_trays: Tray[]
+}

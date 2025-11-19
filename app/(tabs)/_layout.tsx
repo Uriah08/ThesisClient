@@ -119,7 +119,7 @@ const AppLayout = () => {
       <Tabs.Screen
         name="farm"
         options={{
-          title: 'Dryery',
+          title: 'Drying',
           headerShown: false,
           tabBarIcon: ({ color, size }) => <FishSymbolIcon color={color} size={size} />,
           tabBarButton: (props) => <CustomTabBarButton {...props} />,

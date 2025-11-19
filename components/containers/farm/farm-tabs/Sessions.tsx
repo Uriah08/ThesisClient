@@ -63,7 +63,7 @@ const SessionCard = ({ item, onSelect }: SessionCardProps) => {
           >
             Trays: {item.trays_count}
           </Text>
-          {showTriangleAlert || item.status === 'active' && 
+          {(showTriangleAlert && item.status === 'active') && 
           <View className='flex-row gap-2'>
             <TriangleAlert size={15} color={'#ca8a04'} />
             <Text className='text-zinc-500' style={{

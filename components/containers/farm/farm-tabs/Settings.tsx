@@ -22,14 +22,14 @@ const Settings = ({ farmId, owner, setSelectedFarm, onBack }: Props) => {
 
   const settingsMenu: Menu[] = [
     {
-      icon: Pen,
-      label: 'Edit Farm',
-      route: '/farm-settings/edit/[id]'
-    },
-    {
       icon: Megaphone,
       label: 'Announcements',
       route: '/farm-settings/announcement/[id]'
+    },
+    {
+      icon: Pen,
+      label: 'Edit',
+      route: '/farm-settings/edit/[id]'
     },
     {
       icon: RotateCcwKey,

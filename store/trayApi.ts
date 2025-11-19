@@ -18,7 +18,7 @@ export const trayApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Tray"],
         }),
-        getTrayById: builder.query<Tray, number>({
+        getTrayById: builder.query<Tray, number | undefined>({
             query: (trayId) => ({
                 url: `trays/get/tray/${trayId}/`,
                 method: "GET",
@@ -33,7 +33,7 @@ export const trayApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Tray"],
         }),
-        getTrayProgress: builder.query<TrayProgress[], number>({
+        getTrayProgress: builder.query<TrayProgress[], number | undefined>({
             query: (trayId) => ({
                 url: `trays/progress/get/${trayId}/`,
                 method: "GET",
