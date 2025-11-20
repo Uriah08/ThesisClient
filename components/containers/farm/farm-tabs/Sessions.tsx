@@ -267,6 +267,7 @@ const Sessions = ({ farmId }: Props) => {
       >
         {renderSection('Active', activeSessions, 'NO ACTIVE SESSIONS')}
         {renderSection('Others', inactiveSessions, 'NO SESSIONS')}
+        <View className='mt-5'></View>
       </ScrollView>
     </View>
   )
