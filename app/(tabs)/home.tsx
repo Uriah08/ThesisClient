@@ -136,19 +136,19 @@ const Home = () => {
     const windDesc = getWindDescription(wind ?? 0);
     const cloudDesc = getCloudDescription(cloud ?? 0);
   
-    if (rain < 10 && (wind ?? 0) < 10 && (cloud ?? 0) < 30) {
+    if (rain < 10 && (wind ?? 0) < 10 && (cloud ?? 0) < 50) {
       alertLabel = 'Excellent';
       alertColor = '#22c55e';
       message = `The weather is perfect for drying fish on that day. Expect ${cloudDesc}, ${windDesc}, and ${rainDesc}. Ideal for quick and safe drying.`;
-    } else if (rain < 30 && (wind ?? 0) < 15 && (cloud ?? 0) < 50) {
+    } else if (rain < 10 && (wind ?? 0) < 15 && (cloud ?? 0) < 100) {
       alertLabel = 'Good';
       alertColor = '#3b82f6';
       message = `You can dry fish on that day with confidence. There will be ${cloudDesc} and ${windDesc}, with ${rainDesc}. Still, consider a backup cover just in case.`;
-    } else if ((rain >= 30 && rain < 50) || ((cloud ?? 0) >= 50 && (cloud ?? 0) < 70) || ((wind ?? 0) >= 15 && (wind ?? 0) < 20)) {
+    } else if ((rain >= 10 && rain < 50) || ((cloud ?? 0) >= 50 && (cloud ?? 0) < 100) || ((wind ?? 0) >= 15 && (wind ?? 0) < 20)) {
       alertLabel = 'Caution';
       alertColor = '#eab308';
       message = `Drying fish is possible, but not guaranteed. ${cloudDesc} and ${windDesc} may affect drying speed. Plus, there's ${rainDesc}. Stay prepared to react.`;
-    } else if ((rain >= 50 && rain < 80) || (wind ?? 0) >= 20 || (cloud ?? 0) >= 70) {
+    } else if ((rain >= 50 && rain < 80) || (wind ?? 0) >= 20 || (cloud ?? 0) === 100) {
       alertLabel = 'Warning';
       alertColor = '#f97316';
       message = `It’s not advisable to dry fish on that day. Expect ${cloudDesc}, ${windDesc}, and ${rainDesc}. Your batch could be compromised quickly.`;

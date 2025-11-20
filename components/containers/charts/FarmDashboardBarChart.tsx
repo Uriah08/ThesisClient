@@ -49,15 +49,14 @@ const FarmDashboardBarChart = ({ data, chartKey }: Props) => {
 
   return (
     <View style={{ paddingTop: 20 }}>
-      {/* Legend */}
       <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 20, marginBottom: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
           <View style={{ height: 8, width: 8, borderRadius: 99, backgroundColor: BLUE, marginBottom: 2 }} />
-          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#555' }}>Detected</Text>
+          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#555' }}>Good</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
           <View style={{ height: 8, width: 8, borderRadius: 99, backgroundColor: RED, marginBottom: 2 }} />
-          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#555' }}>Rejects</Text>
+          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#555' }}>Reject</Text>
         </View>
       </View>
 
