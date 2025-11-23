@@ -1,4 +1,4 @@
-import { Tray, TrayProgress } from "@/utils/types";
+import { Tray, TrayProgress, TrayResponse } from "@/utils/types";
 import { baseApi } from "./baseApi";
 
 export const trayApi = baseApi.injectEndpoints({
@@ -18,7 +18,7 @@ export const trayApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Tray"],
         }),
-        getTrayById: builder.query<Tray, number | undefined>({
+        getTrayById: builder.query<TrayResponse, number | undefined>({
             query: (trayId) => ({
                 url: `trays/get/tray/${trayId}/`,
                 method: "GET",

@@ -9,6 +9,7 @@ import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDra
 import ProgressSteps from '@/components/containers/farm/tray/ProgressSteps';
 import { Tray } from '@/utils/types';
 
+
 const History = () => {
   const { id } = useLocalSearchParams();
   const { data, isLoading } = useGetFarmTrayHistoryQuery(Number(id));
@@ -67,7 +68,7 @@ const History = () => {
               <View key={tray.id} style={{ overflow: 'hidden', borderRadius: 7, marginTop: 10 }}>
                 <Pressable onPress={() => handlePress(tray)} android_ripple={{ color: 'rgba(0,0,0,0.1)' }} className='p-3 flex' style={{ borderWidth: 1, borderColor: '#d4d4d8', borderRadius: 7, marginTop: index === 0 ? 0 : 3}}>
                   <View className='flex-row justify-between items-center'>
-                     <Text className="text-zinc-500" style={{ fontFamily: 'PoppinsSemiBold' }}>{tray.session_name}</Text>
+                     <Text className="text-zinc-500" style={{ fontFamily: 'PoppinsSemiBold' }}>{tray.tray_name}</Text>
                     <View className="flex-row items-center" style={{ gap: 5 }}>
                       <Image
                         source={

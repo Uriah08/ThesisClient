@@ -40,7 +40,7 @@ export default function Index() {
         style={{
           fontFamily: 'PoppinsRegular'
         }}
-      >A smart mobile app that uses AI to help sun-dried fish farmers identify which fish are fully dried and ready for harvest.
+      >An AI smart app that checks your sun-dried fish and tells you exactly which ones are ready to harvest.
       </Text>
       <Pressable 
         className='mt-14 bg-primary w-full py-3 rounded-full'

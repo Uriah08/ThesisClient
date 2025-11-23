@@ -1,6 +1,6 @@
 import { View, Text, Image, Animated, Easing, Pressable, ScrollView } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, Download, GitCommitVertical, ImageUp, ScanSearch, Share } from 'lucide-react-native';
+import { ChevronLeft, ClockPlus, Download, ImageUp, ScanSearch, Share } from 'lucide-react-native';
 import { useScanMutation } from '@/store/scanApi';
 import Toast from 'react-native-toast-message';
 import { Detections, Photo } from '@/utils/types';
@@ -12,16 +12,25 @@ import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import AddCameraProgress from '../dialogs/AddCameraProgress';
 import { useLocalSearchParams } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = {
   photo: { uri: string; base64?: string } | null;
   setPhoto: React.Dispatch<React.SetStateAction<{ uri: string; base64?: string } | null>>;
   type?: 'tray' | null;
-  finished?: string | null | undefined
-  isLoading?: boolean
 };
 
-const Scanned = ({ photo, setPhoto, type, finished, isLoading: loading }: Props) => {
+const Scanned = ({ photo, setPhoto, type }: Props) => {
+  const [activeTrayId, setActiveTrayId] = useState<number | null>(null);
+  useEffect(() => {
+    const fetchActiveTrayId = async () => {
+      const active = await AsyncStorage.getItem('active_tray_id')
+      if (active) {
+        setActiveTrayId(Number(active));
+      }
+    }
+    fetchActiveTrayId();
+  },[])
   const { id } = useLocalSearchParams();
   const scanAnim = useRef(new Animated.Value(0)).current;
   const [scan, { isLoading }] = useScanMutation();
@@ -151,6 +160,8 @@ const Scanned = ({ photo, setPhoto, type, finished, isLoading: loading }: Props)
         console.log('Rejects detected:', rejectDetected);
       }
     } catch (error: any) {
+      console.log(error.data.detail);
+      
       Toast.show({
         type: 'error',
         text1: error?.data?.detail || 'Failed to scan image.',
@@ -222,6 +233,7 @@ const Scanned = ({ photo, setPhoto, type, finished, isLoading: loading }: Props)
     <View className='flex-1 bg-white'>
       <AddCameraProgress setVisible={setShow} visible={show} trayId={Number(id)} image={imageUri}
       defaultDescription={drynessDescription} rejects={rejectCount} detected={fishCount}
+      activetrayId={activeTrayId!}
       />
       <ChevronLeft onPress={() => setPhoto(null)} style={{ top: 51, left: 20, position: 'absolute' }} />
       <View className="w-full items-center" style={{ marginTop: 50, marginBottom: 20 }}>
@@ -264,7 +276,7 @@ const Scanned = ({ photo, setPhoto, type, finished, isLoading: loading }: Props)
                 </Pressable>
                 </View>
             </View>
-            {(type === 'tray' && !finished && !loading) && (
+            {(type === 'tray') && (
               <View style={{ borderRadius: 5, overflow: 'hidden', paddingHorizontal: 18, paddingBottom: 18 }}>
                 <Pressable
                     onPress={() => setShow(true)}
@@ -273,9 +285,9 @@ const Scanned = ({ photo, setPhoto, type, finished, isLoading: loading }: Props)
                     className='flex-row gap-3 bg-primary'
                     style={{ borderRadius: 5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 20 }}
                 >
-                    <GitCommitVertical color={'#ffffff'} />
+                    <ClockPlus color={'#ffffff'} />
                     <Text className='text-white' style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>
-                     Save as Progress
+                     Save as Timeline
                     </Text>
                 </Pressable>
                 </View>

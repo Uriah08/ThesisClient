@@ -17,9 +17,10 @@ type DialogsProps = {
   defaultDescription?: string
   rejects?: number
   detected?: number
+  activetrayId: number
 };
 
-const AddCameraProgress = ({ setVisible, visible, trayId, image, defaultDescription, rejects, detected }: DialogsProps) => {
+const AddCameraProgress = ({ setVisible, visible, trayId, image, defaultDescription, rejects, detected, activetrayId }: DialogsProps) => {
     const [isFocused, setIsFocused] = useState('');
     const [title, setTitle] = useState('Tray Status')
     const [description, setDescription] = useState(defaultDescription || '')
@@ -82,15 +83,16 @@ const AddCameraProgress = ({ setVisible, visible, trayId, image, defaultDescript
       title,
       description,
       image: imageURL,
-      tray: trayId,
+      tray: activetrayId,
       rejects,
       detected
     }).unwrap();
 
     setVisible(false);
     setIsFocused('');
+    
     router.push({
-      pathname: '/trays/[id]/progress',
+      pathname: '/tray/[id]/timeline',
       params: { id: trayId.toString() },
     });
   } catch (error: any) {

@@ -74,7 +74,7 @@ export default function BottomToTopProgress({
   const startingStep = created_at
     ? {
         title: 'Started',
-        description: 'This tray has been created.',
+        description: 'Drying on this tray has started.',
         datetime: formatDateTime(created_at),
         created_by_username: owner || 'N/A',
         created_by_profile_picture: owner_pfp || null,

@@ -9,8 +9,10 @@ type Props = {
 };
 
 const PieChart2 = ({ v1 = 0, v2 = 0 }: Props) => {
-    const percentage = (v1 / (v1 + v2)) * 100 
-    const rejectPercentage = Math.abs((Number(percentage.toFixed(0)) - 100))
+    const total = v2 + v2;
+    const percentage = total > 0 ? (v1 / total) * 100 : 0;
+
+    const rejectPercentage = total > 0 ? Math.abs(Number(percentage.toFixed(0)) - 100) : 0;
 
     const pieData = [
         {

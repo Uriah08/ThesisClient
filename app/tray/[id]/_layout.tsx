@@ -1,7 +1,51 @@
 import React from 'react'
-import { Tabs, useLocalSearchParams } from 'expo-router'
-import { History, PanelsLeftRightIcon, SettingsIcon } from 'lucide-react-native'
-import { Platform, TouchableNativeFeedback, View } from 'react-native'
+import { Tabs, useLocalSearchParams, usePathname } from 'expo-router'
+import { Aperture, ClockPlus, History, PanelsLeftRightIcon, SettingsIcon } from 'lucide-react-native'
+import { Platform, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native'
+import { useDispatch } from 'react-redux';
+import { setScanTabPressed } from '@/store';
+import { useGetTrayByIdQuery } from '@/store/trayApi';
+
+const CameraTabBarButton = ({ children, onPress, id }: any) => {
+  const pathname = usePathname()
+  const dispatch = useDispatch();
+
+  const { data: sessionTray, isLoading: sessionTrayLoading } = useGetTrayByIdQuery(id)
+  const active = sessionTray?.active_session_tray
+  
+  const handlePress = () => {
+    if (pathname === `/tray/${id}/scan`) {
+      dispatch(setScanTabPressed(true));
+    }
+    onPress?.();
+  };
+  return (
+    <TouchableOpacity
+      onPress={handlePress}
+      style={{
+        top: -10,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+      disabled={active ? false : true || sessionTrayLoading}
+    >
+      <View
+        style={{
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          backgroundColor: '#155183',
+          justifyContent: 'center',
+          alignItems: 'center',
+          elevation: 5,
+          opacity: active && !sessionTrayLoading ? 1 : 0.5
+        }}
+      >
+        {children}
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 const CustomTabBarButton = (props: any) => {
   const { children, onPress, ...rest } = props;
@@ -48,6 +92,27 @@ const TrayLayout = () => {
                     tabBarButton: (props) => <CustomTabBarButton {...props} />,
                 }}
                 initialParams={{ id }}
+            />
+            <Tabs.Screen
+                name="timeline"
+                options={{
+                    title: 'Timeline',
+                    headerShown: false,
+                    tabBarIcon: ({ color, size }) => <ClockPlus color={color} size={size} />,
+                    tabBarButton: (props) => <CustomTabBarButton {...props} />,
+                }}
+                initialParams={{ id }}
+            />
+            <Tabs.Screen
+              name="scan"
+              options={{
+                  title: 'Scan',
+                  headerShown: false,
+                  tabBarIcon: ({ color, size }) => <Aperture color={'#ffffff'} size={28} />,
+                  tabBarButton: (props) => <CameraTabBarButton {...props} id={id} />,
+                  tabBarLabel: () => null
+              }}
+              initialParams={{ id }}
             />
             <Tabs.Screen
                 name="history"

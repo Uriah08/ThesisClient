@@ -34,10 +34,6 @@ const Trays = ({ farmId }: Props) => {
             <View style={{ height: 8, width: 8, borderRadius: 99, marginBottom: 3, backgroundColor: '#155183'}}/>
             <Text className='text-zinc-500' style={{ fontFamily: 'PoppinsRegular', fontSize: 10 }}>Inactive</Text>
           </View>
-          <View className='flex flex-row items-center text-zinc-600 bg-red-700' style={{ gap: 4}}>
-            <View style={{ height: 8, width: 8, borderRadius: 99, marginBottom: 3, backgroundColor: '#b91c1c'}}/>
-            <Text className='text-zinc-500' style={{ fontFamily: 'PoppinsRegular', fontSize: 10 }}>Maintenance</Text>
-          </View>
         </View>
       </View>
       <View

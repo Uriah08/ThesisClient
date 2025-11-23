@@ -1,32 +1,40 @@
 import { View, Text, Pressable, TextInput, Image } from 'react-native'
-import React, { useState} from 'react'
+import React, { useEffect, useState} from 'react'
 import Dialogs from './Dialog'
 import { ActivityIndicator, Dialog } from 'react-native-paper'
-import { AlertCircle, CheckCircle, ImagePlusIcon, Plus } from 'lucide-react-native';
+import { ImagePlusIcon, Plus } from 'lucide-react-native';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadImageToSupabase } from '@/utils/lib/supabase';
-import { useCreateTrayProgressMutation, useHarvestTrayMutation } from '@/store/trayApi';
+import { useCreateTrayProgressMutation } from '@/store/trayApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type DialogsProps = {
   setVisible: (visible: boolean) => void;
   visible: boolean;
   setFocus: (focus: string) => void;
   focus: string;
-  trayId: number
+  trayId?: number
+  activetrayId?: number
 };
 
-const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsProps) => {
+const AddProgress = ({ setVisible, visible, setFocus, focus, trayId, activetrayId }: DialogsProps) => {
+    useEffect(() => {
+        const storeActiveTrayId = async () => {
+            await AsyncStorage.setItem('active_tray_id', activetrayId?.toString() || '');
+        }
+        storeActiveTrayId();
+    }, [activetrayId]);
     const [isFocused, setIsFocused] = useState('');
-    const [title, setTitle] = useState('Checking Progress')
+    const [title, setTitle] = useState('Tray Timeline');
     const [description, setDescription] = useState('')
 
     const [image, setImage] = useState<string | null>(null);
     const [supabaseLoading, setSupabaseLoading] = useState(false)
 
     const [createTrayProgress, { isLoading }] = useCreateTrayProgressMutation()
-    const [harvestTray, { isLoading: harvestLoading }] = useHarvestTrayMutation();
+    // const [harvestTray, { isLoading: harvestLoading }] = useHarvestTrayMutation();
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -39,7 +47,7 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                     if (uploadedUrl) imageURL = uploadedUrl;
                 }
 
-                await createTrayProgress({ title, description, image: imageURL, tray: trayId }).unwrap()
+                await createTrayProgress({ title, description, image: imageURL, tray: activetrayId }).unwrap()
                 setVisible(false)
                 setIsFocused('')
             } catch (error: any) {
@@ -61,27 +69,6 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                 } else {
                 console.log('Unexpected error:', error);
                 }  
-            }
-        }
-    
-        const handleHarvest = async () => {
-            try {
-                await harvestTray(trayId).unwrap()
-                Toast.show({
-                    type: 'success',
-                    text1: 'Tray Harvested Successfully',
-                });
-                setVisible(false);
-                setIsFocused('')
-            } catch (error: any) {
-                console.log(error);
-                                  
-                if (error?.data?.detail) {
-                Toast.show({
-                    type: 'error',
-                    text1: error.data.detail,
-                });
-                } 
             }
         }
     
@@ -121,7 +108,7 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
               }
             };
   return (
-    <Dialogs onVisible={setVisible} visible={visible} title={'Add Progress'}>
+    <Dialogs onVisible={setVisible} visible={visible} title={'Add Timeline'}>
         <Dialog.Content>
             {focus === 'custom' ? (
                 <View>
@@ -188,7 +175,7 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                         gap: 10,
                     }}
                     >
-                        <Pressable onPress={() => setVisible(false)} className='border border-zinc-300 p-2 rounded-lg'
+                        <Pressable onPress={() => {setVisible(false); setFocus('')}} className='border border-zinc-300 p-2 rounded-lg'
                         style={{
                             borderWidth: 1,
                             borderColor: '#d4d4d8',
@@ -229,66 +216,68 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                         </Pressable>
                     </View>
                 </View>
-            ) : focus === 'harvest' ? (
-                <View>
-                    <View className='flex-row gap-3 justify-center items-center bg-zinc-200 p-2 rounded-full' style={{ marginBottom: 15 }}>
-                        <AlertCircle color={'#155183'}/>
-                        <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>This process cannot be undone.</Text>
-                    </View>
-                    <Text style={{ fontFamily: 'PoppinsRegular' }}>Are you sure you want to harvest this tray?</Text>
-                    <View
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        marginTop: 20,
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                        gap: 10,
-                    }}
-                    >
-                    <Pressable onPress={() => setVisible(false)} className='border border-zinc-300 p-2 rounded-lg'
-                        style={{
-                            borderWidth: 1,
-                            borderColor: '#d4d4d8',
-                            paddingHorizontal: 12,
-                            paddingVertical: 8,
-                            borderRadius: 8,
-                        }}>
-                        <Text className='text-zinc-500' style={{
-                        fontFamily: 'PoppinsRegular'
-                        }}>Cancel</Text>
-                        </Pressable>
-                        <Pressable
-                        onPress={handleHarvest}
-                        style={{
-                            backgroundColor: '#155183',
-                            paddingHorizontal: 12,
-                            paddingVertical: 8,
-                            borderRadius: 8,
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 8,
-                        }}
-                        disabled={isLoading}
-                        >
-                            {harvestLoading ? (
-                                <ActivityIndicator size={15} color={'#ffffff'}/>
-                            ) : (
-                                <CheckCircle color={'#ffffff'} size={15} />
-                            )}
-                        <Text
-                            className="text-white"
-                            style={{
-                                fontFamily: 'PoppinsRegular',
-                            }}
-                            >
-                            Harvest
-                            </Text>
-                        </Pressable>
-                    </View>
-                </View>
-            ) : (
+            ) : 
+            // focus === 'harvest' ? (
+            //     <View>
+            //         <View className='flex-row gap-3 justify-center items-center bg-zinc-200 p-2 rounded-full' style={{ marginBottom: 15 }}>
+            //             <AlertCircle color={'#155183'}/>
+            //             <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>This process cannot be undone.</Text>
+            //         </View>
+            //         <Text style={{ fontFamily: 'PoppinsRegular' }}>Are you sure you want to harvest this tray?</Text>
+            //         <View
+            //         style={{
+            //             display: 'flex',
+            //             flexDirection: 'row',
+            //             marginTop: 20,
+            //             justifyContent: 'flex-end',
+            //             alignItems: 'center',
+            //             gap: 10,
+            //         }}
+            //         >
+            //         <Pressable onPress={() => setVisible(false)} className='border border-zinc-300 p-2 rounded-lg'
+            //             style={{
+            //                 borderWidth: 1,
+            //                 borderColor: '#d4d4d8',
+            //                 paddingHorizontal: 12,
+            //                 paddingVertical: 8,
+            //                 borderRadius: 8,
+            //             }}>
+            //             <Text className='text-zinc-500' style={{
+            //             fontFamily: 'PoppinsRegular'
+            //             }}>Cancel</Text>
+            //             </Pressable>
+            //             <Pressable
+            //             onPress={handleHarvest}
+            //             style={{
+            //                 backgroundColor: '#155183',
+            //                 paddingHorizontal: 12,
+            //                 paddingVertical: 8,
+            //                 borderRadius: 8,
+            //                 display: 'flex',
+            //                 flexDirection: 'row',
+            //                 alignItems: 'center',
+            //                 gap: 8,
+            //             }}
+            //             disabled={isLoading}
+            //             >
+            //                 {harvestLoading ? (
+            //                     <ActivityIndicator size={15} color={'#ffffff'}/>
+            //                 ) : (
+            //                     <CheckCircle color={'#ffffff'} size={15} />
+            //                 )}
+            //             <Text
+            //                 className="text-white"
+            //                 style={{
+            //                     fontFamily: 'PoppinsRegular',
+            //                 }}
+            //                 >
+            //                 Harvest
+            //                 </Text>
+            //             </Pressable>
+            //         </View>
+            //     </View>
+            // ) : 
+            (
                 <View className='flex gap-3 '>
                 <View
                     style={{ overflow: "hidden", borderRadius: 8 }}
@@ -303,7 +292,7 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                         className="text-white"
                         style={{ fontFamily: "PoppinsSemiBold" }}
                     >
-                        Add Custom Progress
+                        Add Custom Timeline
                     </Text>
                     </Pressable>
                 </View>
@@ -311,7 +300,15 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                     style={{ overflow: "hidden", borderRadius: 8 }}
                 >
                     <Pressable
-                    onPress={() => {setVisible(false); router.push({ pathname: '/trays/[id]/scan', params: { id: trayId.toString() }});}}
+                    onPress={() => {
+                        if (!trayId) return;
+
+                        setVisible(false);
+                        router.push({
+                            pathname: "/tray/[id]/scan",
+                            params: { id: trayId.toString() },
+                        });
+                    }}
                     android_ripple={{ color: "#ffffff50", borderless: false }}
                     className={`flex flex-row items-center gap-3 px-5 bg-primary rounded-lg justify-center`}
                     style={{ paddingVertical: 10 }}
@@ -324,7 +321,7 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                     </Text>
                     </Pressable>
                 </View>
-                <View
+                {/* <View
                     style={{ overflow: "hidden", borderRadius: 8 }}
                 >
                     <Pressable
@@ -340,7 +337,7 @@ const AddProgress = ({ setVisible, visible, setFocus, focus, trayId}: DialogsPro
                         Harvest
                     </Text>
                     </Pressable>
-                </View>
+                </View> */}
             </View>
             )}
         </Dialog.Content>

@@ -4,13 +4,13 @@ import { Aperture, GitCommitVertical, SettingsIcon } from 'lucide-react-native'
 import { Platform, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { setScanTabPressed } from '@/store'
-import { useGetTrayByIdQuery } from '@/store/trayApi'
+// import { useGetTrayByIdQuery } from '@/store/trayApi'
 
 const CameraTabBarButton = ({ children, onPress, id }: any) => {
   const pathname = usePathname()
   const dispatch = useDispatch();
-  const { id: trayId } = useLocalSearchParams();
-  const { data, isLoading } = useGetTrayByIdQuery(Number(trayId))
+  // const { id: trayId } = useLocalSearchParams();
+  // const { data, isLoading } = useGetTrayByIdQuery(Number(trayId))
   
   const handlePress = () => {
     if (pathname === `/trays/${id}/scan`) {
@@ -20,7 +20,7 @@ const CameraTabBarButton = ({ children, onPress, id }: any) => {
   };
   return (
     <TouchableOpacity
-    disabled={data?.finished_at ? true : false || isLoading}
+    // disabled={data?.finished_at ? true : false || isLoading}
       onPress={handlePress}
       style={{
         top: -10,
@@ -37,7 +37,7 @@ const CameraTabBarButton = ({ children, onPress, id }: any) => {
           justifyContent: 'center',
           alignItems: 'center',
           elevation: 5,
-          opacity: data?.finished_at ? 0.5 : 1
+          // opacity: data?.finished_at ? 0.5 : 1
         }}
       >
         {children}

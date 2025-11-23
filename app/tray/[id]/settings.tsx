@@ -1,9 +1,8 @@
-import { View, Text, ScrollView, RefreshControl, Pressable, Switch } from 'react-native'
+import { View, Text, ScrollView, RefreshControl, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { useLocalSearchParams } from 'expo-router';
-import { ChevronRight, Construction, Pen, Trash } from 'lucide-react-native';
-import { useGetFarmTrayByIdQuery, useMaintenanceMutation } from '@/store/farmTrayApi';
-import Toast from 'react-native-toast-message';
+import { ChevronRight, Pen, Trash } from 'lucide-react-native';
+import { useGetFarmTrayByIdQuery } from '@/store/farmTrayApi';
 import DeleteClass from '@/components/containers/dialogs/Delete';
 import RenameClass from '@/components/containers/dialogs/Rename';
 
@@ -22,30 +21,8 @@ const Settings = () => {
   const { id } = useLocalSearchParams();
   const { data, refetch } = useGetFarmTrayByIdQuery(Number(id));
   const [refreshing, setRefreshing] = useState(false);
-  const [isMaintenanceOn, setIsMaintenanceOn] = useState(data?.status === 'maintenance');
-  const [maintenance, { isLoading }] = useMaintenanceMutation();
   const [showDelete, setShowDelete] = useState(false)
   const [showRename, setShowRename] = useState(false)
-
-  const toggleMaintenance = async () => {
-    if(data?.status === 'active') {
-      Toast.show({
-        type: 'error',
-        text1: 'Tray Must Be Inactive',
-      })
-    } else {
-      try {
-        await maintenance(Number(id)).unwrap();
-        setIsMaintenanceOn((prev) => !prev);
-      } catch (error) {
-        console.log(error);
-        Toast.show({
-          type: 'error',
-          text1: 'Something went wrong',
-        })
-      }
-    }
-  };
 
   const onRefresh = async () => {
     await refetch();
@@ -87,36 +64,6 @@ const Settings = () => {
                   >
                     Tray Settings
                   </Text>
-
-                  <Pressable
-                    disabled={isLoading}
-                      onPress={toggleMaintenance}
-                      className="flex flex-row items-center"
-                      android_ripple={{ color: '#d3d3d3', borderless: false }}
-                      style={{
-                        justifyContent: 'space-between',
-                        borderTopWidth: 1,
-                        borderColor: '#e8e8e8',
-                        paddingVertical: 20,
-                        paddingLeft: 10
-                      }}
-                    >
-                      <View className="flex flex-row items-center gap-5">
-                        <Construction size={20} color={'#a1a1aa'} />
-                        <Text
-                          className="text-lg"
-                          style={{ fontFamily: 'PoppinsMedium' }}
-                        >
-                          Maintenance
-                        </Text>
-                      </View>
-                      <Switch
-                        disabled
-                        value={isMaintenanceOn}
-                        trackColor={{ false: '#d4d4d8', true: '#155183' }}
-                        thumbColor={isMaintenanceOn ? '#fff' : '#f4f3f4'}
-                      />
-                    </Pressable>
         
                   {settingsMenu.map((item, i) => (
                     <Pressable

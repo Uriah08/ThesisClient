@@ -1,163 +1,162 @@
-import { View, Text, Pressable, TouchableOpacity, Image } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { setScanTabPressed } from '@/store';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import { Images, RotateCcw } from 'lucide-react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import * as MediaLibrary from 'expo-media-library';
-import * as ImagePicker from 'expo-image-picker';
-import Scanned from '@/components/containers/scan/Scanned';
-import { Photo } from '@/utils/types';
-import { useLocalSearchParams } from 'expo-router';
-import { useGetTrayByIdQuery } from '@/store/trayApi';
+import { View } from 'react-native'
+// import { useSelector, useDispatch } from 'react-redux';
+// import { setScanTabPressed } from '@/store';
+// import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+// import { Images, RotateCcw } from 'lucide-react-native';
+// import { useFocusEffect } from '@react-navigation/native';
+// import * as MediaLibrary from 'expo-media-library';
+// import * as ImagePicker from 'expo-image-picker';
+// // import Scanned from '@/components/containers/scan/Scanned';
+// import { Photo } from '@/utils/types';
+// import { useLocalSearchParams } from 'expo-router';
+// import { useGetTrayByIdQuery } from '@/store/trayApi';
 
 const ScanPage = () => {
-  const { id } = useLocalSearchParams();
-  const { data, isLoading } = useGetTrayByIdQuery(Number(id))
-  const dispatch = useDispatch();
-  const scanTabPressed = useSelector((state: any) => state.global.scanTabPressed);
+  // const { id } = useLocalSearchParams();
+  // // const { data, isLoading } = useGetTrayByIdQuery(Number(id))
+  // const dispatch = useDispatch();
+  // const scanTabPressed = useSelector((state: any) => state.global.scanTabPressed);
 
-  const cameraRef = useRef<CameraView>(null);
-  const [facing, setFacing] = useState<CameraType>('back');
-  const [permission, requestPermission] = useCameraPermissions();
-  const [isCameraReady, setIsCameraReady] = useState(false);
-  const [torch, setTorch] = useState(false)
-  const [photo, setPhoto] = useState<Photo | null>(null);
-  const [isActive, setIsActive] = useState(true);
+  // const cameraRef = useRef<CameraView>(null);
+  // const [facing, setFacing] = useState<CameraType>('back');
+  // const [permission, requestPermission] = useCameraPermissions();
+  // const [isCameraReady, setIsCameraReady] = useState(false);
+  // const [torch, setTorch] = useState(false)
+  // const [_photo, setPhoto] = useState<Photo | null>(null);
+  // const [isActive, setIsActive] = useState(true);
 
-  const [galleryPermission, requestGalleryPermission] = MediaLibrary.usePermissions();
-  const [latestPhotoUri, setLatestPhotoUri] = useState<string | null>(null); 
+  // const [galleryPermission, requestGalleryPermission] = MediaLibrary.usePermissions();
+  // const [latestPhotoUri, setLatestPhotoUri] = useState<string | null>(null); 
 
-  useEffect(() => {
-    (async () => {
-      if (!galleryPermission) return;
-      if (!galleryPermission.granted) {
-        await requestGalleryPermission();
-      } else {
-        const album = await MediaLibrary.getAssetsAsync({
-          sortBy: [[MediaLibrary.SortBy.creationTime, false]],
-          first: 1,
-          mediaType: [MediaLibrary.MediaType.photo],
-        });
-        if (album.assets.length > 0) {
-          setLatestPhotoUri(album.assets[0].uri);
-        }
-      }
-    })();
-  }, [galleryPermission, requestGalleryPermission]);
+  // useEffect(() => {
+  //   (async () => {
+  //     if (!galleryPermission) return;
+  //     if (!galleryPermission.granted) {
+  //       await requestGalleryPermission();
+  //     } else {
+  //       const album = await MediaLibrary.getAssetsAsync({
+  //         sortBy: [[MediaLibrary.SortBy.creationTime, false]],
+  //         first: 1,
+  //         mediaType: [MediaLibrary.MediaType.photo],
+  //       });
+  //       if (album.assets.length > 0) {
+  //         setLatestPhotoUri(album.assets[0].uri);
+  //       }
+  //     }
+  //   })();
+  // }, [galleryPermission, requestGalleryPermission]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setIsActive(true);
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     setIsActive(true);
       
-      return () => {
-        setIsActive(false);
-        setTorch(false);
-        setIsCameraReady(false);
-      };
-    }, [])
-  );
+  //     return () => {
+  //       setIsActive(false);
+  //       setTorch(false);
+  //       setIsCameraReady(false);
+  //     };
+  //   }, [])
+  // );
 
-  const pickImage = async () => {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        alert('Permission is required to access media library');
-        return;
-      }
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        quality: 1,
-      });
+  // const pickImage = async () => {
+  //     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  //     if (!permission.granted) {
+  //       alert('Permission is required to access media library');
+  //       return;
+  //     }
+  //     let result = await ImagePicker.launchImageLibraryAsync({
+  //       mediaTypes: ['images'],
+  //       allowsEditing: true,
+  //       quality: 1,
+  //     });
   
-      if (!result.canceled) {
-        const uri = result.assets[0].uri;
-        const base64 = result.assets[0].base64;
-        setPhoto({
-          uri,
-          base64: base64 ?? undefined,
-        });
-      }
-    };
+  //     if (!result.canceled) {
+  //       const uri = result.assets[0].uri;
+  //       const base64 = result.assets[0].base64;
+  //       setPhoto({
+  //         uri,
+  //         base64: base64 ?? undefined,
+  //       });
+  //     }
+  //   };
 
-  const handleSubmit = React.useCallback(async () => {
-    if (!cameraRef.current || !isCameraReady) return;
-    setTorch(false)
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  // const handleSubmit = React.useCallback(async () => {
+  //   if (!cameraRef.current || !isCameraReady) return;
+  //   setTorch(false)
+  //   try {
+  //     await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const capturedPhoto = await cameraRef.current.takePictureAsync({
-        quality: 0.7,
-        base64: true,
-        skipProcessing: false,
-      });
-      setPhoto({
-        uri: capturedPhoto.uri,
-        base64: capturedPhoto.base64 ?? undefined,
-      });
+  //     const capturedPhoto = await cameraRef.current.takePictureAsync({
+  //       quality: 0.7,
+  //       base64: true,
+  //       skipProcessing: false,
+  //     });
+  //     setPhoto({
+  //       uri: capturedPhoto.uri,
+  //       base64: capturedPhoto.base64 ?? undefined,
+  //     });
 
-      console.log('Captured photo:', capturedPhoto.uri);
-    } catch (error) {
-      console.error('Failed to capture photo:', error);
-    } finally {
-    }
-  }, [isCameraReady]);
+  //     console.log('Captured photo:', capturedPhoto.uri);
+  //   } catch (error) {
+  //     console.error('Failed to capture photo:', error);
+  //   } finally {
+  //   }
+  // }, [isCameraReady]);
 
-  const handleCameraReady = () => {
-    setIsCameraReady(true);
-  };
+  // const handleCameraReady = () => {
+  //   setIsCameraReady(true);
+  // };
 
-  useEffect(() => {
-    if (scanTabPressed && isActive) {
-      handleSubmit();
-      dispatch(setScanTabPressed(false));
-    }
-  }, [scanTabPressed, dispatch, handleSubmit, isActive]);
+  // useEffect(() => {
+  //   if (scanTabPressed && isActive) {
+  //     handleSubmit();
+  //     dispatch(setScanTabPressed(false));
+  //   }
+  // }, [scanTabPressed, dispatch, handleSubmit, isActive]);
 
-  const toggleCameraFacing = async () => {
-    setIsCameraReady(false);
-    setIsActive(false);
+  // const toggleCameraFacing = async () => {
+  //   setIsCameraReady(false);
+  //   setIsActive(false);
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+  //   await new Promise(resolve => setTimeout(resolve, 100));
 
-    setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
+  //   setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+  //   await new Promise(resolve => setTimeout(resolve, 100));
 
-    setIsActive(true);
-  };
+  //   setIsActive(true);
+  // };
 
 
-  if (!permission) {
-    return <View />;
-  }
+  // if (!permission) {
+  //   return <View />;
+  // }
 
-  if (!permission.granted) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white p-6">
-        <Text className="text-center text-lg font-semibold text-gray-700 mb-4">
-          We need your permission to show the camera
-        </Text>
-        <Pressable
-          onPress={requestPermission}
-          className="bg-primary px-6 py-3 rounded-lg"
-        >
-          <Text className="text-white text-base font-medium">Grant Permission</Text>
-        </Pressable>
-      </View>
-    );
-  }
+  // if (!permission.granted) {
+  //   return (
+  //     <View className="flex-1 items-center justify-center bg-white p-6">
+  //       <Text className="text-center text-lg font-semibold text-gray-700 mb-4">
+  //         We need your permission to show the camera
+  //       </Text>
+  //       <Pressable
+  //         onPress={requestPermission}
+  //         className="bg-primary px-6 py-3 rounded-lg"
+  //       >
+  //         <Text className="text-white text-base font-medium">Grant Permission</Text>
+  //       </Pressable>
+  //     </View>
+  //   );
+  // }
 
-  if(photo) {
-    return(
-      <Scanned photo={photo} setPhoto={setPhoto} type={'tray'} finished={data?.finished_at} isLoading={isLoading}/>
-    )
-  }
+  // if(photo) {
+  //   return(
+  //     <Scanned photo={photo} setPhoto={setPhoto} type={'tray'} finished={data?.finished_at} isLoading={isLoading}/>
+  //   )
+  // }
 
   return (
     <View className='flex-1 bg-black'>
-      {isActive && (
+      {/* {isActive && (
         <CameraView 
           ref={cameraRef} 
           facing={facing} 
@@ -191,7 +190,7 @@ const ScanPage = () => {
         ) : (
           <Images color="black" />
         )}
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   )
 }

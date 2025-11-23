@@ -102,62 +102,73 @@ const Home = () => {
       return new Intl.DateTimeFormat('en-PH', options).format(date);
     };
   
-    const rain = ((selectedItem?.pop ?? 0) * 100);
-    const wind = selectedItem?.wind_speed;
-    const cloud = selectedItem?.clouds;
-  
-    let message = '';
-    let alertLabel = '';
-    let alertColor = '';
-  
+    const rain = (selectedItem?.pop ?? 0) * 100;
+    const wind = selectedItem?.wind_speed ?? 0;
+    const cloud = selectedItem?.clouds ?? 0;
+
+    console.log('Rain', rain, 'Wind', wind, 'Cloud', cloud);
+
+
+    let message = "";
+    let alertLabel = "";
+    let alertColor = "";
+
+    // Descriptions
     const getRainDescription = (rain: number) => {
-      if (rain < 10) return 'no expected rain';
-      if (rain < 30) return `a slight ${rain}% chance of rain`;
+      if (rain === 0) return "no expected rain";
       if (rain < 50) return `a moderate ${rain}% chance of rain`;
-      if (rain < 80) return `a high ${rain}% chance of rain`;
+      if (rain < 90) return `a high ${rain}% chance of rain`;
       return `a very high ${rain}% chance of rain`;
     };
-  
+
     const getWindDescription = (wind: number) => {
-      if (wind < 10) return 'calm winds';
-      if (wind < 15) return 'a light breeze';
-      if (wind < 20) return 'moderate wind';
-      return 'strong gusty winds';
+      if (wind < 10) return "calm winds";
+      if (wind < 15) return "a light breeze";
+      if (wind < 20) return "moderate wind";
+      return "strong gusty winds";
     };
-  
+
     const getCloudDescription = (cloud: number) => {
-      if (cloud < 30) return 'mostly clear skies';
-      if (cloud < 50) return 'partly cloudy skies';
-      if (cloud < 70) return 'noticeable cloud cover';
-      return 'overcast skies';
+      if (cloud < 30) return "mostly clear skies";
+      if (cloud < 50) return "partly cloudy skies";
+      if (cloud < 100) return "noticeable cloud cover";
+      return "overcast skies";
     };
-  
+
     const rainDesc = getRainDescription(rain);
-    const windDesc = getWindDescription(wind ?? 0);
-    const cloudDesc = getCloudDescription(cloud ?? 0);
-  
-    if (rain < 10 && (wind ?? 0) < 10 && (cloud ?? 0) < 50) {
-      alertLabel = 'Excellent';
-      alertColor = '#22c55e';
-      message = `The weather is perfect for drying fish on that day. Expect ${cloudDesc}, ${windDesc}, and ${rainDesc}. Ideal for quick and safe drying.`;
-    } else if (rain < 10 && (wind ?? 0) < 15 && (cloud ?? 0) < 100) {
-      alertLabel = 'Good';
-      alertColor = '#3b82f6';
-      message = `You can dry fish on that day with confidence. There will be ${cloudDesc} and ${windDesc}, with ${rainDesc}. Still, consider a backup cover just in case.`;
-    } else if ((rain >= 10 && rain < 50) || ((cloud ?? 0) >= 50 && (cloud ?? 0) < 100) || ((wind ?? 0) >= 15 && (wind ?? 0) < 20)) {
-      alertLabel = 'Caution';
-      alertColor = '#eab308';
-      message = `Drying fish is possible, but not guaranteed. ${cloudDesc} and ${windDesc} may affect drying speed. Plus, there's ${rainDesc}. Stay prepared to react.`;
-    } else if ((rain >= 50 && rain < 80) || (wind ?? 0) >= 20 || (cloud ?? 0) === 100) {
-      alertLabel = 'Warning';
-      alertColor = '#f97316';
-      message = `It’s not advisable to dry fish on that day. Expect ${cloudDesc}, ${windDesc}, and ${rainDesc}. Your batch could be compromised quickly.`;
-    } else {
-      alertLabel = 'Danger';
-      alertColor = '#ef4444';
-      message = `Avoid drying fish on that day due to ${cloudDesc}, ${windDesc}, and ${rainDesc}. These conditions are highly unfavorable and risky.`;
+    const windDesc = getWindDescription(wind);
+    const cloudDesc = getCloudDescription(cloud);
+
+    if (rain === 0 && cloud < 50 && wind < 10) {
+      alertLabel = "Excellent";
+      alertColor = "#22c55e";
+      message = `Ideal conditions for drying fish: ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
     }
-  
+
+    else if (rain === 0 && cloud <= 100 && wind < 15) {
+      alertLabel = "Good";
+      alertColor = "#3b82f6";
+      message = `Good weather for drying fish with ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
+    }
+
+    else if (rain >= 50 && rain < 90) {
+      alertLabel = "Caution";
+      alertColor = "#eab308";
+      message = `Be cautious: ${cloudDesc}, ${windDesc}, and ${rainDesc}. Drying may be slow or risky.`;
+    }
+
+    else if (rain >= 90 && rain < 100) {
+      alertLabel = "Warning";
+      alertColor = "#f97316";
+      message = `Drying fish is not recommended due to ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
+    }
+
+    else {
+      alertLabel = "Danger";
+      alertColor = "#ef4444";
+      message = `Avoid drying fish. Extreme conditions: ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
+    }
+
 
   if (isLoading) return (
     <View className='flex-1 items-center justify-center bg-white'>
@@ -201,7 +212,7 @@ const Home = () => {
           refreshControl={
             <RefreshControl style={{ zIndex: -1}} colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
           }>
-        <WeatherAlert pop={data?.first_item.pop} wind_speed={data?.first_item.wind_speed} clouds={data?.first_item.clouds}/>
+        <WeatherAlert rain={data?.first_item.pop} wind={data?.first_item.wind_speed} cloud={data?.first_item.clouds}/>
         <View className='flex flex-col px-5 pt-6'>
           <Text className='text-2xl' style={{
           fontFamily: 'PoppinsSemiBold'
@@ -217,7 +228,7 @@ const Home = () => {
           </View>
 
         <View style={{ paddingTop: 18, paddingBottom: 10, paddingRight: 18, paddingLeft: 10}}>
-          <AreaChartComponent chartKey={chartKey} title={'Rain Meter'} description={'Next 48 Hours'} sideLabel data={rainData} data2={cloudData}/>
+          <AreaChartComponent chartKey={chartKey} title={'Rain Forecast Graph'} description={'Next 48 Hours'} sideLabel data={rainData} data2={cloudData}/>
         </View>
 
         {/* ########################################       WEATHER FORECAST      ######################################## */}

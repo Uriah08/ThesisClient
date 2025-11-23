@@ -15,11 +15,12 @@ const FarmDashboardBarChart = ({ data, chartKey }: Props) => {
   const getDayLabel = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
+  // Last 7 days
   const last7Data = data.slice(-7);
 
   const barData = last7Data.flatMap((item) => {
@@ -42,13 +43,13 @@ const FarmDashboardBarChart = ({ data, chartKey }: Props) => {
     ];
   });
 
-  // Compute max value dynamically
-  const maxValue = Math.max(
-    ...data.flatMap((d) => [d.detected, d.rejects])
-  );
+  const flatValues = data.flatMap((d) => [d.detected, d.rejects]);
+  const maxValue = flatValues.length > 0 ? Math.max(...flatValues) : 0;
 
   return (
     <View style={{ paddingTop: 20 }}>
+
+      {/* Legend */}
       <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 20, marginBottom: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
           <View style={{ height: 8, width: 8, borderRadius: 99, backgroundColor: BLUE, marginBottom: 2 }} />
@@ -72,10 +73,22 @@ const FarmDashboardBarChart = ({ data, chartKey }: Props) => {
         height={150}
         xAxisThickness={0}
         yAxisThickness={0}
-        yAxisTextStyle={{ color: 'gray', fontSize: 10, fontFamily: 'PoppinsRegular' }}
-        xAxisLabelTextStyle={{ color: '#a1a1aa', fontSize: 10, fontFamily: 'PoppinsRegular', textAlign: 'left' }}
+        yAxisTextStyle={{
+          color: 'gray',
+          fontSize: 10,
+          fontFamily: 'PoppinsRegular',
+        }}
+        xAxisLabelTextStyle={{
+          color: '#a1a1aa',
+          fontSize: 10,
+          fontFamily: 'PoppinsRegular',
+          textAlign: 'left',
+        }}
         noOfSections={3}
+
+        // FIXED ✓ (No NaN on Y-axis)
         maxValue={maxValue}
+        
       />
     </View>
   );

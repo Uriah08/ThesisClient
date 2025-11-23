@@ -3,22 +3,21 @@ import React from 'react'
 import Dialogs from './Dialog'
 import { ActivityIndicator, Dialog } from 'react-native-paper'
 import { AlertCircle, CheckCircle, Play } from 'lucide-react-native';
-import { useActivateSessionMutation } from '@/store/sessionApi';
 import Toast from 'react-native-toast-message';
+import { useCreateTrayMutation } from '@/store/trayApi';
 
 type DialogsProps = {
   setVisible: (visible: boolean) => void;
   visible: boolean;
-  sessionId: number;
-  sessionStatus: string;
+  trayId: number
+  active: boolean
 };
 
-const ActivateSession = ({ setVisible, visible, sessionId, sessionStatus }: DialogsProps) => {
-    const [activateSession, { isLoading }] = useActivateSessionMutation();
-
+const ActivateSession = ({ setVisible, visible, trayId, active }: DialogsProps) => {
+    const [createTray, { isLoading }] = useCreateTrayMutation();
     const handleActivateSession = async () => {
         try {
-            await activateSession(sessionId).unwrap();
+            await createTray({ tray_id: trayId }).unwrap();
             Toast.show({
                 type: 'success',
                 text1: 'Session Activated Successfully',
@@ -37,15 +36,21 @@ const ActivateSession = ({ setVisible, visible, sessionId, sessionStatus }: Dial
     }
 
   return (
-    <Dialogs onVisible={setVisible} visible={visible} title={sessionStatus === 'inactive' ? 'Start Session' : 'Finish Session'}>
+    <Dialogs onVisible={setVisible} visible={visible} 
+    // title={sessionStatus === 'inactive' ? 'Start Session' : 'Finish Session'}
+    title={active ? 'Finish Drying' : 'Start Drying'}
+    >
         <Dialog.Content>
             <View className='flex-row gap-3 justify-center items-center bg-zinc-200 p-2 rounded-full' style={{ marginBottom: 15 }}>
                 <AlertCircle color={'#155183'}/>
                 <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>This process cannot be undone.</Text>
             </View>
-            <Text style={{ fontFamily: 'PoppinsRegular' }}>
+            {/* <Text style={{ fontFamily: 'PoppinsRegular' }}>
                 Are you sure you want to {sessionStatus === 'inactive' ? 'start' : 'finish'} this session?
                 {sessionStatus === 'active' ? ' All your trays will be harvested.' : ''}
+            </Text> */}
+            <Text style={{ fontFamily: 'PoppinsRegular' }}>
+                Are you sure you want to {active ? 'finish' : 'start'} drying on this tray?
             </Text>
 
             <View
@@ -86,18 +91,19 @@ const ActivateSession = ({ setVisible, visible, sessionId, sessionStatus }: Dial
                 >
                 {isLoading ? (
                     <ActivityIndicator size={15} color="#ffffff" />
-                ) : sessionStatus === 'inactive' ? (
-                    <Play color={'#ffffff'} size={15} />
-                ) : (
+                ) : active ? (
                     <CheckCircle color={'#ffffff'} size={15} />
-                )}
+                ) : (
+                    <Play color={'#ffffff'} size={15} />
+                )
+                }
                 <Text
                     className="text-white"
                     style={{
                         fontFamily: 'PoppinsRegular',
                     }}
                     >
-                    {sessionStatus === 'inactive' ? 'Start': 'Finish'}
+                    {active ? 'Finish Drying' : 'Start Drying'}
                     </Text>
                 </Pressable>
             </View>
