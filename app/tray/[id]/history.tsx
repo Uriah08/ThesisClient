@@ -1,20 +1,21 @@
-import { View, Text, TextInput, Pressable, Image, ActivityIndicator } from 'react-native'
+import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { useLocalSearchParams } from 'expo-router';
 import { useGetFarmTrayHistoryQuery, useLazyGetTrayProgressQuery } from '@/store/trayApi';
-import { FilterIcon, Search } from 'lucide-react-native';
+import { FilterIcon } from 'lucide-react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import SkeletonShimmer from '@/components/containers/SkeletonPlaceholder';
 import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDrawer';
 import ProgressSteps from '@/components/containers/farm/tray/ProgressSteps';
 import { Tray } from '@/utils/types';
 
+
 const History = () => {
   const { id } = useLocalSearchParams();
   const { data, isLoading } = useGetFarmTrayHistoryQuery(Number(id));
   const [ trigger, { data: progress, isFetching: progressLoading }] = useLazyGetTrayProgressQuery()
 
-  const finishedTrays = data?.filter((item) => item.finished_at !== null) ?? [];
+  const finishedTrays = (data?.filter((item) => item.finished_at !== null).slice().reverse()) ?? [];
   
   const [selectedItem, setSelectedItem] = useState<Tray | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -38,20 +39,7 @@ const History = () => {
             <Text className='text-3xl' style={{
                 fontFamily: 'PoppinsBold'
             }}>History</Text>
-        </View>
-        <View className='flex-row gap-3 w-full p-5'>
-          <View className='relative flex-1'>
-            <TextInput
-            style={{ backgroundColor: "#ffffff60", height: 40, width: "100%", borderColor: '#d4d4d8' }}
-              className='rounded-full pl-12 text-base text-black border'
-              placeholder='Search tray history...'
-            />
-            <Search
-              style={{ position: 'absolute', top: 8, left: 14 }}
-              color={'#d4d4d8'}
-            />
-          </View>
-          <View className='flex items-center justify-center' style={{ backgroundColor: '#155183', borderRadius: 10, padding: 8 }}>
+            <View className='flex items-center justify-center' style={{ backgroundColor: '#155183', borderRadius: 10, padding: 8 }}>
             <FilterIcon color={'#ffffff'} size={20}/>
           </View>
         </View>
@@ -67,7 +55,7 @@ const History = () => {
               <View key={tray.id} style={{ overflow: 'hidden', borderRadius: 7, marginTop: 10 }}>
                 <Pressable onPress={() => handlePress(tray)} android_ripple={{ color: 'rgba(0,0,0,0.1)' }} className='p-3 flex' style={{ borderWidth: 1, borderColor: '#d4d4d8', borderRadius: 7, marginTop: index === 0 ? 0 : 3}}>
                   <View className='flex-row justify-between items-center'>
-                     <Text className="text-zinc-500" style={{ fontFamily: 'PoppinsSemiBold' }}>{tray.session_name}</Text>
+                     <Text className="text-zinc-500" style={{ fontFamily: 'PoppinsSemiBold' }}>{tray.tray_name}</Text>
                     <View className="flex-row items-center" style={{ gap: 5 }}>
                       <Image
                         source={
@@ -141,6 +129,7 @@ const History = () => {
               </View>
           ))
           )}
+          <View className='mt-5'></View>
         </ScrollView>
         <BottomDrawer ref={drawerRef} onChange={(open) => setIsDrawerOpen(open)} type='full'>
           {progressLoading ? (

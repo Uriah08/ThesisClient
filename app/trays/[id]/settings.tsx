@@ -1,66 +1,58 @@
 import { 
   View, 
-  Text, 
-  Image, 
-  ActivityIndicator, 
-  Pressable, 
-  Dimensions, 
-  ScrollView, 
-  RefreshControl, 
-  TouchableOpacity 
 } from 'react-native';
-import React, { useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
-import { useGetTrayByIdQuery, useGetTrayProgressQuery } from '@/store/trayApi';
-import { ChevronRight, Pen, Trash } from 'lucide-react-native';
-import ImageViewing from 'react-native-image-viewing';
-import DeleteClass from '@/components/containers/dialogs/Delete';
+// import React, { useState } from 'react';
+// import { useLocalSearchParams } from 'expo-router';
+// import { useGetTrayByIdQuery, useGetTrayProgressQuery } from '@/store/trayApi';
+// import { ChevronRight, Pen, Trash } from 'lucide-react-native';
+// import ImageViewing from 'react-native-image-viewing';
+// import DeleteClass from '@/components/containers/dialogs/Delete';
 
-const settingsMenu = [
-  {
-    icon: Pen,
-    label: 'Rename Tray',
-  },
-  {
-    icon: Trash,
-    label: 'Delete',
-  }
-];
+// const settingsMenu = [
+//   {
+//     icon: Pen,
+//     label: 'Rename Tray',
+//   },
+//   {
+//     icon: Trash,
+//     label: 'Delete',
+//   }
+// ];
 
 const SettingsPage = () => {
-  const { id } = useLocalSearchParams();
-  const { data, isLoading } = useGetTrayByIdQuery(Number(id));
-  const { data: progress, isLoading: progressLoading, refetch } = useGetTrayProgressQuery(Number(id));
+  // const { id } = useLocalSearchParams();
+  // const { data, isLoading } = useGetTrayByIdQuery(Number(id));
+  // const { data: progress, isLoading: progressLoading, refetch } = useGetTrayProgressQuery(Number(id));
 
-  const [refreshing, setRefreshing] = useState(false);
-  const [visible, setVisible] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [showDelete, setShowDelete] = useState(false)
+  // const [refreshing, setRefreshing] = useState(false);
+  // const [visible, setVisible] = useState(false);
+  // const [currentIndex, setCurrentIndex] = useState(0);
+  // const [showDelete, setShowDelete] = useState(false)
 
-  const onRefresh = async () => {
-    await refetch();
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
-  };
+  // const onRefresh = async () => {
+  //   await refetch();
+  //   setRefreshing(true);
+  //   setTimeout(() => {
+  //     setRefreshing(false);
+  //   }, 1000);
+  // };
 
-  if (isLoading || progressLoading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size={30} color="#155183" />
-      </View>
-    );
-  }
+  // if (isLoading || progressLoading) {
+  //   return (
+  //     <View className="flex-1 items-center justify-center bg-white">
+  //       <ActivityIndicator size={30} color="#155183" />
+  //     </View>
+  //   );
+  // }
 
-  const images = progress?.filter(p => p.image).map(p => ({ uri: p.image })) || [];
+  // const images = progress?.filter(p => p.image).map(p => ({ uri: p.image })) || [];
 
-  const screenWidth = Dimensions.get('window').width;
-  const imageSize = (screenWidth - 40 - 16) / 3;
+  // const screenWidth = Dimensions.get('window').width;
+  // const imageSize = (screenWidth - 40 - 16) / 3;
 
   return (
     <View className="bg-white flex-1">
-      <DeleteClass setVisible={setShowDelete} visible={showDelete} trayId={data?.id} type={'tray'}/>
+      {/* <DeleteClass setVisible={setShowDelete} visible={showDelete} trayId={data?.id} type={'tray'}/>
       <Text
         className="mt-10 text-3xl p-5"
         style={{ fontFamily: 'PoppinsBold' }}
@@ -192,7 +184,7 @@ const SettingsPage = () => {
         doubleTapToZoomEnabled
         presentationStyle="overFullScreen"
         backgroundColor="#000"
-      />
+      /> */}
     </View>
   );
 };

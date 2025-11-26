@@ -1,12 +1,25 @@
-import { View, Text, Pressable, ActivityIndicator, ScrollView } from 'react-native'
+import { View, Pressable, ActivityIndicator, Text, ScrollView } from 'react-native'
 import React, { useEffect } from 'react'
 import { ArrowLeft, Fish, PanelsLeftRight } from 'lucide-react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useGetFarmTrayByIdQuery, useTrayDashboardQuery } from '@/store/farmTrayApi'
+import { useGetTrayByIdQuery } from '@/store/trayApi'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const Dashboard = () => {
   const { id } = useLocalSearchParams();
   const { data, isLoading} = useGetFarmTrayByIdQuery(Number(id));
+  const { data: sessionTray, isLoading: sessionTrayLoading } = useGetTrayByIdQuery(data?.id, {
+    skip: !data?.id
+  })
+  useEffect(() => {
+        const storeActiveTrayId = async () => {
+            await AsyncStorage.setItem('active_tray_id', sessionTray?.active_session_tray?.id?.toString() || '');
+        }
+        storeActiveTrayId();
+    }, [sessionTray?.active_session_tray?.id]);
+  console.log(data);
+  
   const { data: dashboard, isLoading: dashboardLoading, refetch } = useTrayDashboardQuery(Number(id))
   
   useEffect(() => {
@@ -18,10 +31,13 @@ const Dashboard = () => {
   const detected = dashboard?.detected_and_reject_by_day.map((item) => item.detected).reduce((prev, curr) => prev + curr, 0) || 0;
   const rejected = dashboard?.detected_and_reject_by_day.map((item) => item.rejects).reduce((prev, curr) => prev + curr, 0) || 0; 
 
-  const percentage = (detected / (detected + rejected)) * 100 
-  const rejectPercentage = Math.abs((Number(percentage.toFixed(0)) - 100))
+  const total = detected + rejected;
 
-  if (isLoading || dashboardLoading) return (
+  const percentage = total > 0 ? (detected / total) * 100 : 0;
+
+  const rejectPercentage = total > 0 ? Math.abs(Number(percentage.toFixed(0)) - 100) : 0;
+
+  if (isLoading || sessionTrayLoading || dashboardLoading) return (
     <View className='flex-1 items-center justify-center bg-white'>
       <ActivityIndicator size={30} color="#155183" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
     </View>
@@ -92,7 +108,7 @@ const Dashboard = () => {
               </View>
               <Text className='flex-1' style={{ fontFamily: 'PoppinsBold', fontSize: 13, color: '#ffffff' }}>Fish {'\n'}Detected</Text>
             </View>
-            <Text style={{ fontFamily: 'PoppinsBold', fontSize: 30, color: '#ffffff', marginTop: 10, marginLeft: 10 }}>{detected}</Text>
+            <Text style={{ fontFamily: 'PoppinsBold', fontSize: 30, color: '#ffffff', marginTop: 10, marginLeft: 10 }}>{detected + rejected}</Text>
           </View>
           <View
           className='px-3 pt-2 flex'
@@ -126,7 +142,7 @@ const Dashboard = () => {
                   <PanelsLeftRight color={'#ffffff'} size={20}/>
                 </View>
                 <View className='flex flex-col'>
-                  <Text className='text-zinc-600' style={{ fontFamily: 'PoppinsBold', fontSize: 13}}>{tray.session_name}</Text>
+                  <Text className='text-zinc-600' style={{ fontFamily: 'PoppinsBold', fontSize: 13}}>Tray Name</Text>
                 </View>
               </View>
               <Text

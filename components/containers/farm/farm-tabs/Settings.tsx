@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Pressable } from 'react-native'
 import React, { useState } from 'react'
-import { ChevronRight, Megaphone, Pen, RotateCcwKey, Smartphone, Trash, UserLock } from 'lucide-react-native'
+import { ChevronRight, Megaphone, Pen, RotateCcwKey, Smartphone, Trash } from 'lucide-react-native'
 import { router } from 'expo-router'
 import DeleteFarm from '../../dialogs/DeleteFarm'
 import { Farm } from '@/utils/types'
@@ -24,26 +24,27 @@ const Settings = ({ farmId, owner, setSelectedFarm, onBack }: Props) => {
     {
       icon: Megaphone,
       label: 'Announcements',
-      route: '/farm-settings/announcement/[id]'
+      route: '/farm-settings/announcement/[id]' as const
     },
-    {
-      icon: Pen,
-      label: 'Edit',
-      route: '/farm-settings/edit/[id]'
-    },
-    {
-      icon: RotateCcwKey,
-      label: 'Change Password',
-      route: '/farm-settings/change/[id]'
-    },
+
+    ...(owner
+      ? [
+          {
+            icon: Pen,
+            label: 'Edit',
+            route: '/farm-settings/edit/[id]' as const
+          },
+          {
+            icon: RotateCcwKey,
+            label: 'Change Password',
+            route: '/farm-settings/change/[id]' as const
+          }
+        ]
+      : [])
   ];
 
+
   const dangerMenu: Menu[] = [
-      {
-      icon: UserLock,
-      label: 'Blocklist',
-      route: '/farm-settings/block/[id]'
-    },
     {
       icon: Trash,
       label: owner ? 'Delete' : 'Leave',
@@ -79,7 +80,7 @@ const Settings = ({ farmId, owner, setSelectedFarm, onBack }: Props) => {
             style={{
               justifyContent: 'space-between',
               borderTopWidth: 1,
-              borderBottomWidth: item.label === 'Change Password' ? 1 : 0,
+              borderBottomWidth: item.label === 'Change Password' ? 1 : !owner && item.label === 'Announcements' ? 1 : 0,
               borderColor: '#e8e8e8',
               paddingVertical: 20,
               paddingLeft: 10

@@ -34,17 +34,19 @@ const TrayChart = () => {
       </Text> */}
 
       {/* Legend */}
-      <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 20, marginBottom: 10 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-          <View style={{ height: 8, width: 8, borderRadius: 99, backgroundColor: '#155183' }} />
-          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#555' }}>Rejects</Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-          <View style={{ height: 8, width: 8, borderRadius: 99, backgroundColor: '#aaaaaa' }} />
-          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#555' }}>Detected</Text>
+      <View className='flex justify-between items-center'>
+        <Text>Fish Detected</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 20, marginBottom: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <View style={{ height: 8, width: 8, borderRadius: 99, backgroundColor: '#155183' }} />
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#555' }}>Rejects</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <View style={{ height: 8, width: 8, borderRadius: 99, backgroundColor: '#aaaaaa' }} />
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#555' }}>Detected</Text>
+          </View>
         </View>
       </View>
-
       {/* Line Chart */}
       <View style={{ height: 150, marginBottom: 5 }}>
         <LineChart

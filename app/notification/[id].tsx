@@ -10,6 +10,9 @@ const Notification = () => {
     const { id } = useLocalSearchParams();
     const { data, isLoading } = useGetNotificationQuery(Number(id));
     const [showDelete, setShowDelete] = useState(false)
+
+    console.log(data);
+    
     
   return (
     <View className="flex-1 bg-white relative">
@@ -24,9 +27,10 @@ const Notification = () => {
                     <Trash onPress={() => setShowDelete(true)} style={{ position: 'absolute', top: -28, right: 20 }} color={'#71717a'} size={20} />
                     <View className="flex-col gap-3 items-center">
                         <NotificationIcon iconCode={data?.notification.type} size={70}/>
-                        <Text className='text-xl' style={{
+                        <Text className='text-xl text-center' style={{
                         fontFamily: 'PoppinsSemiBold'
                         }}>{data?.notification.title}</Text>
+                        <Text className="mt-5 text-zinc-700" style={{ fontFamily: 'PoppinsRegular'}}>{data?.notification.body}</Text>
                     </View>
                 </View>
             )}   

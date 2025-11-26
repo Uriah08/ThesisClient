@@ -68,9 +68,8 @@ const DeleteFarm = ({ visible, setVisible, farmId, type, setSelectedFarm, onBack
     ? "Deleting this farm will permanently remove all data, members, trays, sessions, and records associated with it. This action cannot be undone."
     : "Leaving this farm will permanently remove all your related data, including your tray information, session history, and any changes you've made. This action cannot be undone."
 
-  // Button and ripple colors
-  const actionColor = isDelete ? "#b91c1c" : "#f97316" // red for delete, orange for leave
-  const rippleColor = isDelete ? "#7f1d1d" : "#c2410c" // darker orange for leave ripple
+  const actionColor = isDelete ? "#b91c1c" : "#f97316"
+  const rippleColor = isDelete ? "#7f1d1d" : "#c2410c"
 
   const isAllowed = confirmText.trim().toLowerCase() === keyword
 

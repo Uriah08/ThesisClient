@@ -118,6 +118,7 @@ export type FarmTray = {
   id: number;
   farm: number;
   farm_name: string;
+  farm_owner: number;
   name: string;
   created_at: string;
   status: string;
@@ -128,8 +129,6 @@ export type Tray = {
   id: number;
   farm: number;
   farm_name: string;
-  session: number;
-  session_name: string;
   tray_name: string;
   created_at: string
   finished_at: string | null;
@@ -137,6 +136,28 @@ export type Tray = {
   created_by_username: string;
   created_by_profile_picture: string | null;
 };
+
+export type TrayResponse = {
+  tray_id: number;
+  tray_name: string;
+  tray_status: string;
+  active_session_tray: ActiveSessionTray;
+};
+
+export type CreatedBy = {
+  id: number;
+  username: string;
+  email: string;
+  profile_picture: string | null;
+};
+
+export type ActiveSessionTray = {
+  id: number;
+  created_at: string;
+  finished_at: string | null;
+  created_by: CreatedBy;
+} | null;
+
 
 export type TrayProgress = {
   id: number;
