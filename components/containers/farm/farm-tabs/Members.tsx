@@ -50,13 +50,19 @@ const Members = ({ farmId, ownerId }: Props) => {
               resizeMode="cover"
             />
             <View className="flex flex-col">
-              <Text 
+              {/* <Text 
               className='text-zinc-600' 
               style={{ 
                 fontFamily: 'PoppinsSemiBold', 
                 fontSize: 13 
               }}>
-                {admin?.first_name && admin?.first_name[0].toUpperCase() + admin?.first_name.slice(1)} {admin?.last_name && admin?.last_name[0].toUpperCase() + admin?.last_name.slice(1)}</Text>
+                {admin?.first_name && admin?.first_name[0].toUpperCase() + admin?.first_name.slice(1)} {admin?.last_name && admin?.last_name[0].toUpperCase() + admin?.last_name.slice(1)}</Text> */}
+                <Text 
+              className='text-zinc-600' 
+              style={{ 
+                fontFamily: 'PoppinsSemiBold', 
+                fontSize: 13 
+              }}>{admin?.username && admin?.username[0].toUpperCase() + admin?.username.slice(1)}</Text>
               <Text className='text-zinc-400' style={{ fontSize: 12, fontFamily: 'PoppinsRegular' }}>{admin?.email}</Text>
             </View>
           </View>
@@ -92,13 +98,19 @@ const Members = ({ farmId, ownerId }: Props) => {
                 resizeMode="cover"
               />
               <View className="flex flex-col">
-                <Text 
+                {/* <Text 
                 className='text-zinc-600' 
                 style={{ 
                   fontFamily: 'PoppinsSemiBold', 
                   fontSize: 13 
                 }}>
-                  {member?.first_name && member?.first_name[0].toUpperCase() + member?.first_name.slice(1)} {member?.last_name && member?.last_name[0].toUpperCase() + member?.last_name.slice(1)}</Text>
+                  {member?.first_name && member?.first_name[0].toUpperCase() + member?.first_name.slice(1)} {member?.last_name && member?.last_name[0].toUpperCase() + member?.last_name.slice(1)}</Text> */}
+                  <Text 
+                  className='text-zinc-600' 
+                  style={{ 
+                    fontFamily: 'PoppinsSemiBold', 
+                    fontSize: 13 
+                  }}>{member?.username && member?.username[0].toUpperCase() + member?.username.slice(1)}</Text>
                 <Text className='text-zinc-400' style={{ fontSize: 12, fontFamily: 'PoppinsRegular' }}>{member?.email}</Text>
               </View>
             </View>

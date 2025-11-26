@@ -1,8 +1,8 @@
-import { View, Text, TextInput, Pressable, Image, ActivityIndicator } from 'react-native'
+import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { useLocalSearchParams } from 'expo-router';
 import { useGetFarmTrayHistoryQuery, useLazyGetTrayProgressQuery } from '@/store/trayApi';
-import { FilterIcon, Search } from 'lucide-react-native';
+import { FilterIcon } from 'lucide-react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import SkeletonShimmer from '@/components/containers/SkeletonPlaceholder';
 import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDrawer';
@@ -15,7 +15,7 @@ const History = () => {
   const { data, isLoading } = useGetFarmTrayHistoryQuery(Number(id));
   const [ trigger, { data: progress, isFetching: progressLoading }] = useLazyGetTrayProgressQuery()
 
-  const finishedTrays = data?.filter((item) => item.finished_at !== null) ?? [];
+  const finishedTrays = (data?.filter((item) => item.finished_at !== null).slice().reverse()) ?? [];
   
   const [selectedItem, setSelectedItem] = useState<Tray | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -39,20 +39,7 @@ const History = () => {
             <Text className='text-3xl' style={{
                 fontFamily: 'PoppinsBold'
             }}>History</Text>
-        </View>
-        <View className='flex-row gap-3 w-full p-5'>
-          <View className='relative flex-1'>
-            <TextInput
-            style={{ backgroundColor: "#ffffff60", height: 40, width: "100%", borderColor: '#d4d4d8' }}
-              className='rounded-full pl-12 text-base text-black border'
-              placeholder='Search tray history...'
-            />
-            <Search
-              style={{ position: 'absolute', top: 8, left: 14 }}
-              color={'#d4d4d8'}
-            />
-          </View>
-          <View className='flex items-center justify-center' style={{ backgroundColor: '#155183', borderRadius: 10, padding: 8 }}>
+            <View className='flex items-center justify-center' style={{ backgroundColor: '#155183', borderRadius: 10, padding: 8 }}>
             <FilterIcon color={'#ffffff'} size={20}/>
           </View>
         </View>
@@ -142,6 +129,7 @@ const History = () => {
               </View>
           ))
           )}
+          <View className='mt-5'></View>
         </ScrollView>
         <BottomDrawer ref={drawerRef} onChange={(open) => setIsDrawerOpen(open)} type='full'>
           {progressLoading ? (

@@ -133,6 +133,7 @@ const Notifications = ({ notifications, isLoading, refetch }: NotificationProps)
         ))
         )}
       </View>
+      <View className='mt-10'></View>
     </ScrollView>
   )
 }

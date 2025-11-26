@@ -4,7 +4,7 @@ import { useGetFarmDashboardQuery, useGetFarmQuery } from '@/store/farmApi'
 import { Boxes, ChevronRight, Megaphone, PanelsLeftRight, Users } from 'lucide-react-native'
 import FarmDashboardBarChart from '../../charts/FarmDashboardBarChart'
 import { router } from 'expo-router'
-import PieChart2 from '../../charts/PieChart2'
+// import PieChart2 from '../../charts/PieChart2'
 
 type Props = {
   farmId: number
@@ -39,8 +39,8 @@ const Home = ({ farmId }: Props) => {
   console.log('DASHBOARD', dashboard);
   
 
-  const detected = dashboard?.detected_and_reject_by_day.map((item) => item.detected).reduce((prev, curr) => prev + curr, 0);
-  const rejected = dashboard?.detected_and_reject_by_day.map((item) => item.rejects).reduce((prev, curr) => prev + curr, 0);
+  // const detected = dashboard?.detected_and_reject_by_day.map((item) => item.detected).reduce((prev, curr) => prev + curr, 0);
+  // const rejected = dashboard?.detected_and_reject_by_day.map((item) => item.rejects).reduce((prev, curr) => prev + curr, 0);
   
   return (
     <View className='flex-1 flex flex-col'>
@@ -144,9 +144,9 @@ const Home = ({ farmId }: Props) => {
       <View style={{ paddingTop: 18, paddingBottom: 10, paddingRight: 18, paddingLeft: 10}}>
         <FarmDashboardBarChart data={dashboard?.detected_and_reject_by_day || []} chartKey={chartKey}/>
       </View>
-      <View style={{ paddingTop: 18, paddingBottom: 10, paddingLeft: 10}}>
+      {/* <View style={{ paddingTop: 18, paddingBottom: 10, paddingLeft: 10}}>
         <PieChart2 v1={detected} v2={rejected}/>
-      </View>
+      </View> */}
       <Text className="text-lg px-5 mt-5" style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15 }}>
         Recent Harvested Trays
       </Text>

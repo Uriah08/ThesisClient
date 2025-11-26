@@ -118,6 +118,7 @@ export type FarmTray = {
   id: number;
   farm: number;
   farm_name: string;
+  farm_owner: number;
   name: string;
   created_at: string;
   status: string;

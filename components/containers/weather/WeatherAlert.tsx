@@ -8,7 +8,9 @@ type WeatherData = {
   cloud?: number;
 };
 
-const WeatherAlert = ({ rain = 0, wind = 0, cloud = 0 }: WeatherData) => {
+const WeatherAlert = ({ rain = 0, cloud = 0 }: WeatherData) => {
+  const rainPercent = Math.round(rain * 100);
+    
   const [visible, setVisible] = useState(true);
 
   if (!visible) return null;
@@ -18,18 +20,11 @@ let alertLabel = "";
 let alertColor = "";
 
 // Descriptions
-const getRainDescription = (rain: number) => {
-  if (rain === 0) return "no expected rain";
-  if (rain < 50) return `a moderate ${rain}% chance of rain`;
-  if (rain < 90) return `a high ${rain}% chance of rain`;
-  return `a very high ${rain}% chance of rain`;
-};
-
-const getWindDescription = (wind: number) => {
-  if (wind < 10) return "calm winds";
-  if (wind < 15) return "a light breeze";
-  if (wind < 20) return "moderate wind";
-  return "strong gusty winds";
+const getRainDescription = (rainPercent: number) => {
+  if (rainPercent === 0) return "no expected rain";
+  if (rainPercent < 50) return `a moderate ${rainPercent}% chance of rain`;
+  if (rainPercent < 90) return `a high ${rainPercent}% chance of rain`;
+  return `a very high ${rainPercent}% chance of rain`;
 };
 
 const getCloudDescription = (cloud: number) => {
@@ -39,47 +34,41 @@ const getCloudDescription = (cloud: number) => {
   return "overcast skies";
 };
 
-const rainDesc = getRainDescription(rain);
-const windDesc = getWindDescription(wind);
+const rainDesc = getRainDescription(rainPercent);
 const cloudDesc = getCloudDescription(cloud);
 
 // ----------------------------
 // APPLY NEW RULES
 // ----------------------------
 
-// 🌟 EXCELLENT — rain 0%, clouds < 50, wind < 10
-if (rain === 0 && cloud < 50 && wind < 10) {
+if (rainPercent === 0 && cloud < 50) {
   alertLabel = "Excellent";
   alertColor = "#22c55e";
-  message = `Ideal conditions for drying fish: ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
+  message = `Ideal conditions for drying fish: ${cloudDesc}, and ${rainDesc}.`;
 }
 
-// 👍 GOOD — rain 0%, clouds 50–100%, wind < 15
-else if (rain === 0 && cloud <= 100 && wind < 15) {
+else if (rainPercent === 0 && cloud <= 100) {
   alertLabel = "Good";
   alertColor = "#3b82f6";
-  message = `Good weather for drying fish with ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
+  message = `Good weather for drying fish with ${cloudDesc}, and ${rainDesc}.`;
 }
 
-// ⚠️ CAUTION — rain ≥ 50%
-else if (rain >= 50 && rain < 90) {
+else if (rainPercent <= 80 && rainPercent > 0 && cloud <= 100) {
   alertLabel = "Caution";
   alertColor = "#eab308";
-  message = `Be cautious: ${cloudDesc}, ${windDesc}, and ${rainDesc}. Drying may be slow or risky.`;
+  message = `Be cautious: ${cloudDesc}, and ${rainDesc}. Drying may be slow or risky.`;
 }
 
-// 🟧 WARNING — rain ≥ 90%
-else if (rain >= 90 && rain < 100) {
+else if (rainPercent > 80 && rainPercent < 99) {
   alertLabel = "Warning";
   alertColor = "#f97316";
-  message = `Drying fish is not recommended due to ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
+  message = `Drying fish is not recommended due to ${cloudDesc}, and ${rainDesc}.`;
 }
 
-// 🔴 DANGER — max rain OR max cloud OR strong wind
 else {
   alertLabel = "Danger";
   alertColor = "#ef4444";
-  message = `Avoid drying fish. Extreme conditions: ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
+  message = `Avoid drying fish. Extreme conditions: ${cloudDesc}, and ${rainDesc}.`;
 }
 
 

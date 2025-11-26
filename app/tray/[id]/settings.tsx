@@ -5,24 +5,30 @@ import { ChevronRight, Pen, Trash } from 'lucide-react-native';
 import { useGetFarmTrayByIdQuery } from '@/store/farmTrayApi';
 import DeleteClass from '@/components/containers/dialogs/Delete';
 import RenameClass from '@/components/containers/dialogs/Rename';
-
-const settingsMenu = [
-  {
-    icon: Pen,
-    label: 'Rename Tray',
-  },
-  {
-    icon: Trash,
-    label: 'Delete',
-  }
-];
+import useAuthRedirect from '@/components/hooks/useAuthRedirect';
 
 const Settings = () => {
+  const { user } = useAuthRedirect();
   const { id } = useLocalSearchParams();
   const { data, refetch } = useGetFarmTrayByIdQuery(Number(id));
   const [refreshing, setRefreshing] = useState(false);
   const [showDelete, setShowDelete] = useState(false)
   const [showRename, setShowRename] = useState(false)
+
+  const isOwner = data?.farm_owner === user?.id;
+
+  const settingsMenu = [
+  {
+    icon: Pen,
+    label: 'Rename Tray',
+  },
+  ...(isOwner ? [
+    {
+      icon: Trash,
+      label: 'Delete',
+    }
+  ]: [])
+];
 
   const onRefresh = async () => {
     await refetch();
@@ -74,7 +80,7 @@ const Settings = () => {
                       style={{
                         justifyContent: 'space-between',
                         borderTopWidth: 1,
-                        borderBottomWidth: item.label === 'Delete' ? 1 : 0,
+                        borderBottomWidth: item.label === 'Delete' ? 1 : !isOwner && item.label === 'Rename Tray' ? 1 : 0,
                         borderColor: '#e8e8e8',
                         paddingVertical: 20,
                         paddingLeft: 10

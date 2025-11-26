@@ -102,71 +102,63 @@ const Home = () => {
       return new Intl.DateTimeFormat('en-PH', options).format(date);
     };
   
-    const rain = (selectedItem?.pop ?? 0) * 100;
-    const wind = selectedItem?.wind_speed ?? 0;
+    const rainPercent = (selectedItem?.pop ?? 0) * 100;
     const cloud = selectedItem?.clouds ?? 0;
-
-    console.log('Rain', rain, 'Wind', wind, 'Cloud', cloud);
-
 
     let message = "";
     let alertLabel = "";
     let alertColor = "";
-
+    
     // Descriptions
-    const getRainDescription = (rain: number) => {
-      if (rain === 0) return "no expected rain";
-      if (rain < 50) return `a moderate ${rain}% chance of rain`;
-      if (rain < 90) return `a high ${rain}% chance of rain`;
-      return `a very high ${rain}% chance of rain`;
+    const getRainDescription = (rainPercent: number) => {
+      if (rainPercent === 0) return "no expected rain";
+      if (rainPercent < 50) return `a moderate ${rainPercent}% chance of rain`;
+      if (rainPercent < 90) return `a high ${rainPercent}% chance of rain`;
+      return `a very high ${rainPercent}% chance of rain`;
     };
-
-    const getWindDescription = (wind: number) => {
-      if (wind < 10) return "calm winds";
-      if (wind < 15) return "a light breeze";
-      if (wind < 20) return "moderate wind";
-      return "strong gusty winds";
-    };
-
+    
     const getCloudDescription = (cloud: number) => {
       if (cloud < 30) return "mostly clear skies";
       if (cloud < 50) return "partly cloudy skies";
       if (cloud < 100) return "noticeable cloud cover";
       return "overcast skies";
     };
-
-    const rainDesc = getRainDescription(rain);
-    const windDesc = getWindDescription(wind);
+    
+    const rainDesc = getRainDescription(rainPercent);
     const cloudDesc = getCloudDescription(cloud);
-
-    if (rain === 0 && cloud < 50 && wind < 10) {
+    
+    // ----------------------------
+    // APPLY NEW RULES
+    // ----------------------------
+    
+    if (rainPercent === 0 && cloud < 50) {
       alertLabel = "Excellent";
       alertColor = "#22c55e";
-      message = `Ideal conditions for drying fish: ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
+      message = `Ideal conditions for drying fish: ${cloudDesc}, and ${rainDesc}.`;
     }
-
-    else if (rain === 0 && cloud <= 100 && wind < 15) {
+    
+    else if (rainPercent === 0 && cloud <= 100) {
       alertLabel = "Good";
       alertColor = "#3b82f6";
-      message = `Good weather for drying fish with ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
+      message = `Good weather for drying fish with ${cloudDesc}, and ${rainDesc}.`;
     }
-
-    else if (rain >= 50 && rain < 90) {
+    
+    else if (rainPercent <= 80 && rainPercent > 0 && cloud <= 100) {
       alertLabel = "Caution";
       alertColor = "#eab308";
-      message = `Be cautious: ${cloudDesc}, ${windDesc}, and ${rainDesc}. Drying may be slow or risky.`;
+      message = `Be cautious: ${cloudDesc}, and ${rainDesc}. Drying may be slow or risky.`;
     }
-
-    else if (rain >= 90 && rain < 100) {
+    
+    else if (rainPercent > 80 && rainPercent < 99) {
       alertLabel = "Warning";
       alertColor = "#f97316";
-      message = `Drying fish is not recommended due to ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
+      message = `Drying fish is not recommended due to ${cloudDesc}, and ${rainDesc}.`;
     }
-
+    
     else {
       alertLabel = "Danger";
       alertColor = "#ef4444";
-      message = `Avoid drying fish. Extreme conditions: ${cloudDesc}, ${windDesc}, and ${rainDesc}.`;
+      message = `Avoid drying fish. Extreme conditions: ${cloudDesc}, and ${rainDesc}.`;
     }
 
 

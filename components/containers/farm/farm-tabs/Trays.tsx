@@ -7,8 +7,11 @@ import SkeletonShimmer from '../../SkeletonPlaceholder'
 import { router } from 'expo-router'
 
 type Props = {
-  farmId: number}
-const Trays = ({ farmId }: Props) => {
+  farmId: number
+  owner: boolean
+}
+
+const Trays = ({ farmId, owner }: Props) => {
   const { data, isLoading, refetch } = useGetFarmTraysQuery(farmId) 
   const [visible, setVisible] = useState(false)
   const [refreshing, setRefreshing] = useState(false);
@@ -36,25 +39,27 @@ const Trays = ({ farmId }: Props) => {
           </View>
         </View>
       </View>
-      <View
+      {owner && (
+        <View
         className="absolute bottom-5 right-5 rounded-full"
         style={{ overflow: "hidden", zIndex: 999 }}
-      >
-        <Pressable
-          onPress={() => setVisible(true)}
-          android_ripple={{ color: "#ffffff50", borderless: false }}
-          className={`flex flex-row items-center gap-3 px-5 bg-primary rounded-full`}
-          style={{ paddingVertical: 10 }}
         >
-          <Text
-            className="text-white"
-            style={{ fontFamily: "PoppinsSemiBold" }}
+          <Pressable
+            onPress={() => setVisible(true)}
+            android_ripple={{ color: "#ffffff50", borderless: false }}
+            className={`flex flex-row items-center gap-3 px-5 bg-primary rounded-full`}
+            style={{ paddingVertical: 10 }}
           >
-            Create Tray
-          </Text>
-            <PanelsLeftRightIcon color={"#ffffff"} />
-        </Pressable>
-      </View>
+            <Text
+              className="text-white"
+              style={{ fontFamily: "PoppinsSemiBold" }}
+            >
+              Create Tray
+            </Text>
+              <PanelsLeftRightIcon color={"#ffffff"} />
+          </Pressable>
+        </View>
+      )}
       <View className='flex-row gap-3 w-full p-5'>
           <View className='relative flex-1'>
             <TextInput
