@@ -3,6 +3,7 @@ import { View, Text, ImageBackground, Dimensions, Pressable } from 'react-native
 import Carousel from 'react-native-reanimated-carousel'
 import { modules } from '@/constants/Colors'
 import { ArrowRight } from 'lucide-react-native'
+import { router } from 'expo-router'
 
 const { width } = Dimensions.get('window')
 
@@ -85,37 +86,46 @@ const Lesson = () => {
                 >
                   {item.title}
                 </Text>
-
-                <Pressable
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(27,127,180,0.95)',
-                    alignSelf: 'flex-start',
-                    paddingHorizontal: 14,
-                    paddingVertical: 7,
+                <View
+                  style={{ 
+                    overflow: "hidden", 
                     borderRadius: 9999,
-                    shadowColor: '#000',
-                    shadowOpacity: 0.15,
-                    shadowRadius: 6,
-                    elevation: 2,
-                  }}
-                  onPress={() => {
-                    /* handle read more action: navigate or open modal */
+                    alignSelf: 'flex-start',
                   }}
                 >
-                  <Text
+                  <Pressable
+                    android_ripple={{ color: "#ffffff50", borderless: false }}
+                    className={`flex flex-row items-center gap-3 px-5 bg-primary rounded-full`}
                     style={{
-                      color: '#fff',
-                      fontFamily: 'PoppinsSemiBold',
-                      fontSize: 13,
-                      marginRight: 6,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: 'rgba(27,127,180,0.95)',
+                      paddingHorizontal: 14,
+                      paddingVertical: 7,
+                      borderRadius: 9999,
+                      shadowColor: '#000',
+                      shadowOpacity: 0.15,
+                      shadowRadius: 6,
+                      elevation: 2,
                     }}
+                    onPress={() => router.push({
+                      pathname: item.link as any,
+                      params: { id: item.link }
+                    })}
                   >
-                    Read More
-                  </Text>
-                  <ArrowRight color="#fff" size={14} />
-                </Pressable>
+                    <Text
+                      style={{
+                        color: '#fff',
+                        fontFamily: 'PoppinsSemiBold',
+                        fontSize: 13,
+                        marginRight: 6,
+                      }}
+                    >
+                      Read More
+                    </Text>
+                    <ArrowRight color="#fff" size={14} />
+                  </Pressable>
+                </View>
               </View>
             </ImageBackground>
           </View>

@@ -91,7 +91,7 @@ const Dashboard = () => {
           </View>
           <Text style={{ fontFamily: 'PoppinsBold', fontSize: 30, color: '#ffffff', marginTop: 10 }}>{harvestTrays}</Text>
         </View>
-        <View className='gap-5' style={{ flexDirection: 'row', marginTop: 20 }}>
+        {/* <View className='gap-5' style={{ flexDirection: 'row', marginTop: 20 }}>
           <View
           className='px-3 pt-2 flex'
             style={{
@@ -128,11 +128,11 @@ const Dashboard = () => {
             </View>
             <Text style={{ fontFamily: 'PoppinsBold', fontSize: 30, color: '#ffffff', marginTop: 10, marginLeft: 10 }}>{rejectPercentage}%</Text>
           </View>
-        </View>
+        </View> */}
       </View>
-      <Text className="text-lg px-5" style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15 }}>
+      {/* <Text className="text-lg px-5" style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15 }}>
         Recent Harvested Trays
-      </Text>
+      </Text> */}
       {/* <View className='flex flex-col'>
         {dashboard?.recent_harvested_trays.map((tray, i) => (
           <View key={i} className='flex flex-col mt-3' style={{ borderWidth: 1, borderColor: '#d4d4d8', borderRadius: 12, paddingVertical: 8, paddingHorizontal: 10, marginHorizontal: 17}}>
