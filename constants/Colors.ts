@@ -78,9 +78,9 @@ export const farmMenu = [
   },
 ]
 
-export const apiUrl = '192.168.43.157' // MOBILE HOTSPOT
+// export const apiUrl = '192.168.43.157' // MOBILE HOTSPOT
 // export const apiUrl = '192.168.126.188' // ITD WIFI
-// export const apiUrl = '192.168.1.26' // MY WIFI
+export const apiUrl = '10.239.140.217' // MY WIFI
 
 export const lesson1Content = [
   {

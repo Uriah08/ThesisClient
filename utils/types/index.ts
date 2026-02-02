@@ -8,6 +8,7 @@ export type User = {
   address?: string;
   is_complete?: boolean;
   profile_picture?: string;
+  mobile_number?: string;
 };
 
 export type ForecastItem = {

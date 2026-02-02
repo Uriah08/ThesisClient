@@ -23,12 +23,20 @@ export const userApi = baseApi.injectEndpoints({
         body: passwordData,
       }),
     }),
+    updateProfile: build.mutation({
+      query: (profileData) => ({
+        url: "users/update-profile/",
+        method: "PUT",
+        body: profileData,
+      })
+    })
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {
   useCompleteProfileMutation,
   useLogoutMutation,
   useChangePasswordMutation,
+  useUpdateProfileMutation
 } = userApi;
