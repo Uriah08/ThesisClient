@@ -54,6 +54,12 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="lessons"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="notification"
           options={{
             headerShown: false,

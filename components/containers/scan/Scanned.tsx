@@ -244,23 +244,21 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
     let drynessRemark = remarkMessages.noFish;
 
     if (totalCount > 0) {
-
-      if (reject > 0) {
-        drynessRemark = remarkMessages.reject;
-      }
-      else if (dry > 0 && undried === 0) {
+      if (dry > 0 && undried === 0) {
         drynessRemark = remarkMessages.dry;
-      }
-      else if (undried > 0 && dry === 0) {
+      } else if (undried > 0 && dry === 0) {
         drynessRemark = remarkMessages.undried;
-      }
-      else if (undried > dry && dry > 0) {
+      } else if (undried > dry && dry > 0) {
         drynessRemark = remarkMessages.mostlyUndried;
-      }
-      else if (dry > undried && undried > 0) {
+      } else if (dry > undried && undried > 0) {
         drynessRemark = remarkMessages.mostlyDry;
       }
+
+      if (reject > 0) {
+        drynessRemark = `${drynessRemark} (${remarkMessages.reject})`;
+      }
     }
+
 
   return (
     <View className='flex-1 bg-white'>

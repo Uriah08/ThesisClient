@@ -1,13 +1,15 @@
 import { View, Pressable, ActivityIndicator, Text, ScrollView } from 'react-native'
-import React, { useEffect } from 'react'
-import { ArrowLeft, Fish, PanelsLeftRight } from 'lucide-react-native'
+import React, { useEffect, useState } from 'react'
+import { ArrowLeft, PanelsLeftRight, CircleCheck, Play } from 'lucide-react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useGetFarmTrayByIdQuery, useTrayDashboardQuery } from '@/store/farmTrayApi'
 import { useGetTrayByIdQuery } from '@/store/trayApi'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import ActivateSession from '@/components/containers/dialogs/ActivateSession'
 
 const Dashboard = () => {
   const { id } = useLocalSearchParams();
+  const [show, setShow] = useState(false);
   const { data, isLoading} = useGetFarmTrayByIdQuery(Number(id));
   const { data: sessionTray, isLoading: sessionTrayLoading } = useGetTrayByIdQuery(data?.id, {
     skip: !data?.id
@@ -28,14 +30,14 @@ const Dashboard = () => {
 
   const harvestTrays = dashboard?.session_tray_count.map((item) => item.count).reduce((prev, curr) => prev + curr, 0);
 
-  const detected = dashboard?.detected_and_reject_by_day.map((item) => item.detected).reduce((prev, curr) => prev + curr, 0) || 0;
-  const rejected = dashboard?.detected_and_reject_by_day.map((item) => item.rejects).reduce((prev, curr) => prev + curr, 0) || 0; 
+  // const detected = dashboard?.detected_and_reject_by_day.map((item) => item.detected).reduce((prev, curr) => prev + curr, 0) || 0;
+  // const rejected = dashboard?.detected_and_reject_by_day.map((item) => item.rejects).reduce((prev, curr) => prev + curr, 0) || 0; 
 
-  const total = detected + rejected;
+  // const total = detected + rejected;
 
-  const percentage = total > 0 ? (detected / total) * 100 : 0;
+  // const percentage = total > 0 ? (detected / total) * 100 : 0;
 
-  const rejectPercentage = total > 0 ? Math.abs(Number(percentage.toFixed(0)) - 100) : 0;
+  // const rejectPercentage = total > 0 ? Math.abs(Number(percentage.toFixed(0)) - 100) : 0;
 
   if (isLoading || sessionTrayLoading || dashboardLoading) return (
     <View className='flex-1 items-center justify-center bg-white'>
@@ -46,6 +48,7 @@ const Dashboard = () => {
   return (
     <View className='flex-1 bg-white'>
       <View className='flex-row justify-between items-center mt-10 p-5'>
+        <ActivateSession visible={show} setVisible={setShow} trayId={data?.id || Number(id)} active={data?.status === 'active'}/>
         <View className='flex-row gap-5 items-center'>
           <View style={{ borderRadius: 999, overflow: 'hidden' }}>
               <Pressable
@@ -80,6 +83,23 @@ const Dashboard = () => {
           </View>
         </View>
       </View>
+      <Pressable 
+        onPress={() => setShow(true)}
+        android_ripple={{ color: "#ffffff50", borderless: false }} 
+        className='gap-2 flex-row items-center absolute bottom-10 right-5 z-10' 
+        style={{ 
+          backgroundColor: '#155183', 
+          paddingVertical: 6, 
+          paddingHorizontal: 12, 
+          borderRadius: 9999 
+          }}>
+            {data?.status === 'active' ? (
+                <CircleCheck size={14} color={'#ffffff'}/>
+            ) : (
+                <Play size={14} color={'#ffffff'}/>
+            )}
+          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#ffffff' }}>{data?.status === 'active' ? 'Finish Drying' : 'Start Drying'}</Text>
+        </Pressable>
       <ScrollView showsVerticalScrollIndicator={false} className='flex-1'>
         <View className='flex flex-col p-5'>
         <View className='px-5 pt-5 bg-primary rounded-xl flex'>
@@ -91,7 +111,7 @@ const Dashboard = () => {
           </View>
           <Text style={{ fontFamily: 'PoppinsBold', fontSize: 30, color: '#ffffff', marginTop: 10 }}>{harvestTrays}</Text>
         </View>
-        <View className='gap-5' style={{ flexDirection: 'row', marginTop: 20 }}>
+        {/* <View className='gap-5' style={{ flexDirection: 'row', marginTop: 20 }}>
           <View
           className='px-3 pt-2 flex'
             style={{
@@ -128,11 +148,11 @@ const Dashboard = () => {
             </View>
             <Text style={{ fontFamily: 'PoppinsBold', fontSize: 30, color: '#ffffff', marginTop: 10, marginLeft: 10 }}>{rejectPercentage}%</Text>
           </View>
-        </View>
+        </View> */}
       </View>
-      <Text className="text-lg px-5" style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15 }}>
+      {/* <Text className="text-lg px-5" style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15 }}>
         Recent Harvested Trays
-      </Text>
+      </Text> */}
       {/* <View className='flex flex-col'>
         {dashboard?.recent_harvested_trays.map((tray, i) => (
           <View key={i} className='flex flex-col mt-3' style={{ borderWidth: 1, borderColor: '#d4d4d8', borderRadius: 12, paddingVertical: 8, paddingHorizontal: 10, marginHorizontal: 17}}>

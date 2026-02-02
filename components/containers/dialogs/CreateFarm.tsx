@@ -137,7 +137,7 @@ const CreateFarm = ({setVisible, visible, onSelect}: DialogsProps) => {
       };
 
   return (
-    <Dialogs onVisible={setVisible} visible={visible} title='Create Farm'>
+    <Dialogs onVisible={setVisible} visible={visible} title='Create Drying Area'>
         <Dialog.Content>
             <TextInput
               className={`rounded-md p-3 text-base text-black ${ 
@@ -145,7 +145,7 @@ const CreateFarm = ({setVisible, visible, onSelect}: DialogsProps) => {
               }`}
               onFocus={() => setIsFocused('name')}
               onBlur={() => setIsFocused('')}
-              placeholder="Farm Name"
+              placeholder="Area Name"
               placeholderTextColor="#9ca3af"
               value={name}
               onChangeText={setName}
@@ -184,7 +184,7 @@ const CreateFarm = ({setVisible, visible, onSelect}: DialogsProps) => {
                   fontFamily: 'PoppinsBold',
                   color: '#d4d4d8',
                   marginBottom: 30
-                }}>INSERT FARM COVER IMAGE</Text>
+                }}>INSERT AREA COVER IMAGE</Text>
                 </>
               )}
             </View>
