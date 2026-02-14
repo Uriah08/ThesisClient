@@ -5,7 +5,7 @@ import { apiUrl } from '@/constants/Colors';
 export const baseQueryWithAsyncAuth = () => {
   const rawBaseQuery = fetchBaseQuery({
     // baseUrl: `http://192.168.0.165:8000/api/`,
-    baseUrl: `http://${apiUrl}:8000/api/`, // MOBILE HOTSPOT
+    baseUrl: `${apiUrl}/api/`, // MOBILE HOTSPOT
   });
 
   return async (args: any, api: any, extraOptions: any) => {
