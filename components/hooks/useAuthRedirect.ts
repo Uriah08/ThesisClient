@@ -19,7 +19,7 @@ const useAuthRedirect = () => {
 
           if (user.is_complete && publicPaths.includes(pathname)) {
             router.replace('/home');
-          } else if (!user.is_complete && pathname !== '/complete-profile') {
+          } else if (!user.is_complete && (pathname !== '/complete-profile' && pathname !== '/terms')) {
             router.replace('/complete-profile');
           }
         }

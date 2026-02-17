@@ -101,8 +101,8 @@ const EditProfile = () => {
 
   const validate = async () => {
     const newErrors: { [key: string]: string } = {};
-    const emailValidator = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=a270cfe23edc4084a9665add430b88c9&email=${email}`)
-    const validatedEmail = await emailValidator.json();
+    // const emailValidator = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=a270cfe23edc4084a9665add430b88c9&email=${email}`)
+    // const validatedEmail = await emailValidator.json();
 
     if (!username.trim()) {
       newErrors.username = 'Username is required.';
@@ -110,10 +110,10 @@ const EditProfile = () => {
 
     if (!email.trim()) {
       newErrors.email = 'Email is required.';
-    } else if (validatedEmail.deliverability !== 'DELIVERABLE') {
-      newErrors.email = 'Email is not deliverable.';
-    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-      newErrors.email = 'Enter a valid email.';
+    // } else if (validatedEmail.deliverability !== 'DELIVERABLE') {
+    //   newErrors.email = 'Email is not deliverable.';
+    // } else if (!/^\S+@\S+\.\S+$/.test(email)) {
+    //   newErrors.email = 'Enter a valid email.';
     }
 
     if(!mobileNumber.trim()) {
