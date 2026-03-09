@@ -11,6 +11,7 @@ import {
 import React, { useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react-native'
 import { router } from 'expo-router'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true)
@@ -49,6 +50,15 @@ const faqs: { category: string; question: string; answers: string[] }[] = [
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
+  const handleRemoveUser = async () => {
+    try {
+      await AsyncStorage.removeItem('user')
+      router.push('/login')
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   // one Animated.Value per item
   const rotations = useRef(faqs.map(() => new Animated.Value(0))).current
 
@@ -83,6 +93,12 @@ const FAQ = () => {
         color="black"
         size={32}
       />
+      {/* <ChevronLeft
+        onPress={() => handleRemoveUser()}
+        style={{ marginTop: 50, marginLeft: 60 }}
+        color="black"
+        size={32}
+      /> */}
 
       <Text
         className="mt-10 mx-7 text-2xl"

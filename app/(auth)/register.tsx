@@ -15,7 +15,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [register, { isLoading }] = useRegisterMutation();
-  const [isValidatingEmail, setIsValidatingEmail] = useState(false);
+  // const [isValidatingEmail, setIsValidatingEmail] = useState(false);
 
   const handleRegister = async () => {
     if (await validate()) {
@@ -53,19 +53,19 @@ const Register = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const validate = async () => {
-    setIsValidatingEmail(true);
-    const emailValidator = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=a270cfe23edc4084a9665add430b88c9&email=${email}`)
-    const validatedEmail = await emailValidator.json();
-    setIsValidatingEmail(false);
+    // setIsValidatingEmail(true);
+    // const emailValidator = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=a270cfe23edc4084a9665add430b88c9&email=${email}`)
+    // const validatedEmail = await emailValidator.json();
+    // setIsValidatingEmail(false);
     const newErrors: { [key: string]: string } = {};
 
     if (!username.trim()) newErrors.username = 'Username is required.';
     if (!email.trim()) {
       newErrors.email = 'Email is required.';
-    } else if (validatedEmail.deliverability !== 'DELIVERABLE') {
-      newErrors.email = 'Email is not deliverable.';
-    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-      newErrors.email = 'Enter a valid email.';
+    // } else if (validatedEmail.deliverability !== 'DELIVERABLE') {
+    //   newErrors.email = 'Email is not deliverable.';
+    // } else if (!/^\S+@\S+\.\S+$/.test(email)) {
+    //   newErrors.email = 'Enter a valid email.';
     }
 
     if (!password) {
@@ -161,9 +161,9 @@ const Register = () => {
         <Pressable
         className='mt-14 w-full bg-primary py-3 rounded-lg'
         onPress={() => handleRegister()}
-        disabled={isLoading || isValidatingEmail}
+        disabled={isLoading}
         >
-          {isLoading || isValidatingEmail ? (
+          {isLoading ? (
               <ActivityIndicator className='text-white'/>
           ) : (
             <Text 

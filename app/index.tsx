@@ -1,6 +1,7 @@
 import { View, Image, Text, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';
+import { TestTubeDiagonal } from 'lucide-react-native';
 
 export default function Index() {
   const { checking }  = useAuthRedirect();
@@ -13,6 +14,11 @@ export default function Index() {
 
   return (
     <View className='flex-1 px-10 items-center justify-center bg-white'>
+      <Pressable onPress={() => router.push('/test')} className='bg-primary p-2 absolute top-16 right-7' style={{
+        borderRadius: 10,
+      }}>
+        <TestTubeDiagonal size={18} color={'#ffffff'}/>
+      </Pressable>
       <Image
         source={require('@/assets/images/hero-image.png')}
         style={{ width: 300, height: 300 }}

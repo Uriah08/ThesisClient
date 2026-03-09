@@ -10,14 +10,16 @@ import Toast from 'react-native-toast-message'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useDeleteFarmTrayMutation } from '@/store/farmTrayApi'
 import { useDeleteAnnouncementMutation } from '@/store/farmApi'
+import { useDeleteProductionMutation } from '@/store/productionApi'
 
 type DialogsProps = {
   setVisible: (visible: boolean) => void
   visible: boolean
-  type: 'tray' | 'session' | 'farm-tray' | 'announcement'
+  type: 'tray' | 'session' | 'farm-tray' | 'announcement' | 'production'
   trayId?: number
   sessionId?: number
   announcementId?: number
+  productionId?: number
   onBack?: () => void
 }
 
@@ -28,12 +30,14 @@ const DeleteClass = ({
   trayId,
   sessionId,
   onBack,
-  announcementId
+  announcementId,
+  productionId
 }: DialogsProps) => {
   const [deleteTray, { isLoading: trayLoading }] = useDeleteTrayMutation()
   const [deleteSession, { isLoading: sessionLoading }] = useDeleteSessionMutation()
   const [deleteFarmTray, { isLoading: farmTrayLoading }] = useDeleteFarmTrayMutation()
   const [deleteAnnouncement, { isLoading: announcementLoading }] = useDeleteAnnouncementMutation()
+  const [deleteProduction, { isLoading: productionLoading }] = useDeleteProductionMutation()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleDeleteTray = async () => {
@@ -54,6 +58,9 @@ const DeleteClass = ({
         router.push('/(tabs)/farm')
       } else if (type === 'announcement') {
         await deleteAnnouncement(announcementId).unwrap()
+        setVisible(false)
+      } else if (type === 'production') {
+        await deleteProduction(productionId).unwrap()
         setVisible(false)
       }
     } catch (error: any) {
@@ -80,7 +87,7 @@ const DeleteClass = ({
         )}
 
         <Text style={{ fontFamily: 'PoppinsRegular', marginBottom: 10 }}>
-          Are you sure you want to delete this {(type === 'tray' || type === 'farm-tray') ? 'tray' : type === 'announcement' ? 'announcement' : 'session'}?
+          Are you sure you want to delete this {(type === 'tray' || type === 'farm-tray') ? 'tray' : type === 'announcement' ? 'announcement' : type === 'production' ? 'Record' : 'session'}?
         </Text>
 
         {errorMessage && (
@@ -153,7 +160,7 @@ const DeleteClass = ({
               alignItems: 'center',
               gap: 8,
             }}
-            disabled={trayLoading || sessionLoading || farmTrayLoading || announcementLoading}
+            disabled={trayLoading || sessionLoading || farmTrayLoading || announcementLoading || productionLoading}
           >
             {trayLoading || sessionLoading || farmTrayLoading || announcementLoading  ? (
               <ActivityIndicator size={15} color="#ffffff" />
