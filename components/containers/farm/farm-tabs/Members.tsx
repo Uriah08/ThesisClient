@@ -1,5 +1,5 @@
-import { View, Text, ScrollView, Image, TextInput } from 'react-native'
-import React from 'react'
+import { View, Text, ScrollView, Image, TextInput, RefreshControl } from 'react-native'
+import React, { useState } from 'react'
 import { useGetMembersQuery } from '@/store/farmApi'
 import SkeletonShimmer from '../../SkeletonPlaceholder'
 import { Search } from 'lucide-react-native'
@@ -9,10 +9,20 @@ type Props = {
   ownerId: number
 }
 const Members = ({ farmId, ownerId }: Props) => {
-  const { data, isLoading } = useGetMembersQuery(farmId) 
+  const { data, isLoading, refetch } = useGetMembersQuery(farmId) 
 
   const admin = data?.find((member) => member.id === ownerId);
   const members = data?.filter((member) => member.id !== ownerId);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    await refetch();
+    setRefreshing(true);
+
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
   
   return (
     <View className='flex-1 flex flex-col'>
@@ -28,7 +38,9 @@ const Members = ({ farmId, ownerId }: Props) => {
           color={'#d4d4d8'}
         />
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} className='flex-1 px-5'>
+      <ScrollView showsVerticalScrollIndicator={false} refreshControl={
+        <RefreshControl style={{ zIndex: -1}} colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
+      } className='flex-1 px-5'>
         <Text className='text-zinc-400' style={{ fontFamily: 'PoppinsMedium', color: '#a1a1aa', fontSize: 12}}>Admin</Text>
         {isLoading ? (
           <View className='flex flex-row items-center gap-3 mt-3'>

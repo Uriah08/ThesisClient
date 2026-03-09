@@ -3,7 +3,7 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
-import { Gauge, PanelsLeftRightIcon, Settings, Users } from "lucide-react-native";
+import { Factory, Gauge, PanelsLeftRightIcon, Settings, Users } from "lucide-react-native";
 
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
@@ -64,10 +64,11 @@ export const farmMenu = [
     title: "Trays",
     icon: PanelsLeftRightIcon
   },
-  // {
-  //   title: "Sessions",
-  //   icon: MapPlus
-  // },
+  {
+    title: "Production",
+    icon: Factory,
+    private: true
+  },
   {
     title: "Members",
     icon: Users
@@ -79,7 +80,7 @@ export const farmMenu = [
 ]
 
 // export const apiUrl = 'http://3.106.134.49:8000' // AWS
-export const apiUrl = 'http://192.168.1.102:8000' // ITD WIFI
+export const apiUrl = 'http://172.21.14.217:8000' // ITD WIFI
 // export const apiUrl = 'https://thesis-backend-zprj.onrender.com' // MY WIFI
 
 export const lesson1Content = [

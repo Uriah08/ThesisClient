@@ -224,3 +224,15 @@ export interface TrayDashboard {
   detected_and_reject_by_day: Detected[]
   recent_harvested_trays: Tray[]
 }
+
+export type FarmProduction = {
+  id: number
+  farm: number
+  title: string
+  notes?: string | null
+  satisfaction: number
+  location?: string | null
+  quantity: number
+  landing?: string | null
+  created_at: string
+}
