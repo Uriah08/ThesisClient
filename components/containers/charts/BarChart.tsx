@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, useWindowDimensions } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 
 interface BarChartComponentProps {
@@ -15,6 +15,9 @@ const labelMap: Record<string, string> = {
 
 const BarChartComponent: React.FC<BarChartComponentProps> = ({ data: counts }) => {
   const allLabels = ['REJECT', 'UNDRIED', 'DRY'];
+
+  const { width } = useWindowDimensions()
+  const HORIZONTAL_PADDING = 32
 
   const chartData = allLabels.map((label) => {
     const value = counts?.[label] || 0;
@@ -52,7 +55,7 @@ const BarChartComponent: React.FC<BarChartComponentProps> = ({ data: counts }) =
         Dryness Chart
       </Text>
       <BarChart
-        width={260}
+        width={width - HORIZONTAL_PADDING}
         data={chartData}
         yAxisColor="#ffffff"
         xAxisColor="#ffffff"

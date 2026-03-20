@@ -60,8 +60,14 @@ const DeleteClass = ({
         await deleteAnnouncement(announcementId).unwrap()
         setVisible(false)
       } else if (type === 'production') {
-        await deleteProduction(productionId).unwrap()
-        setVisible(false)
+        try {
+          await deleteProduction(productionId).unwrap()
+        } catch (error: unknown) {
+          if ((error as { status?: string })?.status === 'FETCH_ERROR') {
+            setVisible(false)
+            router.back()
+          }
+        }
       }
     } catch (error: any) {
       if (error?.data?.detail) {
@@ -162,7 +168,7 @@ const DeleteClass = ({
             }}
             disabled={trayLoading || sessionLoading || farmTrayLoading || announcementLoading || productionLoading}
           >
-            {trayLoading || sessionLoading || farmTrayLoading || announcementLoading  ? (
+            {trayLoading || sessionLoading || farmTrayLoading || announcementLoading || productionLoading  ? (
               <ActivityIndicator size={15} color="#ffffff" />
             ) : (
               <Trash color={'#ffffff'} size={15} />

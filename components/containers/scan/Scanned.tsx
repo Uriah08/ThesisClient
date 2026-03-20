@@ -1,6 +1,6 @@
 import { View, Text, Image, Animated, Easing, Pressable, ScrollView } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, CircleAlert, CircleCheck, ClockPlus, Download, ImageUp, ScanSearch, Share, TriangleAlert } from 'lucide-react-native';
+import { ChevronLeft, CircleAlert, CircleCheck, ClockPlus, Download, ImageUp, ScanSearch, TriangleAlert } from 'lucide-react-native';
 import { useScanMutation } from '@/store/scanApi';
 import Toast from 'react-native-toast-message';
 import { Detections, Photo } from '@/utils/types';
@@ -277,7 +277,7 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
         {annotatedPhoto ? (
             <>
             <View className='p-5 flex-row justify-between gap-3'>
-                <View style={{ borderRadius: 5, overflow: 'hidden', width: '48%' }}>
+                <View className='w-full' style={{ borderRadius: 5, overflow: 'hidden' }}>
                 <Pressable
                     onPress={saveAnnotatedImageInDevice}
                     disabled={saved || saving}
@@ -288,21 +288,6 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
                     <Download color={'#ffffff'} />
                     <Text className='text-white' style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>
                     {saved ? 'Saved' : saving ? 'Saving...' : 'Save on Device'}
-                    </Text>
-                </Pressable>
-                </View>
-
-                <View style={{ borderRadius: 5, overflow: 'hidden', width: '48%' }}>
-                <Pressable
-                    onPress={saveAnnotatedImageInDevice}
-                    disabled={saved || saving}
-                    android_ripple={{ color: '#0c3b62' }}
-                    className='flex-row gap-3 bg-primary'
-                    style={{ borderRadius: 5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 20 }}
-                >
-                    <Share color={'#ffffff'} />
-                    <Text className='text-white' style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>
-                    Share
                     </Text>
                 </Pressable>
                 </View>
@@ -471,6 +456,7 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
               color: "#3f3f46",
               lineHeight: 18,
             }}
+            className='text-center'
           >
             {drynessRemark}
           </Text>

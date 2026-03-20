@@ -105,7 +105,7 @@ const FAQ = () => {
         style={{ fontFamily: 'PoppinsSemiBold' }}
       >
         Frequenlty asked
-        <Text className="text-primary"> questions.</Text>
+        <Text className="text-primary" onPress={handleRemoveUser}> questions.</Text>
       </Text>
 
       <ScrollView showsVerticalScrollIndicator={false}>

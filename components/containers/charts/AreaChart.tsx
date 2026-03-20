@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient'
-import { View, Text } from 'react-native'
+import { View, Text, useWindowDimensions } from 'react-native'
 import { LineChart } from "react-native-gifted-charts"
 
 type ChartProps = {
@@ -15,6 +15,9 @@ const AreaChartComponent = ({ title, description, sideLabel, data, data2, chartK
   const lineData = data || [{ value: 0 }]
   const lineData2 = data2 || [{ value: 0 }]
 
+  const { width } = useWindowDimensions()
+  const HORIZONTAL_PADDING = 32
+  
   return (
     <View className="flex flex-col" style={{  }}>
       <Text
@@ -43,7 +46,8 @@ const AreaChartComponent = ({ title, description, sideLabel, data, data2, chartK
       </View>
       <View style={{ marginBottom: 5, overflow: 'hidden' }}>
         <LineChart
-        key={chartKey}
+          key={chartKey}
+          width={width - HORIZONTAL_PADDING}
           maxValue={100}
           disableScroll
           areaChart
