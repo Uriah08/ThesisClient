@@ -246,7 +246,7 @@ const Home = () => {
                     marginRight: 1 }}
                   className={`p-1 border border-zinc-300 flex items-center w-20 h-32`}
                 >
-                  <Text className="text-black text-xs">
+                  <Text className="text-black" style={{ fontSize: 10 }}>
                     {new Date(data.first_item.datetime).toLocaleDateString('en-US', {
                       weekday: 'long',
                     })}
@@ -279,7 +279,7 @@ const Home = () => {
                     marginRight: index === data.future_forecast.length - 1 ? 18 : 0 }}
                   className={`p-1 border border-zinc-300 flex items-center w-20 h-32  ${index === data.future_forecast.length - 1 ? 'mr-5' : ''}`}
                 >
-                  <Text className="text-black text-xs">
+                  <Text className="text-black" style={{ fontSize: 10 }}>
                     {new Date(item.datetime).toLocaleDateString('en-US', {
                       weekday: 'long',
                     })}

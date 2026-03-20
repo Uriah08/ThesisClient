@@ -1,9 +1,10 @@
-import { View, Text, ScrollView, ActivityIndicator, Pressable, TextInput, Alert } from 'react-native'
+import { View, Text, ScrollView, ActivityIndicator, Pressable, TextInput } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useDeleteProductionMutation, useGetProductionQuery, useUpdateProductionMutation } from '@/store/productionApi'
+import { useGetProductionQuery, useUpdateProductionMutation } from '@/store/productionApi'
 import { ChevronLeft, MapPin, Package, Calendar, Pencil, Trash2, Check, X } from 'lucide-react-native'
 import Toast from 'react-native-toast-message'
+import DeleteClass from '@/components/containers/dialogs/Delete'
 
 const EMOJIS = ['😞', '😐', '🙂', '😊', '😁']
 const LABELS = ['Not Satisfied', 'Slightly Satisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
@@ -90,7 +91,7 @@ const Production = () => {
 
   const { data: production, isLoading: isFetching } = useGetProductionQuery(Number(id))
   const [updateProduction, { isLoading: isUpdating }] = useUpdateProductionMutation()
-  const [deleteProduction, { isLoading: isDeleting }] = useDeleteProductionMutation()
+  const [active, setActive] = useState(false)
 
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({ title: '', notes: '', quantity: '', landing: '' })
@@ -114,24 +115,6 @@ const Production = () => {
     } catch {
       Toast.show({ type: 'error', text1: 'Failed to update. Please try again.' })
     }
-  }
-
-  const handleDelete = () => {
-    Alert.alert('Delete Record', 'Are you sure? This cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete', style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteProduction(Number(id)).unwrap()
-            Toast.show({ type: 'success', text1: 'Record deleted' })
-            setTimeout(() => router.back(), 300)
-          } catch {
-            Toast.show({ type: 'error', text1: 'Failed to delete. Please try again.' })
-          }
-        },
-      },
-    ])
   }
 
   const cancelEdit = () => {
@@ -168,6 +151,7 @@ const Production = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <DeleteClass visible={active} setVisible={setActive} type='production' productionId={Number(id)}/>
 
       {/* ── Nav bar ── */}
       <View style={{
@@ -192,8 +176,8 @@ const Production = () => {
             </>
           ) : (
             <>
-              <Pressable onPress={handleDelete} disabled={isDeleting} style={{ padding: 8, borderRadius: 8, backgroundColor: '#fef2f2' }}>
-                {isDeleting ? <ActivityIndicator size={16} color="#ef4444" /> : <Trash2 size={16} color="#ef4444" />}
+              <Pressable onPress={() => setActive(true)} style={{ padding: 8, borderRadius: 8, backgroundColor: '#fef2f2' }}>
+                <Trash2 size={16} color="#ef4444" />
               </Pressable>
               <Pressable onPress={() => setEditing(true)} style={{ padding: 8, borderRadius: 8, backgroundColor: '#f4f4f5' }}>
                 <Pencil size={16} color="#3f3f46" />
