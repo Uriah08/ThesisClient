@@ -431,7 +431,7 @@ const HelpCenter = () => {
                 <Image
                   style={{ width: '100%', height: '100%' }}
                   resizeMode='cover'
-                  source={require('@/assets/images/help/sample.jpg')}
+                  source={require('@/assets/images/help/good.jpg')}
                 />
               </View>
               <CircleCheck size={20} color={'#00B44A'}/>
@@ -448,7 +448,7 @@ const HelpCenter = () => {
                 <Image
                   style={{ width: '100%', height: '100%' }}
                   resizeMode='cover'
-                  source={require('@/assets/images/help/sample.jpg')}
+                  source={require('@/assets/images/help/slant.jpg')}
                 />
               </View>
               <CircleX size={20} color={'#FF0000'}/>
@@ -463,6 +463,87 @@ const HelpCenter = () => {
           <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
             The scan result will identify whether the fish is <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>dry</Text>, <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>undried</Text>, or <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>rejected</Text>.
           </Text>
+
+          <Text
+            className="text-base mt-6"
+            style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}
+          >
+            Sun-Dried Fish Classification
+          </Text>
+
+          <Text
+            className="text-sm mt-1"
+            style={{ fontFamily: 'PoppinsRegular' }}
+          >
+            The scan feature classifies your fish based on dryness level and quality.
+            Each result is color-coded for quick identification.
+          </Text>
+
+          <View className="mt-4 border border-zinc-300 rounded-lg overflow-hidden">
+            {/* Header */}
+            <View className="flex-row bg-zinc-100">
+              <Text
+                className="p-3 text-sm"
+                style={{ width: '40%', fontFamily: 'PoppinsSemiBold' }}
+              >
+                Status
+              </Text>
+              <Text
+                className="p-3 text-sm"
+                style={{ width: '60%', fontFamily: 'PoppinsSemiBold' }}
+              >
+                Description
+              </Text>
+            </View>
+
+            {/* Reject */}
+            <View className="flex-row border-t border-zinc-200">
+              <Text
+                className="p-3 text-sm"
+                style={{ width: '40%', fontFamily: 'PoppinsSemiBold', color: '#961515' }}
+              >
+                Reject
+              </Text>
+              <Text
+                className="p-3 text-sm"
+                style={{ width: '60%', fontFamily: 'PoppinsRegular' }}
+              >
+                Not suitable due to spoilage or defects.
+              </Text>
+            </View>
+
+            {/* Undried */}
+            <View className="flex-row border-t border-zinc-200">
+              <Text
+                className="p-3 text-sm"
+                style={{ width: '40%', fontFamily: 'PoppinsSemiBold', color: '#c47f00' }}
+              >
+                Undried
+              </Text>
+              <Text
+                className="p-3 text-sm"
+                style={{ width: '60%', fontFamily: 'PoppinsRegular' }}
+              >
+                Still moist and needs more drying time.
+              </Text>
+            </View>
+
+            {/* Dry */}
+            <View className="flex-row border-t border-zinc-200">
+              <Text
+                className="p-3 text-sm"
+                style={{ width: '40%', fontFamily: 'PoppinsSemiBold', color: '#127312' }}
+              >
+                Dry
+              </Text>
+              <Text
+                className="p-3 text-sm"
+                style={{ width: '60%', fontFamily: 'PoppinsRegular' }}
+              >
+                Fully dried and ready for storage or selling.
+              </Text>
+            </View>
+          </View>
 
           <Text className='text-base mt-6' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>
             Need more help?

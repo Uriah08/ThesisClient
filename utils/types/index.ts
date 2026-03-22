@@ -124,7 +124,8 @@ export type FarmTray = {
   created_at: string;
   status: string;
   description: string
-  _isOptimistic?: boolean;  
+  _isOptimistic?: boolean; 
+  latest_session_datetime?: Date 
 }
 
 export type Tray = {
