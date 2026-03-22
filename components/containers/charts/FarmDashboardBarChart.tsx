@@ -1,6 +1,6 @@
 import { Detected } from '@/utils/types';
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, useWindowDimensions } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 
 interface Props {
@@ -46,6 +46,9 @@ const FarmDashboardBarChart = ({ data, chartKey }: Props) => {
   const flatValues = data.flatMap((d) => [d.detected, d.rejects]);
   const maxValue = flatValues.length > 0 ? Math.max(...flatValues) : 0;
 
+  const { width } = useWindowDimensions()
+  const HORIZONTAL_PADDING = 32
+
   return (
     <View style={{ paddingTop: 20 }}>
 
@@ -65,6 +68,7 @@ const FarmDashboardBarChart = ({ data, chartKey }: Props) => {
       </View>
 
       <BarChart
+        width={width - HORIZONTAL_PADDING}
         key={chartKey}
         isAnimated
         scrollAnimation

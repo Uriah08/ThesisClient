@@ -29,7 +29,13 @@ export const userApi = baseApi.injectEndpoints({
         method: "PUT",
         body: profileData,
       })
-    })
+    }),
+    me: build.query({
+      query: () => ({
+        url: "users/me/",
+        method: "GET",
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -38,5 +44,6 @@ export const {
   useCompleteProfileMutation,
   useLogoutMutation,
   useChangePasswordMutation,
-  useUpdateProfileMutation
+  useUpdateProfileMutation,
+  useMeQuery
 } = userApi;
