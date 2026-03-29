@@ -237,6 +237,11 @@ export interface TrayDashboard {
   session_tray_count: SessionTrayCountByDay[];
   detected_and_reject_by_day: Detected[];
   recent_harvested_trays: Tray[];
+  detection_summary: {
+    total_detected: number;
+    total_rejects: number;
+    reject_rate: number;
+  };
 }
 
 export type FarmProduction = {

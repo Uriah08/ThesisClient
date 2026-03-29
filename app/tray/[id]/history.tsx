@@ -1,14 +1,13 @@
 import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native'
 import React, { useRef, useState } from 'react'
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { useGetFarmTrayHistoryQuery, useLazyGetTrayProgressQuery } from '@/store/trayApi';
-import { FilterIcon } from 'lucide-react-native';
+import { ArrowLeft, FilterIcon, CircleCheck } from 'lucide-react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import SkeletonShimmer from '@/components/containers/SkeletonPlaceholder';
 import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDrawer';
 import ProgressSteps from '@/components/containers/farm/tray/ProgressSteps';
 import { Tray } from '@/utils/types';
-
 
 const History = () => {
   const { id } = useLocalSearchParams();
@@ -24,8 +23,8 @@ const History = () => {
   const finishedTrays = (data?.filter((item) => item.finished_at !== null) ?? [])
     .slice()
     .sort((a, b) => {
-      if (sortFilter === 'oldest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      if (sortFilter === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
 
   const handlePress = async (item: Tray) => {
@@ -41,116 +40,154 @@ const History = () => {
   }
 
   return (
-    <View className='flex-1 bg-white'>
-      <View className='flex-row justify-between items-center mt-10 p-5'>
-        <Text className='text-3xl' style={{ fontFamily: 'PoppinsBold' }}>History</Text>
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
 
-        {/* Filter button + dropdown */}
-        <View style={{ position: 'relative' }}>
-          <Pressable
-            onPress={() => setShowFilter(prev => !prev)}
-            style={{ backgroundColor: '#155183', borderRadius: 10, padding: 8 }}
-          >
-            <FilterIcon color={'#ffffff'} size={20} />
-          </Pressable>
-
-          {showFilter && (
-            <View style={{
-              position: 'absolute', top: 44, right: 0, zIndex: 50,
-              backgroundColor: 'white', borderWidth: 1, borderColor: '#d4d4d8',
-              borderRadius: 12, padding: 12, width: 160,
-              shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8,
-            }}>
-              <Text style={{ fontFamily: 'PoppinsMedium', color: '#27272a', marginBottom: 4 }}>Sort</Text>
-              <Pressable
-                onPress={() => { setSortFilter('newest'); setShowFilter(false) }}
-                style={{ padding: 8, borderRadius: 8, backgroundColor: sortFilter === 'newest' ? '#f4f4f5' : 'transparent' }}
-              >
-                <Text style={{ fontFamily: 'PoppinsRegular', color: '#000', fontSize: 14 }}>Newest</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => { setSortFilter('oldest'); setShowFilter(false) }}
-                style={{ padding: 8, borderRadius: 8, backgroundColor: sortFilter === 'oldest' ? '#f4f4f5' : 'transparent' }}
-              >
-                <Text style={{ fontFamily: 'PoppinsRegular', color: '#000', fontSize: 14 }}>Oldest</Text>
-              </Pressable>
+      {/* Header */}
+      <View style={{ backgroundColor: '#155183', paddingTop: 48, paddingBottom: 20, paddingHorizontal: 20 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <Pressable onPress={() => router.back()} android_ripple={{ color: '#ffffff30', borderless: true }}>
+              <ArrowLeft color="#fff" size={24} />
+            </Pressable>
+            <View>
+              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 18, color: '#fff' }}>History</Text>
+              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#ffffffaa', marginTop: 2 }}>
+                {finishedTrays.length} completed session{finishedTrays.length !== 1 ? 's' : ''}
+              </Text>
             </View>
-          )}
+          </View>
+
+          {/* Filter button */}
+          <View style={{ position: 'relative' }}>
+            <Pressable
+              onPress={() => setShowFilter(prev => !prev)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#ffffff20', borderRadius: 10, padding: 8 }}
+            >
+              <FilterIcon color="#fff" size={16} />
+              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#fff' }}>
+                {sortFilter === 'newest' ? 'Newest' : 'Oldest'}
+              </Text>
+            </Pressable>
+
+            {showFilter && (
+              <View style={{
+                position: 'absolute', top: 44, right: 0, zIndex: 50,
+                backgroundColor: 'white', borderWidth: 1, borderColor: '#d4d4d8',
+                borderRadius: 12, padding: 12, width: 160,
+                shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8,
+              }}>
+                <Text style={{ fontFamily: 'PoppinsMedium', color: '#27272a', marginBottom: 4 }}>Sort</Text>
+                <Pressable
+                  onPress={() => { setSortFilter('newest'); setShowFilter(false) }}
+                  style={{ padding: 8, borderRadius: 8, backgroundColor: sortFilter === 'newest' ? '#eff6ff' : 'transparent' }}
+                >
+                  <Text style={{ fontFamily: sortFilter === 'newest' ? 'PoppinsSemiBold' : 'PoppinsRegular', color: sortFilter === 'newest' ? '#155183' : '#000', fontSize: 14 }}>Newest</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => { setSortFilter('oldest'); setShowFilter(false) }}
+                  style={{ padding: 8, borderRadius: 8, backgroundColor: sortFilter === 'oldest' ? '#eff6ff' : 'transparent' }}
+                >
+                  <Text style={{ fontFamily: sortFilter === 'oldest' ? 'PoppinsSemiBold' : 'PoppinsRegular', color: sortFilter === 'oldest' ? '#155183' : '#000', fontSize: 14 }}>Oldest</Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} className='px-5' style={{ gap: 12 }}>
+      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1, paddingHorizontal: 16 }}>
         {isLoading ? (
-          <View>
-            <SkeletonShimmer style={{ height: 60, borderRadius: 7 }} />
-            <SkeletonShimmer style={{ height: 60, borderRadius: 7, marginTop: 12 }} />
-            <SkeletonShimmer style={{ height: 60, borderRadius: 7, marginTop: 12 }} />
+          <View style={{ marginTop: 16, gap: 10 }}>
+            <SkeletonShimmer style={{ height: 80, borderRadius: 12 }} />
+            <SkeletonShimmer style={{ height: 80, borderRadius: 12 }} />
+            <SkeletonShimmer style={{ height: 80, borderRadius: 12 }} />
+          </View>
+        ) : finishedTrays.length === 0 ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 }}>
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#a1a1aa' }}>No completed sessions yet</Text>
           </View>
         ) : (
-          finishedTrays?.map((tray, index) => (
-            <View key={tray.id} style={{ overflow: 'hidden', borderRadius: 7, marginTop: 10 }}>
-              <Pressable onPress={() => handlePress(tray)} android_ripple={{ color: 'rgba(0,0,0,0.1)' }} className='p-3 flex' style={{ borderWidth: 1, borderColor: '#d4d4d8', borderRadius: 7, marginTop: index === 0 ? 0 : 3 }}>
-                <View className='flex-row justify-between items-center'>
-                  <Text className="text-zinc-500" style={{ fontFamily: 'PoppinsSemiBold' }}>{tray.tray_name}</Text>
-                  <View className="flex-row items-center" style={{ gap: 5 }}>
-                    <Image
-                      source={
-                        tray?.created_by_profile_picture
-                          ? { uri: tray?.created_by_profile_picture }
-                          : require("@/assets/images/default-profile.png")
-                      }
-                      style={{ width: 15, height: 15, borderRadius: 999 }}
-                      resizeMode="cover"
-                    />
-                    <Text className="text-zinc-500" style={{ fontFamily: "PoppinsRegular", fontSize: 12, marginTop: 3 }}>
-                      {tray.created_by_username
-                        ? tray.created_by_username[0].toUpperCase() + tray.created_by_username.slice(1)
-                        : "N/A"}
-                    </Text>
-                  </View>
-                </View>
-                <View className="gap-3 flex flex-row">
-                  {['Start', 'End'].map((label) => (
-                    <View key={label} className="flex flex-row gap-2">
-                      <Text
-                        className="bg-primary text-white"
-                        style={{ fontFamily: 'PoppinsRegular', fontSize: 10, paddingHorizontal: 5, borderRadius: 5 }}
-                      >
-                        {label}
-                      </Text>
-                      <Text className="text-zinc-400" style={{ fontFamily: 'PoppinsMedium', fontSize: 10 }}>
-                        {label === 'Start'
-                          ? tray.created_at
-                            ? new Date(tray.created_at).toLocaleString('en-US', {
-                                hour: 'numeric', minute: '2-digit', hour12: true,
-                                month: 'short', day: 'numeric', year: 'numeric',
-                              })
-                            : '-'
-                          : tray?.finished_at
-                          ? new Date(tray?.finished_at).toLocaleString('en-US', {
-                              hour: 'numeric', minute: '2-digit', hour12: true,
-                              month: 'short', day: 'numeric', year: 'numeric',
-                            })
-                          : '-'}
+          <View style={{ marginTop: 16, gap: 10 }}>
+            {finishedTrays.map((tray) => (
+              <View key={tray.id} style={{ borderRadius: 12, overflow: 'hidden' }}>
+                <Pressable
+                  onPress={() => handlePress(tray)}
+                  android_ripple={{ color: 'rgba(0,0,0,0.06)' }}
+                  style={{ backgroundColor: 'white', borderWidth: 1, borderColor: '#e4e4e7', borderRadius: 12, padding: 14 }}
+                >
+                  {/* Top row */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <View style={{ backgroundColor: '#eff6ff', borderRadius: 8, padding: 6 }}>
+                        <CircleCheck size={14} color="#155183" />
+                      </View>
+                      <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 14, color: '#18181b' }}>
+                        {tray.tray_name}
                       </Text>
                     </View>
-                  ))}
-                </View>
-              </Pressable>
-            </View>
-          ))
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Image
+                        source={
+                          tray?.created_by_profile_picture
+                            ? { uri: tray.created_by_profile_picture }
+                            : require("@/assets/images/default-profile.png")
+                        }
+                        style={{ width: 20, height: 20, borderRadius: 999 }}
+                        resizeMode="cover"
+                      />
+                      <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#71717a' }}>
+                        {tray.created_by_username
+                          ? tray.created_by_username[0].toUpperCase() + tray.created_by_username.slice(1)
+                          : 'N/A'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Date rows */}
+                  <View style={{ gap: 4 }}>
+                    {(['Start', 'End'] as const).map((label) => (
+                      <View key={label} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <View style={{ backgroundColor: '#155183' , borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2 }}>
+                          <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 9, color: '#fff' }}>
+                            {label}
+                          </Text>
+                        </View>
+                        <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 11, color: '#71717a' }}>
+                          {label === 'Start'
+                            ? tray.created_at
+                              ? new Date(tray.created_at).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, month: 'short', day: 'numeric', year: 'numeric' })
+                              : '—'
+                            : tray.finished_at
+                            ? new Date(tray.finished_at).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, month: 'short', day: 'numeric', year: 'numeric' })
+                            : '—'}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </Pressable>
+              </View>
+            ))}
+          </View>
         )}
-        <View className='mt-5' />
+        <View style={{ height: 40 }} />
       </ScrollView>
 
       <BottomDrawer ref={drawerRef} onChange={(open) => setIsDrawerOpen(open)} type='full'>
         {progressLoading ? (
-          <View className='flex-1 items-center justify-center bg-white'>
-            <ActivityIndicator size={30} color="#155183" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', margin: 100 }} />
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'white' }}>
+            <ActivityIndicator size={30} color="#155183" />
           </View>
         ) : (
-          <ScrollView className='flex-1 w-full' contentContainerStyle={{ flexGrow: 1, paddingBottom: 80 }}>
-            <ProgressSteps loading={progressLoading} created_at={selectedItem?.created_at} finished_at={selectedItem?.finished_at} owner={selectedItem?.created_by_username} owner_pfp={selectedItem?.created_by_profile_picture} progress={progress} />
+          <ScrollView style={{ flex: 1, width: '100%' }} contentContainerStyle={{ flexGrow: 1, paddingBottom: 80 }}>
+            <ProgressSteps
+              loading={progressLoading}
+              created_at={selectedItem?.created_at}
+              finished_at={selectedItem?.finished_at}
+              owner={selectedItem?.created_by_username}
+              owner_pfp={selectedItem?.created_by_profile_picture}
+              progress={progress}
+            />
           </ScrollView>
         )}
       </BottomDrawer>

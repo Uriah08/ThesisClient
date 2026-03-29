@@ -9,18 +9,13 @@ import DateRangePicker from '@/components/ui/DateRangeFilter'
 
 type Props = { farmId: number }
 
-const formatDate = (d: Date) => d.toISOString().split('T')[0]
-
 const displayDate = (str: string) =>
   new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
 const Home = ({ farmId }: Props) => {
-  const today = new Date()
-  const defaultFrom = formatDate(new Date(today.getTime() - 6 * 86400000))
-  const defaultTo = formatDate(today)
 
-  const [from, setFrom] = useState<string | null>(defaultFrom)
-  const [to, setTo] = useState<string | null>(defaultTo)
+  const [from, setFrom] = useState<string | null>(null)
+  const [to, setTo] = useState<string | null>(null)
   const [chartKey, setChartKey] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
 
@@ -107,55 +102,73 @@ const Home = ({ farmId }: Props) => {
         ) : null}
 
         {/* Stat cards */}
-        <View className='px-5'>
-          <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
-            <View className='px-3 bg-primary rounded-xl flex' style={{ paddingTop: 15, flex: 1 }}>
-              <View className='flex-row gap-3 items-center'>
-                <View className='bg-white p-1 rounded-lg'>
-                  <PanelsLeftRight color={'#155183'} size={18} />
+        <View style={{ paddingHorizontal: 16 }}>
+          {/* Row 1 — Trays + Members */}
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
+            <View style={{ flex: 1, backgroundColor: '#155183', borderRadius: 14, padding: 14 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <View style={{ backgroundColor: '#ffffff20', borderRadius: 8, padding: 5 }}>
+                  <PanelsLeftRight color="#fff" size={14} />
                 </View>
-                <Text style={{ fontFamily: 'PoppinsBold', fontSize: 14, color: '#ffffff' }}>Trays</Text>
+                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 12, color: '#ffffffcc' }}>Trays</Text>
               </View>
-              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 25, color: '#ffffff', marginTop: 10 }}>{dashboard?.tray_count}</Text>
+              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 28, color: '#fff' }}>{dashboard?.tray_count ?? 0}</Text>
+              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#ffffff80', marginTop: 2 }}>total trays</Text>
             </View>
-            <View className='px-3 bg-primary rounded-xl flex' style={{ paddingTop: 15, flex: 1 }}>
-              <View className='flex-row gap-3 items-center'>
-                <View className='bg-white p-1 rounded-lg'>
-                  <Users color={'#155183'} size={18} />
+
+            <View style={{ flex: 1, backgroundColor: '#155183', borderRadius: 14, padding: 14 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <View style={{ backgroundColor: '#ffffff20', borderRadius: 8, padding: 5 }}>
+                  <Users color="#fff" size={14} />
                 </View>
-                <Text style={{ fontFamily: 'PoppinsBold', fontSize: 14, color: '#ffffff' }}>Members</Text>
+                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 12, color: '#ffffffcc' }}>Members</Text>
               </View>
-              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 25, color: '#ffffff', marginTop: 10 }}>{data?.members.length}</Text>
+              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 28, color: '#fff' }}>{data?.members.length ?? 0}</Text>
+              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#ffffff80', marginTop: 2 }}>farm members</Text>
             </View>
           </View>
 
-          <View className='px-3 bg-primary rounded-xl flex mt-5' style={{ paddingTop: 15 }}>
-            <View className='flex-row gap-3 items-center'>
-              <View className='bg-white p-1 rounded-lg'>
-                <Boxes color={'#155183'} size={18} />
+          {/* Row 2 — Total KG + Total Sales */}
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+            <View style={{ flex: 1, backgroundColor: '#155183', borderRadius: 14, padding: 14 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <View style={{ backgroundColor: '#ffffff20', borderRadius: 8, padding: 5 }}>
+                  <PanelsLeftRight color="#fff" size={14} />
+                </View>
+                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 12, color: '#ffffffcc' }}>Total KG</Text>
               </View>
-              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 14, color: '#ffffff' }}>Harvested Trays</Text>
+              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 28, color: '#fff' }}>
+                {dashboard?.production_summary?.total_quantity?.toFixed(1) ?? '0.0'}
+              </Text>
+              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#ffffff80', marginTop: 2 }}>kg produced</Text>
             </View>
-            <Text style={{ fontFamily: 'PoppinsBold', fontSize: 25, color: '#ffffff', marginTop: 10 }}>
+
+            <View style={{ flex: 1, backgroundColor: '#155183', borderRadius: 14, padding: 14 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <View style={{ backgroundColor: '#ffffff20', borderRadius: 8, padding: 5 }}>
+                  <Users color="#fff" size={14} />
+                </View>
+                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 12, color: '#ffffffcc' }}>Total Sales</Text>
+              </View>
+              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 24, color: '#fff' }} numberOfLines={1}>
+                ₱{dashboard?.production_summary?.total_sales?.toLocaleString() ?? '0'}
+              </Text>
+              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#ffffff80', marginTop: 2 }}>revenue earned</Text>
+            </View>
+          </View>
+
+          {/* Row 3 — Harvested Trays (full width) */}
+          <View style={{ backgroundColor: '#155183', borderRadius: 14, padding: 14, marginTop: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <View style={{ backgroundColor: '#ffffff20', borderRadius: 8, padding: 5 }}>
+                <Boxes color="#fff" size={14} />
+              </View>
+              <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 12, color: '#ffffffcc' }}>Harvested Trays</Text>
+            </View>
+            <Text style={{ fontFamily: 'PoppinsBold', fontSize: 28, color: '#fff' }}>
               {dashboard?.session_trays_count_by_day?.reduce((total, item) => total + item.count, 0) ?? 0}
             </Text>
-          </View>
-
-          {/* Production summary cards */}
-          <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
-            <View style={{ flex: 1, backgroundColor: '#f0fdf4', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#bbf7d0' }}>
-              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#16a34a', marginBottom: 4 }}>Total Quantity</Text>
-              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 22, color: '#15803d' }}>
-                {dashboard?.production_summary?.total_quantity?.toFixed(1) ?? 0}
-                <Text style={{ fontSize: 13, fontFamily: 'PoppinsRegular' }}> kg</Text>
-              </Text>
-            </View>
-            <View style={{ flex: 1, backgroundColor: '#eff6ff', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#bfdbfe' }}>
-              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#155183', marginBottom: 4 }}>Total Sales</Text>
-              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 22, color: '#155183' }}>
-                ₱{dashboard?.production_summary?.total_sales?.toLocaleString() ?? 0}
-              </Text>
-            </View>
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#ffffff80', marginTop: 2 }}>sessions finished</Text>
           </View>
         </View>
 
