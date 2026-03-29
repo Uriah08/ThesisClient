@@ -8,101 +8,121 @@ type Props = {
   farmId: number
   ownerId: number
 }
+
 const Members = ({ farmId, ownerId }: Props) => {
-  const { data, isLoading, refetch } = useGetMembersQuery(farmId) 
+  const { data, isLoading, refetch } = useGetMembersQuery(farmId)
+  const [refreshing, setRefreshing] = useState(false)
+  const [search, setSearch] = useState('')
 
-  const admin = data?.find((member) => member.id === ownerId);
-  const members = data?.filter((member) => member.id !== ownerId);
-
-  const [refreshing, setRefreshing] = useState(false);
   const onRefresh = async () => {
-    await refetch();
-    setRefreshing(true);
+    await refetch()
+    setRefreshing(true)
+    setTimeout(() => setRefreshing(false), 1000)
+  }
 
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
-  };
-  
+  const admin = data?.find((member) => member.id === ownerId)
+  const members = data
+    ?.filter((member) => member.id !== ownerId)
+    ?.filter((member) =>
+      member.username?.toLowerCase().includes(search.toLowerCase()) ||
+      member.email?.toLowerCase().includes(search.toLowerCase())
+    )
+
+  const adminMatch = !search ||
+    admin?.username?.toLowerCase().includes(search.toLowerCase()) ||
+    admin?.email?.toLowerCase().includes(search.toLowerCase())
+
   return (
     <View className='flex-1 flex flex-col'>
-      <Text className='text-xl text-zinc-700 mt-3 px-5' style={{ fontFamily: 'PoppinsBold', color: '#3f3f46'}}>Members</Text>
+      <Text className='text-xl text-zinc-700 mt-3 px-5' style={{ fontFamily: 'PoppinsBold', color: '#3f3f46' }}>Members</Text>
       <View className='relative p-5'>
         <TextInput
-        style={{ backgroundColor: "#ffffff60", height: 40, width: "100%", borderColor: '#d4d4d8' }}
+          style={{ backgroundColor: "#ffffff60", height: 40, width: "100%", borderColor: '#d4d4d8' }}
           className='rounded-full pl-12 text-base text-black border'
           placeholder='Search user...'
+          value={search}
+          onChangeText={setSearch}
         />
         <Search
           style={{ position: 'absolute', top: 25, left: 28 }}
           color={'#d4d4d8'}
         />
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} refreshControl={
-        <RefreshControl style={{ zIndex: -1}} colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
-      } className='flex-1 px-5'>
-        <Text className='text-zinc-400' style={{ fontFamily: 'PoppinsMedium', color: '#a1a1aa', fontSize: 12}}>Admin</Text>
-        {isLoading ? (
-          <View className='flex flex-row items-center gap-3 mt-3'>
-            <SkeletonShimmer style={{ width: 50, height: 50, borderRadius: 999 }}/>
-            <View className='flex flex-col'>
-              <SkeletonShimmer style={{ width: 100, height: 15, borderRadius: 4 }}/>
-              <SkeletonShimmer style={{ width: 150, height: 15, borderRadius: 4, marginTop: 8 }}/>
-            </View>
-          </View>
-        ) : (
-          <View className='flex flex-row items-center gap-3 mt-3'>
-            <Image
-              source={
-              admin?.profile_picture
-                  ? { uri: admin?.profile_picture }
-                  : require('@/assets/images/default-profile.png')
-              }
-              style={{ width: 50, height: 50, borderRadius: 999 }}
-              resizeMode="cover"
-            />
-            <View className="flex flex-col">
-              {/* <Text 
-              className='text-zinc-600' 
-              style={{ 
-                fontFamily: 'PoppinsSemiBold', 
-                fontSize: 13 
-              }}>
-                {admin?.first_name && admin?.first_name[0].toUpperCase() + admin?.first_name.slice(1)} {admin?.last_name && admin?.last_name[0].toUpperCase() + admin?.last_name.slice(1)}</Text> */}
-                <Text 
-              className='text-zinc-600' 
-              style={{ 
-                fontFamily: 'PoppinsSemiBold', 
-                fontSize: 13 
-              }}>{admin?.username && admin?.username[0].toUpperCase() + admin?.username.slice(1)}</Text>
-              <Text className='text-zinc-400' style={{ fontSize: 12, fontFamily: 'PoppinsRegular' }}>{admin?.email}</Text>
-            </View>
-          </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl style={{ zIndex: -1 }} colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        className='flex-1 px-5'
+      >
+        {/* Admin section */}
+        {adminMatch && (
+          <>
+            <Text className='text-zinc-400' style={{ fontFamily: 'PoppinsMedium', color: '#a1a1aa', fontSize: 12 }}>Admin</Text>
+            {isLoading ? (
+              <View className='flex flex-row items-center gap-3 mt-3'>
+                <SkeletonShimmer style={{ width: 50, height: 50, borderRadius: 999 }} />
+                <View className='flex flex-col'>
+                  <SkeletonShimmer style={{ width: 100, height: 15, borderRadius: 4 }} />
+                  <SkeletonShimmer style={{ width: 150, height: 15, borderRadius: 4, marginTop: 8 }} />
+                </View>
+              </View>
+            ) : (
+              <View className='flex flex-row items-center gap-3 mt-3'>
+                <Image
+                  source={
+                    admin?.profile_picture
+                      ? { uri: admin?.profile_picture }
+                      : require('@/assets/images/default-profile.png')
+                  }
+                  style={{ width: 50, height: 50, borderRadius: 999 }}
+                  resizeMode="cover"
+                />
+                <View className="flex flex-col">
+                  <Text className='text-zinc-600' style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13 }}>
+                    {admin?.username && admin.username[0].toUpperCase() + admin.username.slice(1)}
+                  </Text>
+                  <Text className='text-zinc-400' style={{ fontSize: 12, fontFamily: 'PoppinsRegular' }}>
+                    {admin?.email}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </>
         )}
-        <Text className='text-zinc-400 mt-3' style={{ fontFamily: 'PoppinsMedium', color: '#a1a1aa', fontSize: 12}}>Members</Text>
+
+        {/* Members section */}
+        {(members?.length ?? 0) > 0 && (
+          <Text className='text-zinc-400 mt-3' style={{ fontFamily: 'PoppinsMedium', color: '#a1a1aa', fontSize: 12 }}>Members</Text>
+        )}
         {isLoading ? (
           <>
-          <View className='flex flex-row items-center gap-3 mt-3'>
-            <SkeletonShimmer style={{ width: 50, height: 50, borderRadius: 999 }}/>
-            <View className='flex flex-col'>
-              <SkeletonShimmer style={{ width: 100, height: 15, borderRadius: 4 }}/>
-              <SkeletonShimmer style={{ width: 150, height: 15, borderRadius: 4, marginTop: 8 }}/>
+            <View className='flex flex-row items-center gap-3 mt-3'>
+              <SkeletonShimmer style={{ width: 50, height: 50, borderRadius: 999 }} />
+              <View className='flex flex-col'>
+                <SkeletonShimmer style={{ width: 100, height: 15, borderRadius: 4 }} />
+                <SkeletonShimmer style={{ width: 150, height: 15, borderRadius: 4, marginTop: 8 }} />
+              </View>
             </View>
-          </View>
-          <View className='flex flex-row items-center gap-3 mt-3'>
-            <SkeletonShimmer style={{ width: 50, height: 50, borderRadius: 999 }}/>
-            <View className='flex flex-col'>
-              <SkeletonShimmer style={{ width: 100, height: 15, borderRadius: 4 }}/>
-              <SkeletonShimmer style={{ width: 150, height: 15, borderRadius: 4, marginTop: 8 }}/>
+            <View className='flex flex-row items-center gap-3 mt-3'>
+              <SkeletonShimmer style={{ width: 50, height: 50, borderRadius: 999 }} />
+              <View className='flex flex-col'>
+                <SkeletonShimmer style={{ width: 100, height: 15, borderRadius: 4 }} />
+                <SkeletonShimmer style={{ width: 150, height: 15, borderRadius: 4, marginTop: 8 }} />
+              </View>
             </View>
-          </View>
           </>
+        ) : members?.length === 0 && search ? (
+          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#a1a1aa', textAlign: 'center', marginTop: 20 }}>
+            No members found
+          </Text>
         ) : (
           members?.map((member) => (
             <View key={member.id} className='flex flex-row items-center gap-3 mt-3'>
               <Image
                 source={
-                member?.profile_picture
+                  member?.profile_picture
                     ? { uri: member?.profile_picture }
                     : require('@/assets/images/default-profile.png')
                 }
@@ -110,20 +130,12 @@ const Members = ({ farmId, ownerId }: Props) => {
                 resizeMode="cover"
               />
               <View className="flex flex-col">
-                {/* <Text 
-                className='text-zinc-600' 
-                style={{ 
-                  fontFamily: 'PoppinsSemiBold', 
-                  fontSize: 13 
-                }}>
-                  {member?.first_name && member?.first_name[0].toUpperCase() + member?.first_name.slice(1)} {member?.last_name && member?.last_name[0].toUpperCase() + member?.last_name.slice(1)}</Text> */}
-                  <Text 
-                  className='text-zinc-600' 
-                  style={{ 
-                    fontFamily: 'PoppinsSemiBold', 
-                    fontSize: 13 
-                  }}>{member?.username && member?.username[0].toUpperCase() + member?.username.slice(1)}</Text>
-                <Text className='text-zinc-400' style={{ fontSize: 12, fontFamily: 'PoppinsRegular' }}>{member?.email}</Text>
+                <Text className='text-zinc-600' style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13 }}>
+                  {member?.username && member.username[0].toUpperCase() + member.username.slice(1)}
+                </Text>
+                <Text className='text-zinc-400' style={{ fontSize: 12, fontFamily: 'PoppinsRegular' }}>
+                  {member?.email}
+                </Text>
               </View>
             </View>
           ))

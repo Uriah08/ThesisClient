@@ -171,7 +171,7 @@ const Home = () => {
   return (
     <View className='flex-1 bg-white'>
           <View className='flex-row justify-between items-center mt-14 p-5'>
-            <Image source={require('@/assets/images/main-icon.png')} style={{ width: 120, height: 63 }} resizeMode='cover'/>
+            <Image source={require('@/assets/images/main-logo.png')} style={{ width: 120, height: 63, marginTop: -10 }} resizeMode='contain'/>
         <View
           style={{
             width: 50,

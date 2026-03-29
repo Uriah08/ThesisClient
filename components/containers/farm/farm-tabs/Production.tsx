@@ -124,6 +124,16 @@ const Production = ({ owner, farmId }: ProductionProps) => {
   const [visible, setVisible] = useState(false)
   const [format, setFormat] = useState(true)
   const { data, isLoading } = useGetProductionsQuery(farmId)
+  const [showFilter, setShowFilter] = useState(false)
+  const [sortFilter, setSortFilter] = useState<'newest' | 'latest'>('newest')
+  const [search, setSearch] = useState('')
+
+  const filteredData = [...(data ?? [])]
+  .filter(item => item.title?.toLowerCase().includes(search.toLowerCase()))
+  .sort((a, b) => {
+    if (sortFilter === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  })
 
   return (
     <View style={{ flex: 1 }}>
@@ -139,18 +149,43 @@ const Production = ({ owner, farmId }: ProductionProps) => {
         </View>
       </View>
 
+      {showFilter && (
+        <View style={{ top: 90 }} className="absolute right-5 z-50 bg-white border border-zinc-300 rounded-xl shadow-lg p-3 w-44">
+          <Text className='text-zinc-800' style={{ fontFamily: 'PoppinsMedium' }}>Sort</Text>
+
+          <Pressable
+            className={`w-full p-2 rounded-lg ${sortFilter === 'newest' && 'bg-zinc-100'}`}
+            onPress={() => { setSortFilter('newest'); setShowFilter(false) }}
+          >
+            <Text className="text-black text-base">Newest</Text>
+          </Pressable>
+          <Pressable
+            className={`w-full p-2 rounded-lg ${sortFilter === 'latest' && 'bg-zinc-100'}`}
+            onPress={() => { setSortFilter('latest'); setShowFilter(false) }}
+          >
+            <Text className="text-black text-base">Latest</Text>
+          </Pressable>
+        </View>
+      )}
+
       <View className='flex-row gap-3 w-full px-5' style={{ marginBottom: 15, marginTop: 10 }}>
         <View className='relative flex-1'>
           <TextInput
             style={{ backgroundColor: "#ffffff60", height: 40, width: "100%", borderColor: '#d4d4d8' }}
             className='rounded-full pl-12 text-base text-black border'
-            placeholder='Search tray...'
+            placeholder='Search production...'
+            value={search}
+            onChangeText={setSearch}
           />
           <Search style={{ position: 'absolute', top: 8, left: 14 }} color={'#d4d4d8'} />
         </View>
-        <View className='flex items-center justify-center' style={{ backgroundColor: '#155183', borderRadius: 10, padding: 8 }}>
+        <Pressable
+          onPress={() => setShowFilter(prev => !prev)}
+          className='flex items-center justify-center'
+          style={{ backgroundColor: '#155183', borderRadius: 10, padding: 8 }}
+        >
           <FilterIcon color={'#ffffff'} size={20} />
-        </View>
+        </Pressable>
         <Pressable
           onPress={() => setFormat(f => !f)}
           className='flex items-center justify-center'
@@ -164,7 +199,7 @@ const Production = ({ owner, farmId }: ProductionProps) => {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator color="#155183" />
         </View>
-      ) : !data || data.length === 0 ? (
+      ) : !filteredData || filteredData.length === 0 ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40 }}>
           <Text style={{ fontSize: 36, marginBottom: 8 }}>📦</Text>
           <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15, color: '#3f3f46', textAlign: 'center' }}>
@@ -187,7 +222,7 @@ const Production = ({ owner, farmId }: ProductionProps) => {
             </View>
           )}
 
-          {data.map((item: FarmProduction) =>
+          {filteredData.map((item: FarmProduction) =>
             format
               ? <ProductionCard key={item.id} item={item} />
               : <ProductionRow key={item.id} item={item} />

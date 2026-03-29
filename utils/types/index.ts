@@ -193,11 +193,24 @@ export interface FarmDashboard {
   description: string | null;
   image_url: string | null;
   session_counts_by_day: SessionCountByDay[];
-  tray_count: number
-  announcement_count: number
-  session_trays_count_by_day: SessionTrayCountByDay[]
-  detected_and_reject_by_day: Detected[]
-  recent_harvested_trays: Tray[]
+  tray_count: number;
+  announcement_count: number;
+  session_trays_count_by_day: SessionTrayCountByDay[];
+  detected_and_reject_by_day: Detected[];
+  recent_harvested_trays: Tray[];
+  production_by_day: ProductionDay[];
+  production_summary: ProductionSummary;
+}
+
+export interface ProductionDay {
+  day: string;
+  quantity: number;
+  sales: number;
+}
+
+export interface ProductionSummary {
+  total_quantity: number;
+  total_sales: number;
 }
 
 export interface SessionCountByDay {
@@ -206,7 +219,7 @@ export interface SessionCountByDay {
 }
 
 export interface SessionTrayCountByDay {
-  created_at: string;
+  finished_at: string;
   count: number;
 }
 
@@ -220,10 +233,10 @@ export interface TrayDashboard {
   id: number;
   name: string;
   status: string;
-  created_at: string
-  session_tray_count: SessionTrayCountByDay[]
-  detected_and_reject_by_day: Detected[]
-  recent_harvested_trays: Tray[]
+  created_at: string;
+  session_tray_count: SessionTrayCountByDay[];
+  detected_and_reject_by_day: Detected[];
+  recent_harvested_trays: Tray[];
 }
 
 export type FarmProduction = {
@@ -232,6 +245,7 @@ export type FarmProduction = {
   title: string
   notes?: string | null
   satisfaction: number
+  total: number
   location?: string | null
   quantity: number
   landing?: string | null

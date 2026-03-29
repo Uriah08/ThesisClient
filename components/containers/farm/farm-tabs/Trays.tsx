@@ -1,10 +1,11 @@
 import { View, Text, Pressable, TextInput, ScrollView, RefreshControl } from 'react-native'
 import React, { useState } from 'react'
-import { FilterIcon, PanelsLeftRightIcon, Search } from 'lucide-react-native'
+import { CircleCheck, FilterIcon, PanelsLeftRightIcon, Play, Search } from 'lucide-react-native'
 import CreateTray from '../../dialogs/CreateTray'
 import { useGetFarmTraysQuery } from '@/store/farmTrayApi'
 import SkeletonShimmer from '../../SkeletonPlaceholder'
 import { router } from 'expo-router'
+import ActivateSession from '../../dialogs/ActivateSession'
 
 type Props = {
   farmId: number
@@ -20,6 +21,8 @@ const Trays = ({ farmId, owner }: Props) => {
   const [sortFilter, setSortFilter] = useState<'newest' | 'latest'>('newest');
   const [olderThan2Days, setOlderThan2Days] = useState(false);
   const [search, setSearch] = useState('');
+  const [show, setShow] = useState(false);
+  const [ID, setID] = useState<number | null>(null);
 
   const onRefresh = async () => {
     await refetch();
@@ -28,8 +31,6 @@ const Trays = ({ farmId, owner }: Props) => {
       setRefreshing(false);
     }, 1000);
   };
-
-  console.log("WOW:", data);
 
   const filteredTrays = (data ?? [])
     .filter(tray => tray.name?.toLowerCase().includes(search.toLowerCase()))
@@ -66,6 +67,11 @@ const Trays = ({ farmId, owner }: Props) => {
           </View>
         </View>
       </View>
+
+      <ActivateSession visible={show} setVisible={setShow} 
+      trayId={ID!} 
+      active={data?.find(tray => tray.id === ID)?.status === 'active'}
+      />
 
       {owner && (
         <View
@@ -223,12 +229,29 @@ const Trays = ({ farmId, owner }: Props) => {
                     className='text-gray-500 mt-1'
                     style={{ fontFamily: 'PoppinsMedium', fontSize: 11 }}
                   >
-                    {tray.latest_session_datetime
+                    {tray.latest_session_datetime && tray.status === 'active'
                       ? (new Date().getTime() - new Date(tray.latest_session_datetime).getTime()) / (1000 * 60 * 60 * 24) >= 2
                         ? 'Tray reached 2 days'
                         : ''
                       : ''}
                   </Text>
+                  <Pressable 
+                    onPress={() => {setShow(true); setID(tray?.id)}}
+                    android_ripple={{ color: "#ffffff50", borderless: false }} 
+                    className='gap-2 flex-row items-center z-10' 
+                    style={{ 
+                      backgroundColor: '#155183', 
+                      padding: 2,
+                      paddingHorizontal: 10,
+                      borderRadius: 9999 
+                      }}>
+                        {tray.status === 'active' ? (
+                            <CircleCheck size={14} color={'#ffffff'}/>
+                        ) : (
+                            <Play size={14} color={'#ffffff'}/>
+                        )}
+                      <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#ffffff' }}>{tray.status === 'active' ? 'Finish' : 'Start'}</Text>
+                    </Pressable>
                 </View>
               </Pressable>
             </View>

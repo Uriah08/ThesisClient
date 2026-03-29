@@ -2,7 +2,7 @@ import { View, Text, ScrollView, ActivityIndicator, Pressable, TextInput } from 
 import React, { useState, useEffect } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useGetProductionQuery, useUpdateProductionMutation } from '@/store/productionApi'
-import { ChevronLeft, MapPin, Package, Calendar, Pencil, Trash2, Check, X } from 'lucide-react-native'
+import { ChevronLeft, MapPin, Package, Calendar, Pencil, Trash2, Check, X, PhilippinePeso } from 'lucide-react-native'
 import Toast from 'react-native-toast-message'
 import DeleteClass from '@/components/containers/dialogs/Delete'
 
@@ -94,7 +94,7 @@ const Production = () => {
   const [active, setActive] = useState(false)
 
   const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState({ title: '', notes: '', quantity: '', landing: '' })
+  const [form, setForm] = useState({ title: '', notes: '', quantity: '', total: '', landing: '' })
 
   useEffect(() => {
     if (production) {
@@ -102,6 +102,7 @@ const Production = () => {
         title: production.title ?? '',
         notes: production.notes ?? '',
         quantity: String(production.quantity ?? ''),
+        total: String(production.total ?? ''),
         landing: production.landing ?? '',
       })
     }
@@ -123,6 +124,7 @@ const Production = () => {
       title: production.title ?? '',
       notes: production.notes ?? '',
       quantity: String(production.quantity ?? ''),
+      total: String(production.total ?? ''),
       landing: production.landing ?? '',
     })
   }
@@ -223,6 +225,7 @@ const Production = () => {
             <EditField label="Title" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} />
             <EditField label="Quantity (kg)" value={form.quantity} onChange={v => setForm(f => ({ ...f, quantity: v }))} keyboardType="numeric" />
             <EditField label="Landing Site" value={form.landing} onChange={v => setForm(f => ({ ...f, landing: v }))} />
+              <EditField label="Total Sales" value={form.total} onChange={v => setForm(f => ({ ...f, total: v }))} />
             <EditField label="Notes" value={form.notes} onChange={v => setForm(f => ({ ...f, notes: v }))} multiline />
           </View>
         ) : (
@@ -248,6 +251,18 @@ const Production = () => {
                 </View>
                 <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#18181b' }}>
                   {production.landing}
+                </Text>
+              </View>
+            )}
+
+            {production.total && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <PhilippinePeso size={15} color="#a1a1aa" />
+                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#71717a' }}>Total Sale</Text>
+                </View>
+                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#18181b' }}>
+                  ₱{Number(production.total).toLocaleString('en-PH')}
                 </Text>
               </View>
             )}

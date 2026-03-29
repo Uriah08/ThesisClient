@@ -114,13 +114,14 @@ export const farmApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Farm"],
     }),
-    getFarmDashboard: build.query<FarmDashboard, number>({
-      query: (id) => ({
+    getFarmDashboard: build.query<FarmDashboard, { id: number; from?: string; to?: string }>({
+      query: ({ id, from, to }) => ({
         url: `farms/dashboard/${id}/`,
         method: "GET",
+        params: from && to ? { from, to } : {},
       }),
       providesTags: ["Farm", "Tray", "Session"],
-    })
+    }),
   }),
   overrideExisting: true,
 });
