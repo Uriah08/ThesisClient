@@ -47,13 +47,14 @@ export const farmTrayApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Tray"],
         }),
-        trayDashboard: builder.query<TrayDashboard, number>({
-            query: (id) => ({
+        trayDashboard: builder.query<TrayDashboard, { id: number; from?: string; to?: string }>({
+            query: ({ id, from, to }) => ({
                 url: `tray/dashboard/${id}/`,
-                method: 'GET',
+                method: "GET",
+                params: from && to ? { from, to } : {},
             }),
-            providesTags: ['Tray'],
-        })
+            providesTags: ["Tray", "Session"],
+        }),
     }),
     overrideExisting: true,
 })
