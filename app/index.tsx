@@ -36,9 +36,9 @@ export default function Index() {
         style={{
           fontFamily: 'PoppinsSemiBold'
         }}
-        >To
+        >Fi
           <Text className='text-primary'>
-            You
+            Scan
           </Text>
       </Text>
       <Text 
