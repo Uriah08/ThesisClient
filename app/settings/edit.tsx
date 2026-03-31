@@ -1,285 +1,367 @@
-import { View, Text, ScrollView, Image, Pressable, TextInput, ActivityIndicator } from 'react-native'
+import {
+  View, Text, ScrollView, Image,
+  Pressable, TextInput, ActivityIndicator,
+} from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { ChevronLeft, Pencil } from 'lucide-react-native'
+import { ChevronLeft, Pencil, UserIcon } from 'lucide-react-native'
 import { router } from 'expo-router'
 import useAuthRedirect from '@/components/hooks/useAuthRedirect'
-import * as ImagePicker from 'expo-image-picker';
-import CountryPicker, { Country, CountryCode } from "react-native-country-picker-modal";
+import * as ImagePicker from 'expo-image-picker'
+import CountryPicker, { Country, CountryCode } from 'react-native-country-picker-modal'
 import Toast from 'react-native-toast-message'
 import { useUpdateProfileMutation } from '@/store/userApi'
 import { replaceImageInSupabase } from '@/utils/lib/supabase'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+// ─── text field ────────────────────────────────────────────────────────────────
+type FieldProps = {
+  label: string
+  fieldKey: string
+  value: string
+  onChange: (v: string) => void
+  error?: string
+  isFocused: string
+  onFocus: () => void
+  onBlur: () => void
+  placeholder?: string
+  keyboardType?: any
+  textContentType?: any
+}
+const Field = ({
+  label, fieldKey, value, onChange, error,
+  isFocused, onFocus, onBlur, placeholder, keyboardType, textContentType,
+}: FieldProps) => {
+  const focused = isFocused === fieldKey
+  const hasError = !!error
+  return (
+    <View style={{ marginTop: 14 }}>
+      <Text style={{
+        fontSize: 11, fontFamily: 'PoppinsMedium',
+        color: '#a1a1aa', letterSpacing: 0.4, marginBottom: 6,
+      }}>
+        {label}
+      </Text>
+      <TextInput
+        style={{
+          borderRadius: 10,
+          borderWidth: hasError ? 1.5 : focused ? 1.5 : 0.5,
+          borderColor: hasError ? '#ef444480' : focused ? '#155183' : '#e4e4e7',
+          backgroundColor: '#fafafa',
+          paddingHorizontal: 14, paddingVertical: 12,
+          fontSize: 13, fontFamily: 'PoppinsRegular', color: '#18181b',
+        }}
+        placeholder={placeholder}
+        placeholderTextColor="#d4d4d8"
+        value={value}
+        onChangeText={onChange}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        keyboardType={keyboardType}
+        textContentType={textContentType}
+        autoCapitalize="none"
+      />
+      {hasError && (
+        <Text style={{
+          fontSize: 11, fontFamily: 'PoppinsRegular',
+          color: '#ef4444', marginTop: 4, marginLeft: 2,
+        }}>
+          {error}
+        </Text>
+      )}
+    </View>
+  )
+}
+
+// ─── main screen ───────────────────────────────────────────────────────────────
 const EditProfile = () => {
   const { user } = useAuthRedirect()
-  const [updateProfile, { isLoading }] = useUpdateProfileMutation();
+  const [updateProfile, { isLoading }] = useUpdateProfileMutation()
   const [supabaseLoading, setSupabaseLoading] = useState(false)
   const [isFocused, setIsFocused] = useState('')
+  const [errors, setErrors]       = useState<{ [key: string]: string }>({})
+  const [image, setImage]         = useState<string | null>(null)
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  const [image, setImage] = useState<string | null>(null);
+  const [username, setUsername]           = useState(user?.username || '')
+  const [email, setEmail]                 = useState(user?.email || '')
+  const [mobileNumber, setMobileNumber]   = useState(
+    user?.mobile_number ? user.mobile_number.replace(/^\+\d{1,3}/, '') : ''
+  )
+  const [countryCode, setCountryCode] = useState<CountryCode>('PH')
+  const [callingCode, setCallingCode] = useState('+63')
+  const [visible, setVisible]         = useState(false)
 
   useEffect(() => {
     if (user) {
-        setUsername(user.username || '');
-        setEmail(user.email || '');
-        setMobileNumber(user.mobile_number ? user.mobile_number.replace(/^\+\d{1,3}/, '') : '');
+      setUsername(user.username || '')
+      setEmail(user.email || '')
+      setMobileNumber(user.mobile_number ? user.mobile_number.replace(/^\+\d{1,3}/, '') : '')
     }
-    }, [user]);
-
-  const [username, setUsername] = useState(user?.username || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [mobileNumber, setMobileNumber] = useState(user?.mobile_number ? user.mobile_number.replace(/^\+\d{1,3}/, '') : '');
-
-  const [countryCode, setCountryCode] = useState<CountryCode>("PH");
-  const [callingCode, setCallingCode] = useState("+63");
-  const [visible, setVisible] = useState(false);
-
-  const handleSubmit = async () => {
-      if (!validate()) return
-      let imageURL = ''
-      try {
-        if (image) {
-        const uploadedUrl = await replaceImageInSupabase(
-            image,
-            'profile',
-            user?.profile_picture || undefined,
-            setSupabaseLoading
-        );
-        if (uploadedUrl) imageURL = uploadedUrl;
-        }
-        const response = await updateProfile({
-            username,
-            email,
-            mobile_number: callingCode + mobileNumber,
-            ...(imageURL && { profile_picture: imageURL }),
-        }).unwrap()
-
-        await AsyncStorage.setItem(
-        'user',
-        JSON.stringify({
-            username: response.username,
-            email: response.email || '', 
-            id: response.id || '',
-            first_name: response.first_name || '',
-            last_name: response.last_name || '',
-            birthday: response.birthday || '',
-            address: response.address || '',
-            is_complete: response.is_complete || false,
-            profile_picture: response.profile_picture || '',
-            mobile_number: response.mobile_number || '',
-        })
-        );
-  
-        Toast.show({
-          type: 'success',
-          text1: 'Profile Updated Successfully!',
-        });
-  
-      } catch (error: any) {
-        console.log(error);
-        
-        if (error?.data?.detail) {
-          Toast.show({
-            type: 'error',
-            text1: error.data.detail,
-          });
-        }
-  
-        const serverErrors: { [key: string]: string } = {};
-        if (error?.data) {
-          for (const key in error.data) {
-            serverErrors[key] = error.data[key][0];
-          }
-          setErrors((prev) => ({ ...prev, ...serverErrors }));
-        } else {
-          console.log('Unexpected error:', error);
-        }      
-      }
-    };
+  }, [user])
 
   const validate = async () => {
-    const newErrors: { [key: string]: string } = {};
-    // const emailValidator = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=a270cfe23edc4084a9665add430b88c9&email=${email}`)
-    // const validatedEmail = await emailValidator.json();
-
-    if (!username.trim()) {
-      newErrors.username = 'Username is required.';
-    }
-
-    if (!email.trim()) {
-      newErrors.email = 'Email is required.';
-    // } else if (validatedEmail.deliverability !== 'DELIVERABLE') {
-    //   newErrors.email = 'Email is not deliverable.';
-    // } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-    //   newErrors.email = 'Enter a valid email.';
-    }
-
-    if(!mobileNumber.trim()) {
-      newErrors.mobileNumber = 'Mobile number is required.';
-    }
-
+    const e: { [key: string]: string } = {}
+    if (!username.trim())     e.username     = 'Username is required.'
+    if (!email.trim())        e.email        = 'Email is required.'
+    if (!mobileNumber.trim()) e.mobileNumber = 'Mobile number is required.'
     if (image) {
-      const allowedExtensions = ['jpg', 'jpeg', 'png'];
-      const extension = image.split('.').pop()?.toLowerCase();
-      if (!extension || !allowedExtensions.includes(extension)) {
-        newErrors.profilePicture = 'Only JPEG or PNG images are allowed.';
+      const ext = image.split('.').pop()?.toLowerCase()
+      if (!ext || !['jpg', 'jpeg', 'png'].includes(ext))
+        e.profilePicture = 'Only JPEG or PNG images are allowed.'
+    }
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  const handleSubmit = async () => {
+    if (!validate()) return
+    let imageURL = ''
+    try {
+      if (image) {
+        const url = await replaceImageInSupabase(
+          image, 'profile', user?.profile_picture || undefined, setSupabaseLoading
+        )
+        if (url) imageURL = url
+      }
+      const response = await updateProfile({
+        username, email,
+        mobile_number: callingCode + mobileNumber,
+        ...(imageURL && { profile_picture: imageURL }),
+      }).unwrap()
+
+      await AsyncStorage.setItem('user', JSON.stringify({
+        username: response.username,
+        email: response.email || '',
+        id: response.id || '',
+        first_name: response.first_name || '',
+        last_name: response.last_name || '',
+        birthday: response.birthday || '',
+        address: response.address || '',
+        is_complete: response.is_complete || false,
+        profile_picture: response.profile_picture || '',
+        mobile_number: response.mobile_number || '',
+      }))
+
+      Toast.show({ type: 'success', text1: 'Profile updated successfully!' })
+    } catch (error: any) {
+      if (error?.data?.detail) Toast.show({ type: 'error', text1: error.data.detail })
+      if (error?.data) {
+        const se: { [key: string]: string } = {}
+        for (const key in error.data) se[key] = error.data[key][0]
+        setErrors(prev => ({ ...prev, ...se }))
       }
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  }
 
   const onSelect = (country: Country) => {
-    setCountryCode(country.cca2);
-    setCallingCode("+" + country.callingCode[0]);
-    setVisible(false);
-  };
+    setCountryCode(country.cca2)
+    setCallingCode('+' + country.callingCode[0])
+    setVisible(false)
+  }
 
   const pickImage = async () => {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        alert('Permission is required to access media library');
-        return;
-      }
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        quality: 1,
-      });
-  
-      if (!result.canceled) {
-        setImage(result.assets[0].uri);
-      }
-    };
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (!permission.granted) { alert('Permission required to access media library'); return }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'], allowsEditing: true, quality: 1,
+    })
+    if (!result.canceled) setImage(result.assets[0].uri)
+  }
 
+  const mobileFocused = isFocused === 'no'
+  const mobileError   = !!errors.mobileNumber
 
   return (
-    <View className='flex-1 bg-white'>
-      <ChevronLeft onPress={() => router.back()} style={{ marginTop: 50, marginLeft: 30 }} color="black" size={32} />
-      <Text className='mt-10 mx-7 text-2xl' style={{
-        fontFamily: 'PoppinsSemiBold',
-      }}> Edit your
-      <Text className='text-primary'> profile.</Text></Text>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="mx-7 flex-1 items-center">
-          <View className="border-[3px] border-primary mt-10 rounded-full p-1 relative">
-            <Image
-              source={
-                image
-                  ? { uri: image } :
-                  user?.profile_picture ? 
-                { uri: user.profile_picture }
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+
+      {/* Header */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', gap: 12,
+        paddingTop: 56, paddingHorizontal: 24, paddingBottom: 8,
+      }}>
+        <Pressable
+          onPress={() => router.back()}
+          style={{
+            width: 36, height: 36, borderRadius: 18,
+            backgroundColor: '#f4f4f5',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+          <ChevronLeft size={18} color="#18181b" />
+        </Pressable>
+        <Text style={{ fontSize: 17, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
+          Edit Profile
+        </Text>
+      </View>
+
+      {/* subtitle chip */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', gap: 8,
+        paddingHorizontal: 24, paddingVertical: 12,
+      }}>
+        <View style={{
+          width: 28, height: 28, borderRadius: 8,
+          backgroundColor: '#E6F1FB',
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          <UserIcon size={13} color="#185FA5" />
+        </View>
+        <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+          Update your account information
+        </Text>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 60 }}
+      >
+
+        {/* Avatar card */}
+        <View style={{
+          alignItems: 'center', padding: 24, gap: 4,
+          backgroundColor: '#fafafa', borderRadius: 16,
+          borderWidth: 0.5, borderColor: '#f4f4f5',
+          marginBottom: 16,
+        }}>
+          {/* avatar + pencil */}
+          <View style={{ position: 'relative' }}>
+            <View style={{
+              padding: 3, borderRadius: 999,
+              borderWidth: 2, borderColor: '#155183',
+            }}>
+              <Image
+                source={
+                  image ? { uri: image }
+                  : user?.profile_picture ? { uri: user.profile_picture }
                   : require('@/assets/images/default-profile.png')
-              }
-              style={{ width: 80, height: 80, borderRadius: 999 }}
-              resizeMode="cover"
-            />
+                }
+                style={{ width: 72, height: 72, borderRadius: 999 }}
+                resizeMode="cover"
+              />
+            </View>
             <Pressable
               onPress={pickImage}
-              className="absolute bg-zinc-200 justify-center items-center h-8 w-8 bottom-0 right-0 rounded-full"
-            >
-              <Pencil size={15} color={'#155183'} />
+              style={{
+                position: 'absolute', bottom: 0, right: 0,
+                width: 26, height: 26, borderRadius: 13,
+                backgroundColor: '#ffffff',
+                borderWidth: 0.5, borderColor: '#e4e4e7',
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+              <Pencil size={12} color="#155183" />
             </Pressable>
           </View>
-
-          <TextInput
-            className={`rounded-md p-3 mt-10 w-full text-base text-black ${
-              isFocused === 'username' ? 'border-[2px] border-black' : 'border border-zinc-300'
-            }`}
-            onFocus={() => setIsFocused('username')}
-            onBlur={() => setIsFocused('')}
-            placeholder="Username"
-            placeholderTextColor="#9ca3af"
-            value={username}
-            onChangeText={setUsername}
-          />
-          {errors.username && (
-            <Text className="text-error mt-1 ml-1 text-sm w-full">{errors.username}</Text>
-          )}
-
-          <TextInput
-            className={`rounded-md p-3 mt-5 w-full text-base text-black ${
-              isFocused === 'email' ? 'border-[2px] border-black' : 'border border-zinc-300'
-            }`}
-            onFocus={() => setIsFocused('email')}
-            onBlur={() => setIsFocused('')}
-            placeholder="Email"
-            textContentType='emailAddress'
-            placeholderTextColor="#9ca3af"
-            value={email}
-            onChangeText={setEmail}
-          />
-          {errors.email && (
-            <Text className="text-error mt-1 ml-1 text-sm w-full">{errors.email}</Text>
-          )}
-
-        <View
-          className={`flex-row items-center mt-5 rounded-md border ${
-            isFocused === "no"
-              ? "border-2 border-black"
-              : "border border-zinc-300"
-          }`}
-        >
-          <Pressable
-            onPress={() => setVisible(true)}
-            className="flex-row items-center"
-          >
-            <CountryPicker
-              withFilter
-              withFlag
-              withCallingCode
-              withEmoji
-              withModal
-              countryCode={countryCode}
-              visible={visible}
-              onSelect={onSelect}
-              onClose={() => setVisible(false)}
-            />
-            <Text className="text-base text-black">{callingCode}</Text>
-          </Pressable>
-  
-          <View className="w-[1px] h-6 bg-gray-300 mx-2" />
-  
-          <TextInput
-            maxLength={10}
-            editable={true}
-            selectTextOnFocus={false}
-            className="flex-1 text-base text-black"
-            onFocus={() => setIsFocused("no")}
-            onBlur={() => setIsFocused("")}
-            placeholder="912 345 6789"
-            placeholderTextColor="#9ca3af"
-            keyboardType="phone-pad"
-            value={mobileNumber}
-            onChangeText={setMobileNumber}
-          />
-        </View>
-  
-        {errors?.mobileNumber && (
-          <Text className="text-error mt-1 ml-1 text-sm w-full">
-            {errors.mobileNumber}
+          <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa', marginTop: 8 }}>
+            Tap the pencil to change photo
           </Text>
-        )}
-        <Pressable
-            onPress={() => handleSubmit()}
-            className='mt-14 w-full bg-primary py-3 rounded-lg'
-            disabled={isLoading || supabaseLoading}
-        >
-            {isLoading || supabaseLoading ? (
-            <ActivityIndicator color={'#ffffff'}/>
-            ) : (
-            <Text 
-                className='text-white text-center'
-                style={{
-                fontFamily: 'PoppinsRegular',
-                }}
-            >Update Profile</Text>
-            )}    
-        </Pressable>
+          {errors.profilePicture && (
+            <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#ef4444' }}>
+              {errors.profilePicture}
+            </Text>
+          )}
         </View>
+
+        {/* fields card */}
+        <View style={{
+          backgroundColor: '#fafafa', borderRadius: 16,
+          borderWidth: 0.5, borderColor: '#f4f4f5',
+          padding: 14,
+        }}>
+          <Text style={{
+            fontSize: 11, fontFamily: 'PoppinsMedium',
+            color: '#a1a1aa', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 2,
+          }}>
+            Account Details
+          </Text>
+
+          <Field
+            label="Username" fieldKey="username"
+            value={username} onChange={setUsername}
+            error={errors.username} isFocused={isFocused}
+            onFocus={() => setIsFocused('username')} onBlur={() => setIsFocused('')}
+            placeholder="Username"
+          />
+          <Field
+            label="Email" fieldKey="email"
+            value={email} onChange={setEmail}
+            error={errors.email} isFocused={isFocused}
+            onFocus={() => setIsFocused('email')} onBlur={() => setIsFocused('')}
+            placeholder="you@example.com"
+            textContentType="emailAddress"
+            keyboardType="email-address"
+          />
+
+          {/* mobile number */}
+          <View style={{ marginTop: 14 }}>
+            <Text style={{
+              fontSize: 11, fontFamily: 'PoppinsMedium',
+              color: '#a1a1aa', letterSpacing: 0.4, marginBottom: 6,
+            }}>
+              Mobile Number
+            </Text>
+            <View style={{
+              flexDirection: 'row', alignItems: 'center',
+              borderRadius: 10,
+              borderWidth: mobileError ? 1.5 : mobileFocused ? 1.5 : 0.5,
+              borderColor: mobileError ? '#ef444480' : mobileFocused ? '#155183' : '#e4e4e7',
+              backgroundColor: '#fafafa',
+              paddingHorizontal: 12, paddingVertical: 4,
+              gap: 8,
+            }}>
+              <Pressable
+                onPress={() => setVisible(true)}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <CountryPicker
+                  withFilter withFlag withCallingCode withEmoji withModal
+                  countryCode={countryCode}
+                  visible={visible}
+                  onSelect={onSelect}
+                  onClose={() => setVisible(false)}
+                />
+                <Text style={{ fontSize: 13, fontFamily: 'PoppinsRegular', color: '#18181b' }}>
+                  {callingCode}
+                </Text>
+              </Pressable>
+              <View style={{ width: 0.5, height: 18, backgroundColor: '#e4e4e7' }} />
+              <TextInput
+                style={{ flex: 1, fontSize: 13, fontFamily: 'PoppinsRegular', color: '#18181b', paddingVertical: 8 }}
+                maxLength={10}
+                onFocus={() => setIsFocused('no')}
+                onBlur={() => setIsFocused('')}
+                placeholder="912 345 6789"
+                placeholderTextColor="#d4d4d8"
+                keyboardType="phone-pad"
+                value={mobileNumber}
+                onChangeText={setMobileNumber}
+              />
+            </View>
+            {mobileError && (
+              <Text style={{
+                fontSize: 11, fontFamily: 'PoppinsRegular',
+                color: '#ef4444', marginTop: 4, marginLeft: 2,
+              }}>
+                {errors.mobileNumber}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* submit */}
+        <Pressable
+          onPress={handleSubmit}
+          disabled={isLoading || supabaseLoading}
+          android_ripple={{ color: '#ffffff20', borderless: false }}
+          style={{
+            marginTop: 20, backgroundColor: '#155183',
+            paddingVertical: 13, borderRadius: 12,
+            alignItems: 'center', justifyContent: 'center',
+            opacity: isLoading || supabaseLoading ? 0.7 : 1,
+          }}>
+          {isLoading || supabaseLoading
+            ? <ActivityIndicator color="#ffffff" />
+            : <Text style={{ fontSize: 13, fontFamily: 'PoppinsMedium', color: '#ffffff' }}>
+                Update Profile
+              </Text>
+          }
+        </Pressable>
 
       </ScrollView>
     </View>

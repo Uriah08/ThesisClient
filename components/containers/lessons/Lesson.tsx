@@ -11,23 +11,23 @@ const Lesson = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   return (
-    <View className="mb-5">
-      {/* Top Row: Label + Dots */}
-      <View className="flex-row items-center justify-between px-5 mb-2">
-        <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 16 }}>How to dry fish?</Text>
+    <View style={{ marginBottom: 8, paddingHorizontal: 24 }}>
 
-        <View className="flex-row items-center">
+      {/* label + dots */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center',
+        justifyContent: 'space-between', marginBottom: 10,
+      }}>
+        <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#18181b' }}>
+          How to dry fish?
+        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
           {modules.map((_, i) => (
-            <View
-              key={i}
-              style={{
-                width: i === currentIndex ? 10 : 6,
-                height: 6,
-                borderRadius: 99,
-                marginHorizontal: 3,
-                backgroundColor: i === currentIndex ? '#1b7fb4' : '#d4d4d8',
-              }}
-            />
+            <View key={i} style={{
+              width: i === currentIndex ? 16 : 5,
+              height: 5, borderRadius: 99,
+              backgroundColor: i === currentIndex ? '#155183' : '#e4e4e7',
+            }} />
           ))}
         </View>
       </View>
@@ -36,94 +36,47 @@ const Lesson = () => {
         loop
         autoPlay
         autoPlayInterval={10000}
-        width={width * 0.90}
-        height={130}
+        width={width - 48}
+        height={124}
         data={modules}
         scrollAnimationDuration={800}
-        onSnapToItem={(index) => setCurrentIndex(index)}
-        style={{ alignSelf: 'center', padding: 18, gap: 5 }}
+        onSnapToItem={setCurrentIndex}
         renderItem={({ item }) => (
-          <View
-            style={{
-              width: '100%',
-              borderRadius: 12,
-              overflow: 'hidden',
-              backgroundColor: '#000',
-            }}
-          >
+          <View style={{ borderRadius: 14, overflow: 'hidden', backgroundColor: '#000' }}>
             <ImageBackground
               source={item.image}
-              style={{
-                width: '100%',
-                height: '100%',
-                justifyContent: 'flex-end',
-              }}
-              imageStyle={{ borderRadius: 12 }}
+              style={{ width: '100%', height: '100%', justifyContent: 'flex-end' }}
+              imageStyle={{ borderRadius: 14 }}
               resizeMode="cover"
             >
-              {/* dark overlay to improve contrast */}
-              <View
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  backgroundColor: 'rgba(0,0,0,0.32)',
-                }}
-              />
+              {/* overlay */}
+              <View style={{
+                position: 'absolute', inset: 0,
+                backgroundColor: 'rgba(0,0,0,0.38)',
+              }} />
 
-              {/* content inside image */}
-              <View style={{ paddingHorizontal: 18, paddingVertical: 14 }}>
-                <Text
-                  style={{
-                    color: '#fff',
-                    fontFamily: 'PoppinsSemiBold',
-                    fontSize: 18,
-                    marginBottom: 6,
-                    maxWidth: '92%',
-                  }}
-                >
+              <View style={{ paddingHorizontal: 16, paddingVertical: 14, gap: 8 }}>
+                <Text style={{
+                  color: '#ffffff', fontFamily: 'PoppinsSemiBold',
+                  fontSize: 15, maxWidth: '80%',
+                }}>
                   {item.title}
                 </Text>
-                <View
-                  style={{ 
-                    overflow: "hidden", 
-                    borderRadius: 9999,
-                    alignSelf: 'flex-start',
-                  }}
-                >
+                <View style={{ overflow: 'hidden', borderRadius: 999, alignSelf: 'flex-start' }}>
                   <Pressable
-                    android_ripple={{ color: "#ffffff50", borderless: false }}
-                    className={`flex flex-row items-center gap-3 px-5 bg-primary rounded-full`}
+                    android_ripple={{ color: '#ffffff30', borderless: false }}
+                    onPress={() => router.push({ pathname: item.link as any, params: { id: item.link } })}
                     style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      backgroundColor: 'rgba(27,127,180,0.95)',
-                      paddingHorizontal: 14,
-                      paddingVertical: 7,
-                      borderRadius: 9999,
-                      shadowColor: '#000',
-                      shadowOpacity: 0.15,
-                      shadowRadius: 6,
-                      elevation: 2,
-                    }}
-                    onPress={() => router.push({
-                      pathname: item.link as any,
-                      params: { id: item.link }
-                    })}
-                  >
-                    <Text
-                      style={{
-                        color: '#fff',
-                        fontFamily: 'PoppinsSemiBold',
-                        fontSize: 13,
-                        marginRight: 6,
-                      }}
-                    >
+                      flexDirection: 'row', alignItems: 'center', gap: 6,
+                      backgroundColor: 'rgba(255,255,255,0.18)',
+                      borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.35)',
+                      paddingHorizontal: 12, paddingVertical: 6,
+                      borderRadius: 999,
+                    }}>
+                    <Text style={{ color: '#ffffff', fontFamily: 'PoppinsMedium', fontSize: 12 }}>
                       Read More
                     </Text>
-                    <ArrowRight color="#fff" size={14} />
+                    <ArrowRight color="#ffffff" size={12} />
                   </Pressable>
                 </View>
               </View>

@@ -1,348 +1,300 @@
-import { 
-  BackHandler, 
-  View, 
-  Text, 
-  ActivityIndicator, 
-  ScrollView, 
-  Pressable, 
-  RefreshControl,
-  Image
+import {
+  BackHandler, View, Text, ActivityIndicator,
+  ScrollView, Pressable, RefreshControl, Image,
 } from 'react-native'
-import { 
-  useCallback, 
-  useEffect, 
-  useRef, 
-  useState 
-} from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import { useGetWeatherForecastQuery } from '@/store/weatherApi';
-import { useRegisterDeviceTokenMutation } from '@/store/notificationApi';
-import WeatherIcon from '@/components/containers/weather/WeatherIcon';
-import { MapPinCheckInsideIcon } from 'lucide-react-native';
-import WeatherDashboardBoxes from '@/components/containers/weather/WeatherDashboardBoxes';
-import WeatherAlert from '@/components/containers/weather/WeatherAlert';
-import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDrawer';
-import { ForecastItem } from '@/utils/types';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import useAuthRedirect from '@/components/hooks/useAuthRedirect';
-import AreaChartComponent from '@/components/containers/charts/AreaChart';
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useFocusEffect } from '@react-navigation/native'
+import { useGetWeatherForecastQuery } from '@/store/weatherApi'
+import { useRegisterDeviceTokenMutation } from '@/store/notificationApi'
+import WeatherIcon from '@/components/containers/weather/WeatherIcon'
+import { MapPinIcon } from 'lucide-react-native'
+import WeatherDashboardBoxes from '@/components/containers/weather/WeatherDashboardBoxes'
+import WeatherAlert from '@/components/containers/weather/WeatherAlert'
+import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDrawer'
+import { ForecastItem } from '@/utils/types'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import useAuthRedirect from '@/components/hooks/useAuthRedirect'
+import AreaChartComponent from '@/components/containers/charts/AreaChart'
 
 const Home = () => {
-  const { data, isLoading, refetch } = useGetWeatherForecastQuery();
-  const drawerRef = useRef<BottomDrawerRef>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<ForecastItem | null>(null);
-  const [chartKey, setChartKey] = useState(0);
-  const [registerDeviceToken] = useRegisterDeviceTokenMutation();
-  
-  const [refreshing, setRefreshing] = useState(false);
+  const { data, isLoading, refetch }       = useGetWeatherForecastQuery()
+  const drawerRef                          = useRef<BottomDrawerRef>(null)
+  const [isDrawerOpen, setIsDrawerOpen]   = useState(false)
+  const [selectedItem, setSelectedItem]   = useState<ForecastItem | null>(null)
+  const [chartKey, setChartKey]           = useState(0)
+  const [registerDeviceToken]             = useRegisterDeviceTokenMutation()
+  const [refreshing, setRefreshing]       = useState(false)
+  const { user }                          = useAuthRedirect()
+
   const onRefresh = async () => {
-    await refetch();
-    setRefreshing(true);
-    setChartKey(prev => prev + 1);
+    setRefreshing(true)
+    await refetch()
+    setChartKey(prev => prev + 1)
+    setTimeout(() => setRefreshing(false), 1000)
+  }
 
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
-  };
-
-  const rainData = data?.future_forecast.map((item: any) => ({
-    value: item.pop * 100,
-  }))
-
-  const cloudData = data?.future_forecast.map((item: any) => ({
-    value: Math.min(item.clouds, 100),
-  }))
-
-  const { user } = useAuthRedirect()
-
+  const rainData  = data?.future_forecast.map((item: any) => ({ value: item.pop * 100 }))
+  const cloudData = data?.future_forecast.map((item: any) => ({ value: Math.min(item.clouds, 100) }))
 
   useEffect(() => {
     const registerToken = async () => {
-      const expoToken = await AsyncStorage.getItem('expoPushToken');
+      const expoToken = await AsyncStorage.getItem('expoPushToken')
       try {
-        if (expoToken) {
-          await registerDeviceToken({ token: expoToken }).unwrap();
-        }
+        if (expoToken) await registerDeviceToken({ token: expoToken }).unwrap()
       } catch (error) {
-        console.log('Error registering device token:', error);
+        console.log('Error registering device token:', error)
       }
     }
-    registerToken();
-  },[registerDeviceToken])
-  
-    const handlePress = (item: ForecastItem) => {
-      setSelectedItem(item);
-      if (isDrawerOpen) {
-        drawerRef.current?.close();
-      } else {
-        drawerRef.current?.open();
-      }
-    }
+    registerToken()
+  }, [registerDeviceToken])
+
+  const handlePress = (item: ForecastItem) => {
+    setSelectedItem(item)
+    if (isDrawerOpen) drawerRef.current?.close()
+    else              drawerRef.current?.open()
+  }
 
   useFocusEffect(
     useCallback(() => {
-      const onBackPress = () => {
-        return true;
-      };
-      const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => {
-        backHandler.remove();
-      };
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true)
+      return () => backHandler.remove()
     }, [])
-  );
-  
-    const formatToPHT = (utcDateString: string) => {
-      const date = new Date(utcDateString);
-      const options: Intl.DateTimeFormatOptions = {
-        hour: 'numeric',
-        hour12: true,
-        timeZone: 'Asia/Manila',
-      };
-      return new Intl.DateTimeFormat('en-PH', options).format(date);
-    };
-  
-    const rainPercent = (selectedItem?.pop ?? 0) * 100;
-    const cloud = selectedItem?.clouds ?? 0;
+  )
 
-    let message = "";
-    let alertLabel = "";
-    let alertColor = "";
-    
-    // Descriptions
-    const getRainDescription = (rainPercent: number) => {
-      if (rainPercent === 0) return "no expected rain";
-      if (rainPercent < 50) return `a moderate ${rainPercent}% chance of rain`;
-      if (rainPercent < 90) return `a high ${rainPercent}% chance of rain`;
-      return `a very high ${rainPercent}% chance of rain`;
-    };
-    
-    const getCloudDescription = (cloud: number) => {
-      if (cloud < 30) return "mostly clear skies";
-      if (cloud < 50) return "partly cloudy skies";
-      if (cloud < 100) return "noticeable cloud cover";
-      return "overcast skies";
-    };
-    
-    const rainDesc = getRainDescription(rainPercent);
-    const cloudDesc = getCloudDescription(cloud);
-    
-    // ----------------------------
-    // APPLY NEW RULES
-    // ----------------------------
-    
-    if (rainPercent === 0 && cloud < 50) {
-      alertLabel = "Excellent";
-      alertColor = "#22c55e";
-      message = `Ideal conditions for drying fish: ${cloudDesc}, and ${rainDesc}.`;
-    }
-    
-    else if (rainPercent === 0 && cloud <= 100) {
-      alertLabel = "Good";
-      alertColor = "#3b82f6";
-      message = `Good weather for drying fish with ${cloudDesc}, and ${rainDesc}.`;
-    }
-    
-    else if (rainPercent <= 80 && rainPercent > 0 && cloud <= 100) {
-      alertLabel = "Caution";
-      alertColor = "#eab308";
-      message = `Be cautious: ${cloudDesc}, and ${rainDesc}. Drying may be slow or risky.`;
-    }
-    
-    else if (rainPercent > 80 && rainPercent < 99) {
-      alertLabel = "Warning";
-      alertColor = "#f97316";
-      message = `Drying fish is not recommended due to ${cloudDesc}, and ${rainDesc}.`;
-    }
-    
-    else {
-      alertLabel = "Danger";
-      alertColor = "#ef4444";
-      message = `Avoid drying fish. Extreme conditions: ${cloudDesc}, and ${rainDesc}.`;
-    }
+  const formatToPHT = (utcDateString: string) => {
+    const date = new Date(utcDateString)
+    return new Intl.DateTimeFormat('en-PH', {
+      hour: 'numeric', hour12: true, timeZone: 'Asia/Manila',
+    }).format(date)
+  }
 
+  // ── drawer alert logic ──────────────────────────────────────────────────────
+  const rainPercent = (selectedItem?.pop ?? 0) * 100
+  const cloud       = selectedItem?.clouds ?? 0
+
+  const getRainDesc  = (r: number) =>
+    r === 0 ? 'no expected rain'
+    : r < 50 ? `a moderate ${r}% chance of rain`
+    : r < 90 ? `a high ${r}% chance of rain`
+    : `a very high ${r}% chance of rain`
+
+  const getCloudDesc = (c: number) =>
+    c < 30  ? 'mostly clear skies'
+    : c < 50  ? 'partly cloudy skies'
+    : c < 100 ? 'noticeable cloud cover'
+    : 'overcast skies'
+
+  const rd = getRainDesc(rainPercent)
+  const cd = getCloudDesc(cloud)
+
+  let alertLabel = 'Excellent', alertColor = '#16a34a', message = ''
+  if      (rainPercent === 0 && cloud < 50)  { alertLabel = 'Excellent'; alertColor = '#16a34a'; message = `Ideal conditions for drying fish: ${cd}, and ${rd}.` }
+  else if (rainPercent === 0)                { alertLabel = 'Good';      alertColor = '#2563eb'; message = `Good weather for drying fish with ${cd}, and ${rd}.` }
+  else if (rainPercent <= 80)                { alertLabel = 'Caution';   alertColor = '#ca8a04'; message = `Be cautious: ${cd}, and ${rd}. Drying may be slow or risky.` }
+  else if (rainPercent < 99)                 { alertLabel = 'Warning';   alertColor = '#ea580c'; message = `Drying fish is not recommended due to ${cd}, and ${rd}.` }
+  else                                       { alertLabel = 'Danger';    alertColor = '#dc2626'; message = `Avoid drying fish. Extreme conditions: ${cd}, and ${rd}.` }
 
   if (isLoading) return (
-    <View className='flex-1 items-center justify-center bg-white'>
-      <ActivityIndicator size={30} color="#155183" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }}>
+      <ActivityIndicator size={28} color="#155183" />
     </View>
-  );
-  
-  return (
-    <View className='flex-1 bg-white'>
-          <View className='flex-row justify-between items-center mt-14 p-5'>
-            <Image source={require('@/assets/images/main-logo.png')} style={{ width: 120, height: 63, marginTop: -10 }} resizeMode='contain'/>
-        <View
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: 25,
-            overflow: 'hidden',
-          }}
-        >
-          <Pressable
-            android_ripple={{ color: '#d1d5db' }}
-            delayLongPress={100}
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            onPress={() => data?.first_item && handlePress(data.first_item)}
-          >
-        <View className='flex-col flex justify-center'>
-          <WeatherIcon iconCode={data?.first_item.icon} style={{ width: 25, height: 25}}/>
-          <Text style={{ fontFamily: 'PoppinsMedium' }} className='text-base text-primary'>{Math.round(data?.first_item.temperature ?? 0)}<Text className='text-xs' style={{ fontFamily: 'PoppinsRegular' }}>
-          °C</Text></Text>
-        </View>
-        </Pressable>
-        </View>
+  )
 
-        </View>
-        <ScrollView 
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl style={{ zIndex: -1}} colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
-          }>
-        <WeatherAlert rain={data?.first_item.pop} wind={data?.first_item.wind_speed} cloud={data?.first_item.clouds}/>
-        <View className='flex flex-col px-5 pt-6'>
-          <Text className='text-2xl' style={{
-          fontFamily: 'PoppinsSemiBold'
-        }}>Hello <Text className='text-primary'>{user?.username && user.username[0].toUpperCase() + user.username.slice(1)}!</Text></Text>
-          <Text className="mt-1 text-md text-gray-600" style={{ fontFamily: 'PoppinsRegular'}}>
-            Let’s make your SunDried Fish Farm thrive!
+  return (
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+
+      {/* ── top bar ───────────────────────────────────────────────────────────── */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        paddingTop: 56, paddingHorizontal: 15, paddingBottom: 8,
+      }}>
+        <Image
+          source={require('@/assets/images/main-logo.png')}
+          style={{ width: 110, height: 56 }}
+          resizeMode="contain"
+        />
+
+        {/* current weather pill */}
+        <Pressable
+          onPress={() => data?.first_item && handlePress(data.first_item)}
+          style={{
+            flexDirection: 'row', alignItems: 'center', gap: 6,
+            paddingHorizontal: 12, paddingVertical: 6,
+            backgroundColor: '#fafafa',
+            borderRadius: 999, borderWidth: 0.5, borderColor: '#e4e4e7',
+          }}>
+          <WeatherIcon iconCode={data?.first_item.icon} style={{ width: 22, height: 22 }} />
+          <Text style={{ fontSize: 14, fontFamily: 'PoppinsSemiBold', color: '#155183' }}>
+            {Math.round(data?.first_item.temperature ?? 0)}
+            <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>°C</Text>
+          </Text>
+        </Pressable>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <WeatherAlert rain={data?.first_item.pop} wind={data?.first_item.wind_speed} cloud={data?.first_item.clouds} />
+
+        {/* ── greeting ────────────────────────────────────────────────────────── */}
+        <View style={{ paddingHorizontal: 15, paddingTop: 20, gap: 2 }}>
+          <Text style={{ fontSize: 22, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
+            Hello{' '}
+            <Text style={{ color: '#155183' }}>
+              {user?.username
+                ? user.username[0].toUpperCase() + user.username.slice(1)
+                : ''}!
+            </Text>
+          </Text>
+          <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+            Let&apos;s make your SunDried Fish Farm thrive!
           </Text>
         </View>
-        <WeatherDashboardBoxes pop={data?.first_item.pop} wind_speed={data?.first_item.wind_speed} clouds={data?.first_item.clouds}/>
-        <View className='flex-row items-center justify-end px-5 mt-5'>
-            <MapPinCheckInsideIcon size={15} color={'#6b7280'}/>
-            <Text className='text-sm text-gray-500 ml-1' style={{ fontFamily: 'PoppinsRegular'}}>Lives in {data?.city.name}, {data?.city.country}</Text>
-          </View>
 
-        <View style={{ paddingTop: 18, paddingBottom: 10, paddingRight: 18, paddingLeft: 10}}>
-          <AreaChartComponent chartKey={chartKey} title={'Rain Forecast Graph'} description={'Next 48 Hours'} sideLabel data={rainData} data2={cloudData}/>
+        <WeatherDashboardBoxes
+          pop={data?.first_item.pop}
+          wind_speed={data?.first_item.wind_speed}
+          clouds={data?.first_item.clouds}
+        />
+
+        {/* location row */}
+        <View style={{
+          flexDirection: 'row', alignItems: 'center', gap: 4,
+          paddingHorizontal: 15, marginTop: 10,
+        }}>
+          <MapPinIcon size={12} color="#a1a1aa" />
+          <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+            {data?.city.name}, {data?.city.country}
+          </Text>
         </View>
 
-        {/* ########################################       WEATHER FORECAST      ######################################## */}
+        {/* ── chart ───────────────────────────────────────────────────────────── */}
+        <View style={{ paddingTop: 20, paddingBottom: 10, paddingHorizontal: 20 }}>
+          <AreaChartComponent
+            chartKey={chartKey}
+            title="Rain Forecast"
+            description="Next 48 Hours"
+            sideLabel
+            data={rainData}
+            data2={cloudData}
+          />
+        </View>
 
-        <View style={{ 
-        marginBottom: 10,   
-        }} className="gap-3 bg-white">
-        <Text className="text-lg px-5" style={{ fontFamily: 'PoppinsSemiBold' }}>
-          Weather Forecast
-        </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row gap-3">
-            {data?.first_item &&  (
-              <Pressable onPress={() => handlePress(data.first_item)}>
-                <View
-                  style={{ 
-                    borderRadius: 16, 
-                    borderColor: '#d4d4d8', 
-                    width: 75, 
-                    height:120, 
-                    padding: 8,
-                    marginLeft: 18, 
-                    marginRight: 1 }}
-                  className={`p-1 border border-zinc-300 flex items-center w-20 h-32`}
-                >
-                  <Text className="text-black" style={{ fontSize: 10 }}>
-                    {new Date(data.first_item.datetime).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                    })}
-                  </Text>
-                  <Text
-                    className="text-xs text-zinc-500"
-                    style={{ fontFamily: 'PoppinsMedium' }}
-                  >
-                    {formatToPHT(data.first_item.datetime)}
-                  </Text>
-                  <WeatherIcon iconCode={data.first_item.icon} style={{ width: 35, height: 35, marginTop: 8 }} />
-                  <Text style={{ fontFamily: 'PoppinsMedium' }} className="mt-3 text-base text-primary">
-                    {Math.round(data.first_item.temperature ?? 0)}
-                    <Text className="text-xs" style={{ fontFamily: 'PoppinsRegular' }}>
-                      °C
-                    </Text>
-                  </Text>
-                </View>
-              </Pressable>
-            )}
-            {data?.future_forecast.map((item, index) => (
-              <Pressable key={index} onPress={() => handlePress(item)}>
-                <View
-                  style={{ 
-                    borderRadius: 16, 
-                    borderColor: '#d4d4d8', 
-                    width: 75, 
-                    height:120, 
-                    padding: 8, 
-                    marginRight: index === data.future_forecast.length - 1 ? 18 : 0 }}
-                  className={`p-1 border border-zinc-300 flex items-center w-20 h-32  ${index === data.future_forecast.length - 1 ? 'mr-5' : ''}`}
-                >
-                  <Text className="text-black" style={{ fontSize: 10 }}>
-                    {new Date(item.datetime).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                    })}
-                  </Text>
-                  <Text
-                    className="text-xs text-zinc-500"
-                    style={{ fontFamily: 'PoppinsMedium' }}
-                  >
-                    {formatToPHT(item.datetime)}
-                  </Text>
-                  <WeatherIcon iconCode={item.icon} style={{ width: 35, height: 35, marginTop: 8 }} />
-                  <Text style={{ fontFamily: 'PoppinsMedium' }} className="mt-3 text-base text-primary">
-                    {Math.round(item.temperature ?? 0)}
-                    <Text className="text-xs" style={{ fontFamily: 'PoppinsRegular' }}>
-                      °C
-                    </Text>
-                  </Text>
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
-      {/* <Lesson/> */}
-      <View style={{ marginBottom: 20}}/>
+        {/* ── forecast strip ──────────────────────────────────────────────────── */}
+        <View style={{ marginBottom: 10, gap: 10 }}>
+          <Text style={{
+            fontSize: 13, fontFamily: 'PoppinsSemiBold',
+            color: '#18181b', paddingHorizontal: 15,
+          }}>
+            Weather Forecast
+          </Text>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 15 }}>
+              {/* current item */}
+              {data?.first_item && (
+                <ForecastCard
+                  item={data.first_item}
+                  onPress={() => handlePress(data.first_item)}
+                  formatToPHT={formatToPHT}
+                />
+              )}
+              {/* future items */}
+              {data?.future_forecast.map((item: ForecastItem, index: number) => (
+                <ForecastCard
+                  key={index}
+                  item={item}
+                  onPress={() => handlePress(item)}
+                  formatToPHT={formatToPHT}
+                />
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+
+        <View style={{ height: 24 }} />
       </ScrollView>
-      <BottomDrawer ref={drawerRef} onChange={(open) => setIsDrawerOpen(open)} type='none'>
+
+      {/* ── bottom drawer ────────────────────────────────────────────────────── */}
+      <BottomDrawer ref={drawerRef} onChange={(open) => setIsDrawerOpen(open)} type="none">
         {selectedItem ? (
-          <View style={{ alignItems: 'center', padding: 16, zIndex: 99999, marginBottom: 18 }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+          <View style={{ alignItems: 'center', padding: 20, paddingBottom: 32, gap: 4 }}>
+            <Text style={{ fontSize: 15, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
               {new Date(selectedItem.datetime).toLocaleDateString('en-US', { weekday: 'long' })}
             </Text>
-            <Text style={{ color: '#6b7280' }}>{formatToPHT(selectedItem.datetime)}</Text>
-            <WeatherIcon iconCode={selectedItem.icon} style={{ width: 50, height: 50, marginVertical: 12 }} />
-            <View>
-            <View className=" rounded-xl relative">
-              <View style={{ gap: 5 }} className="flex-row justify-center items-center">
-                <Text
-                  style={{
-                    fontFamily: 'PoppinsSemiBold',
-                    color: alertColor,
-                    fontSize: 16,
-                  }}
-                >
+            <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+              {formatToPHT(selectedItem.datetime)}
+            </Text>
+            <WeatherIcon iconCode={selectedItem.icon} style={{ width: 48, height: 48, marginVertical: 12 }} />
+
+            {/* alert card inside drawer */}
+            <View style={{
+              width: '100%', padding: 14,
+              backgroundColor: alertColor + '10',
+              borderRadius: 14, borderWidth: 0.5, borderColor: alertColor + '30',
+              gap: 6,
+            }}>
+              <View style={{
+                paddingHorizontal: 10, paddingVertical: 3,
+                backgroundColor: alertColor + '18',
+                borderRadius: 999, alignSelf: 'center',
+              }}>
+                <Text style={{ fontSize: 12, fontFamily: 'PoppinsSemiBold', color: alertColor }}>
                   {alertLabel}
                 </Text>
               </View>
-      
-              <Text
-                style={{ fontFamily: 'PoppinsRegular' }}
-                className="text-zinc-500 mt-2 text-center text-sm"
-              >
+              <Text style={{
+                fontSize: 12, fontFamily: 'PoppinsRegular',
+                color: '#52525b', lineHeight: 20, textAlign: 'center',
+              }}>
                 {message}
               </Text>
             </View>
           </View>
-          </View>
         ) : (
-          <Text>No selection</Text>
+          <Text style={{ padding: 20, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+            No selection
+          </Text>
         )}
       </BottomDrawer>
     </View>
-  );
+  )
 }
+
+// ─── forecast card ─────────────────────────────────────────────────────────────
+type ForecastCardProps = {
+  item: ForecastItem
+  onPress: () => void
+  formatToPHT: (s: string) => string
+}
+const ForecastCard = ({ item, onPress, formatToPHT }: ForecastCardProps) => (
+  <Pressable
+    onPress={onPress}
+    android_ripple={{ color: '#f4f4f5', borderless: false }}
+    style={{ borderRadius: 14, overflow: 'hidden' }}
+  >
+    <View style={{
+      width: 72, borderRadius: 14,
+      borderWidth: 0.5, borderColor: '#f4f4f5',
+      backgroundColor: '#fafafa',
+      padding: 10, alignItems: 'center', gap: 2,
+    }}>
+      <Text style={{ fontSize: 9, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+        {new Date(item.datetime).toLocaleDateString('en-US', { weekday: 'short' })}
+      </Text>
+      <Text style={{ fontSize: 10, fontFamily: 'PoppinsMedium', color: '#71717a' }}>
+        {formatToPHT(item.datetime)}
+      </Text>
+      <WeatherIcon iconCode={item.icon} style={{ width: 32, height: 32, marginTop: 4 }} />
+      <Text style={{ fontSize: 14, fontFamily: 'PoppinsSemiBold', color: '#155183', marginTop: 4 }}>
+        {Math.round(item.temperature ?? 0)}
+        <Text style={{ fontSize: 10, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>°C</Text>
+      </Text>
+    </View>
+  </Pressable>
+)
 
 export default Home

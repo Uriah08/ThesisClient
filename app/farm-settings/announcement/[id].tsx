@@ -1,108 +1,175 @@
 import { View, Text, ActivityIndicator, Pressable, ScrollView, Image } from 'react-native'
 import React, { useState } from 'react'
-import { ArrowLeft, Megaphone, Trash } from 'lucide-react-native'
+import { ChevronLeft, MegaphoneIcon, Trash2 } from 'lucide-react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useGetAnnouncementQuery } from '@/store/farmApi'
 import DeleteClass from '@/components/containers/dialogs/Delete'
 import SkeletonShimmer from '@/components/containers/SkeletonPlaceholder'
 
 const Announcement = () => {
-  const { id } = useLocalSearchParams();
-  const { data, isLoading } = useGetAnnouncementQuery(Number(id));
-  const [showDelete, setShowDelete] = useState(false);
+  const { id } = useLocalSearchParams()
+  const { data, isLoading } = useGetAnnouncementQuery(Number(id))
+  const [showDelete, setShowDelete] = useState(false)
   const [announcementId, setAnnouncementId] = useState<number>()
-  
-  if (isLoading) return (
-      <View className='flex-1 items-center justify-center bg-white'>
-        <ActivityIndicator size={30} color="#155183" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
-      </View>
-    );
-  
-  return (
-    <View className='flex-1 bg-white'>
-      <DeleteClass visible={showDelete} setVisible={setShowDelete} announcementId={announcementId} type='announcement'/>
-      <View className='flex-row gap-5 items-center mt-10 p-5'>
-        <View style={{ borderRadius: 999, overflow: 'hidden' }}>
-            <Pressable
-            android_ripple={{
-                color: '#d4d4d8',
-                borderless: false,
-                radius: 9999, 
-            }}
-            style={{
-                borderRadius: 99,
-                padding: 3,
-                overflow: 'hidden',
-            }}
-            onPress={() => router.back()}
-            >
-            <ArrowLeft color="#000" size={26} />
-            </Pressable>
-        </View>
 
-        <Text
-          className='text-3xl'
+  if (isLoading) return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }}>
+      <ActivityIndicator size={30} color="#155183" />
+    </View>
+  )
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      <DeleteClass
+        visible={showDelete}
+        setVisible={setShowDelete}
+        announcementId={announcementId}
+        type="announcement"
+      />
+
+      {/* Header */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', gap: 12,
+        paddingTop: 56, paddingHorizontal: 24, paddingBottom: 8,
+      }}>
+        <Pressable
+          onPress={() => router.back()}
           style={{
-            fontFamily: 'PoppinsBold',
-          }}
-        >
+            width: 36, height: 36, borderRadius: 18,
+            backgroundColor: '#f4f4f5',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+          <ChevronLeft size={18} color="#18181b" />
+        </Pressable>
+        <Text style={{ fontSize: 17, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
           Announcements
         </Text>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} className='p-5'>
-        <Text className='text-zinc-600' style={{ fontFamily: 'PoppinsMedium'}}>Active</Text>
+
+      {/* Subtitle chip */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', gap: 8,
+        paddingHorizontal: 24, paddingVertical: 12,
+      }}>
+        <View style={{
+          width: 28, height: 28, borderRadius: 8,
+          backgroundColor: '#FAEEDA',
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          <MegaphoneIcon size={13} color="#854F0B" />
+        </View>
+        <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+          Active announcements for your farm
+        </Text>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40, gap: 12 }}
+      >
         {isLoading ? (
-          <View>
-            <SkeletonShimmer style={{ width: '100%', height: 140, borderRadius: 12, marginTop: 12 }}/>
-            <SkeletonShimmer style={{ width: '100%', height: 140, borderRadius: 12, marginTop: 12 }}/>
+          <>
+            <SkeletonShimmer style={{ width: '100%', height: 140, borderRadius: 12 }} />
+            <SkeletonShimmer style={{ width: '100%', height: 140, borderRadius: 12 }} />
+          </>
+        ) : data?.length === 0 ? (
+          <View style={{ alignItems: 'center', paddingTop: 80, gap: 10 }}>
+            <View style={{
+              width: 52, height: 52, borderRadius: 16,
+              backgroundColor: '#FAEEDA',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <MegaphoneIcon size={22} color="#854F0B" />
+            </View>
+            <Text style={{
+              fontSize: 14, fontFamily: 'PoppinsMedium',
+              color: '#d4d4d8', marginTop: 4,
+            }}>
+              No announcements yet
+            </Text>
           </View>
         ) : (
-          data?.length === 0 ? (
-            <View className='p-5'>
-              <Text className='text-zinc-300 text-center mt-10' style={{ fontFamily: 'PoppinsBold', fontSize: 20}}>NO ANNOUNCEMENTS</Text>
-            </View>
-          ) : (
-            data?.map((item, i) => (
-              <View key={i} className='flex flex-col mt-3' style={{ borderWidth: 1, borderColor: '#d4d4d8', borderRadius: 12, padding: 13}}>
-                <View className='flex-row justify-between items-center'>
-                  <View className='flex-row gap-3 items-center'>
-                    <View className='bg-primary p-2' style={{ borderRadius: 999 }}>
-                      <Megaphone color={'#ffffff'} size={20}/>
-                    </View>
-                    <Text className='text-zinc-600' style={{ fontFamily: 'PoppinsMedium', fontSize: 15}}>{item.title}</Text>
+          data?.map((item, i) => (
+            <View key={i} style={{
+              borderRadius: 16, borderWidth: 0.5,
+              borderColor: '#f4f4f5', backgroundColor: '#fafafa',
+              padding: 16,
+            }}>
+
+              {/* Card header */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                  <View style={{
+                    width: 34, height: 34, borderRadius: 10,
+                    backgroundColor: '#FAEEDA',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <MegaphoneIcon size={15} color="#854F0B" />
                   </View>
-                  <Trash color={'#52525b'} size={16} onPress={() => {setShowDelete(true); setAnnouncementId(Number(item.id))}}/>
+                  <Text style={{
+                    flex: 1, fontSize: 14, fontFamily: 'PoppinsMedium',
+                    color: '#18181b',
+                  }} numberOfLines={1}>
+                    {item.title}
+                  </Text>
                 </View>
-                <Text className='mt-3 text-zinc-600 text-justify' style={{ fontFamily: 'PoppinsRegular', fontSize: 13}}>{'     '}{item.content}</Text>
-                <Text className='mt-3 self-end text-zinc-400' style={{ fontFamily: 'PoppinsRegular', fontSize: 11}}>{'     '}Posted on {new Date(item.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }).replace(',', '')}</Text>
-                <View className='flex-row gap-2 items-center self-end'>
+                <Pressable
+                  onPress={() => { setShowDelete(true); setAnnouncementId(Number(item.id)) }}
+                  hitSlop={8}
+                  style={{
+                    width: 30, height: 30, borderRadius: 8,
+                    backgroundColor: '#FCEBEB',
+                    alignItems: 'center', justifyContent: 'center',
+                    marginLeft: 10,
+                  }}>
+                  <Trash2 size={13} color="#A32D2D" />
+                </Pressable>
+              </View>
+
+              {/* Divider */}
+              <View style={{ height: 0.5, backgroundColor: '#f4f4f5', marginVertical: 12 }} />
+
+              {/* Content */}
+              <Text style={{
+                fontSize: 13, fontFamily: 'PoppinsRegular',
+                color: '#52525b', lineHeight: 20,
+              }}>
+                {item.content}
+              </Text>
+
+              {/* Footer */}
+              <View style={{
+                flexDirection: 'row', alignItems: 'center',
+                justifyContent: 'space-between', marginTop: 14,
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Image
                     source={
                       item?.created_by_profile_picture
-                        ? { uri: item?.created_by_profile_picture }
+                        ? { uri: item.created_by_profile_picture }
                         : require('@/assets/images/default-profile.png')
                     }
-                    style={{ width: 15, height: 15, borderRadius: 999 }}
+                    style={{ width: 18, height: 18, borderRadius: 999 }}
                     resizeMode="cover"
                   />
-                  <Text
-                    className="text-zinc-500"
-                    style={{
-                      fontFamily: 'PoppinsRegular',
-                      fontSize: 12,
-                      marginTop: 3,
-                    }}
-                  >
+                  <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#71717a' }}>
                     {item?.created_by_username
-                      ? item.created_by_username[0].toUpperCase() +
-                        item.created_by_username.slice(1)
+                      ? item.created_by_username[0].toUpperCase() + item.created_by_username.slice(1)
                       : 'N/A'}
                   </Text>
                 </View>
+                <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+                  {new Date(item.created_at).toLocaleString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric',
+                    hour: 'numeric', minute: '2-digit', hour12: true,
+                  }).replace(',', '')}
+                </Text>
               </View>
-            ))
-          ))}
-        </ScrollView>
+
+            </View>
+          ))
+        )}
+      </ScrollView>
     </View>
   )
 }
