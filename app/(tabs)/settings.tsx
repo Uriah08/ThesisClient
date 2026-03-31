@@ -1,197 +1,174 @@
 import { View, Text, Image, ScrollView, Pressable, ActivityIndicator } from 'react-native'
 import React from 'react'
 import useAuthRedirect from '@/components/hooks/useAuthRedirect'
-import { CircleUserIcon, ChevronRight, RotateCcwKey, CircleQuestionMark, HelpCircleIcon, FileTextIcon, InfoIcon, LogOutIcon } from 'lucide-react-native'
+import {
+  CircleUserIcon, RotateCcwKey, CircleQuestionMark,
+  HelpCircleIcon, FileTextIcon, InfoIcon, LogOutIcon, ChevronRight
+} from 'lucide-react-native'
 import { router } from 'expo-router'
 import { useLogoutMutation } from '@/store/userApi'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const settingsMenu = [
-    {
-        icon: CircleUserIcon,
-        label: 'User Profile',
-        route: '/settings/profile'
-    },
-    {
-        icon: RotateCcwKey,
-        label: 'Change Password',
-        route: '/settings/change-password'
-    },
-    {
-        icon: CircleQuestionMark,
-        label: 'FAQ',
-        route: '/settings/FAQ'
-    },
-    { 
-        icon: HelpCircleIcon, 
-        label: 'Help Center', 
-        route: '/settings/help-center' 
-    },
-    { 
-        icon: FileTextIcon, 
-        label: 'Terms of Service', 
-        route: '/settings/terms' 
-    },
-    {
-        icon: InfoIcon,
-        label: 'About',
-        route: '/settings/about'
-    },
+type MenuItem = {
+  icon: any
+  label: string
+  route: string
+  iconBg: string
+  iconColor: string
+}
+
+const accountMenu: MenuItem[] = [
+  { icon: CircleUserIcon,  label: 'User Profile',      route: '/settings/profile',         iconBg: '#E6F1FB', iconColor: '#185FA5' },
+  { icon: RotateCcwKey,    label: 'Change Password',   route: '/settings/change-password', iconBg: '#E1F5EE', iconColor: '#0F6E56' },
 ]
 
+const supportMenu: MenuItem[] = [
+  { icon: CircleQuestionMark, label: 'FAQ',         route: '/settings/FAQ',         iconBg: '#FAEEDA', iconColor: '#854F0B' },
+  { icon: HelpCircleIcon,     label: 'Help Center', route: '/settings/help-center', iconBg: '#FBEAF0', iconColor: '#993556' },
+]
+
+const legalMenu: MenuItem[] = [
+  { icon: FileTextIcon, label: 'Terms of Service', route: '/settings/terms', iconBg: '#EEEDFE', iconColor: '#534AB7' },
+  { icon: InfoIcon,     label: 'About',            route: '/settings/about', iconBg: '#F1EFE8', iconColor: '#5F5E5A' },
+]
+
+const MenuGroup = ({ title, items }: { title: string; items: MenuItem[] }) => (
+  <View style={{ gap: 8 }}>
+    <Text style={{
+      fontSize: 11, fontFamily: 'PoppinsMedium',
+      color: '#a1a1aa', letterSpacing: 0.8,
+      textTransform: 'uppercase', marginBottom: 4,
+    }}>
+      {title}
+    </Text>
+    <View style={{
+      borderRadius: 16, borderWidth: 0.5,
+      borderColor: '#f4f4f5', overflow: 'hidden',
+      backgroundColor: '#fafafa',
+    }}>
+      {items.map((item, i) => (
+        <Pressable
+          key={i}
+          onPress={() => router.push(item.route as any)}
+          android_ripple={{ color: '#e4e4e7', borderless: false }}
+          style={{
+            flexDirection: 'row', alignItems: 'center', gap: 14,
+            padding: 14, paddingHorizontal: 16,
+            borderBottomWidth: i < items.length - 1 ? 0.5 : 0,
+            borderBottomColor: '#f4f4f5',
+          }}>
+          <View style={{
+            width: 34, height: 34, borderRadius: 10,
+            backgroundColor: item.iconBg,
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <item.icon size={16} color={item.iconColor} />
+          </View>
+          <Text style={{ flex: 1, fontSize: 14, fontFamily: 'PoppinsMedium', color: '#18181b' }}>
+            {item.label}
+          </Text>
+          <ChevronRight size={14} color="#d4d4d8" />
+        </Pressable>
+      ))}
+    </View>
+  </View>
+)
+
 const Settings = () => {
-    
-    const { user } = useAuthRedirect()
+  const { user } = useAuthRedirect()
+  const [logout, { isLoading }] = useLogoutMutation()
 
-    const [logout, {isLoading}] = useLogoutMutation()
-
-    const handleLogout = async () => {
-      try {
-        const expoToken = await AsyncStorage.getItem('expoPushToken');
-        await logout({ token: expoToken }).unwrap()
-        
-        await AsyncStorage.removeItem('user');
-        await AsyncStorage.removeItem('authToken');
-        await AsyncStorage.removeItem('farm');
-        await AsyncStorage.removeItem('session');
-    
-        router.replace('/login');
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
-    };
+  const handleLogout = async () => {
+    try {
+      const expoToken = await AsyncStorage.getItem('expoPushToken')
+      await logout({ token: expoToken }).unwrap()
+      await AsyncStorage.multiRemove(['user', 'authToken', 'farm', 'session'])
+      router.replace('/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
 
   return (
-    <View className='flex-1 bg-[#fff]'>
-      <Text className='mt-10 text-3xl p-5' style={{
-        fontFamily: 'PoppinsBold'
-      }}>Settings</Text>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={{
-            marginHorizontal: 20
-        }}>
-            <View className='flex flex-row gap-3' style={{
-        marginVertical: 25
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      <Text style={{
+        marginTop: 56, paddingHorizontal: 15, paddingBottom: 8,
+        fontSize: 26, fontFamily: 'PoppinsBold', color: '#18181b',
       }}>
-        <Image
-            source={
-            user?.profile_picture
-                ? { uri: user?.profile_picture }
-                : require('@/assets/images/default-profile.png')
-            }
-            style={{ width: 50, height: 50, borderRadius: 999 }}
+        Settings
+      </Text>
+
+      <ScrollView showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 15, gap: 24 }}>
+
+        {/* Profile card */}
+        <View style={{
+          flexDirection: 'row', alignItems: 'center', gap: 14,
+          paddingVertical: 16,
+          borderBottomWidth: 0.5, borderBottomColor: '#f4f4f5',
+        }}>
+          <Image
+            source={user?.profile_picture
+              ? { uri: user.profile_picture }
+              : require('@/assets/images/default-profile.png')}
+            style={{ width: 52, height: 52, borderRadius: 999 }}
             resizeMode="cover"
-        />
-        <View>
-            <Text className='text-lg text-zinc-600'
-            style={{
-                fontFamily: 'PoppinsMedium'
-            }}>
-                {user?.username
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 15, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
+              {user?.username
                 ? user.username.charAt(0).toUpperCase() + user.username.slice(1)
                 : ''}
             </Text>
-            <Text className='text-sm text-zinc-400'
+            <Text style={{ fontSize: 13, fontFamily: 'PoppinsRegular', color: '#71717a', marginTop: 2 }}>
+              {user?.email}
+            </Text>
+          </View>
+          <Pressable
+            onPress={() => router.push('/settings/profile' as any)}
             style={{
-                fontFamily: 'PoppinsRegular'
-            }}
-            >{user?.email}</Text>
+              paddingHorizontal: 14, paddingVertical: 6,
+              borderRadius: 20, borderWidth: 0.5, borderColor: '#e4e4e7',
+            }}>
+            <Text style={{ fontSize: 12, fontFamily: 'PoppinsMedium', color: '#71717a' }}>Edit</Text>
+          </Pressable>
         </View>
-      </View>
-      {settingsMenu.map((item, i) => (
-        <React.Fragment key={i}>
-            {i === 0 && (
-            <Text
-                className="text-zinc-500 text-sm"
-                style={{
-                marginVertical: 10,
-                fontFamily: 'PoppinsMedium',
-                }}
-            >
-                Account Settings
-            </Text>
-            )}
-            {i === 2 && (
-            <Text
-                className="text-zinc-500 text-sm mt-10"
-                style={{
-                marginVertical: 10,
-                fontFamily: 'PoppinsMedium',
-                }}
-            >
-                Legal & About
-            </Text>
-            )}
-            <Pressable
-            onPress={() => router.push(item.route as any)}
-            className="flex flex-row items-center"
-            android_ripple={{ color: '#d3d3d3', borderless: false }}
-            style={{
-                justifyContent: 'space-between',
-                borderTopWidth: 1,
-                borderBottomWidth: (item.label === 'Change Password' || item.label === 'About') ? 1 : 0,
-                borderColor: '#e8e8e8',
-                paddingVertical: 20,
-                paddingLeft: 10,
-            }}
-            >
-            <View className="flex flex-row items-center gap-5">
-                <item.icon size={20} color={'#a1a1aa'} />
-                <Text
-                className="text-lg"
-                style={{
-                    fontFamily: 'PoppinsMedium',
-                }}
-                >
-                {item.label}
-                </Text>
-            </View>
-            <ChevronRight size={18} />
-            </Pressable>
-        </React.Fragment>
-        ))}
 
-        <Text
-            className="text-zinc-500 text-sm mt-10"
-            style={{
-            marginVertical: 10,
-            fontFamily: 'PoppinsMedium',
-            }}
-        >
-            Other
+        <MenuGroup title="Account" items={accountMenu} />
+        <MenuGroup title="Support" items={supportMenu} />
+        <MenuGroup title="Legal" items={legalMenu} />
+
+        {/* Logout */}
+        <Pressable
+          disabled={isLoading}
+          onPress={handleLogout}
+          android_ripple={{ color: '#fee2e2', borderless: false }}
+          style={{
+            flexDirection: 'row', alignItems: 'center', gap: 14,
+            padding: 14, paddingHorizontal: 16,
+            borderRadius: 16, borderWidth: 0.5,
+            borderColor: '#fee2e2', backgroundColor: '#fff5f5',
+          }}>
+          <View style={{
+            width: 34, height: 34, borderRadius: 10,
+            backgroundColor: '#FCEBEB',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            {isLoading
+              ? <ActivityIndicator size={16} color="#A32D2D" />
+              : <LogOutIcon size={16} color="#A32D2D" />
+            }
+          </View>
+          <Text style={{ fontSize: 14, fontFamily: 'PoppinsSemiBold', color: '#A32D2D' }}>
+            Logout
+          </Text>
+        </Pressable>
+
+        <Text style={{ textAlign: 'center', fontSize: 11, color: '#d4d4d8', fontFamily: 'PoppinsRegular' }}>
+          v1.0.0
         </Text>
 
-        <Pressable
-            disabled={isLoading}
-            onPress={() => handleLogout()}
-            className="flex flex-row items-center"
-            style={{
-                justifyContent: 'space-between',
-                borderTopWidth: 1,
-                borderBottomWidth: 1,
-                borderColor: '#e8e8e8',
-                paddingVertical: 20,
-                paddingLeft: 10,
-            }}
-            >
-            <View className="flex flex-row items-center gap-5">
-                {isLoading ? (
-                    <ActivityIndicator color={'#155183'}/>
-                ) : (
-                    <LogOutIcon size={20} color={'#a1a1aa'} />
-                )}
-                <Text
-                className="text-lg"
-                style={{
-                    fontFamily: 'PoppinsMedium'
-                }}
-                >
-                Logout
-                </Text>
-            </View>
-            </Pressable>
-        </View>
-        </ScrollView>
+      </ScrollView>
     </View>
   )
 }

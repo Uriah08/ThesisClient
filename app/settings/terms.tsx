@@ -1,129 +1,142 @@
-import { View, Text, ScrollView } from 'react-native'
+import { View, Text, ScrollView, Pressable } from 'react-native'
 import React from 'react'
-import { ChevronLeft } from 'lucide-react-native'
+import { ChevronLeft, FileTextIcon } from 'lucide-react-native'
 import { router } from 'expo-router'
+
+type Section = { title: string; body: string }
+
+const sections: Section[] = [
+  {
+    title: '1. Acceptance of Terms',
+    body: 'By creating an account, you agree to comply with these Terms. If you do not agree, please do not use the application.',
+  },
+  {
+    title: '2. User Registration',
+    body: 'You must register with accurate personal information. You must be a tuyo farmer or authorized representative from Labac, Naic, Cavite.',
+  },
+  {
+    title: '3. Data Collection',
+    body: 'We collect basic account information used solely to provide our services. Your data will not be shared with third parties without consent, except as required by law.',
+  },
+  {
+    title: '4. Image Processing',
+    body: 'Results from image analysis are guides only. We do not guarantee 100% accuracy and recommend using results alongside traditional assessment methods.',
+  },
+  {
+    title: '5. User Responsibilities',
+    body: 'Use this app only for lawful purposes. Provide clear, accurate images. Misuse may result in account suspension.',
+  },
+  {
+    title: '6. Research & Academic Use',
+    body: 'This app is part of a thesis project. Anonymized data may be used for academic research. Personal information will remain confidential.',
+  },
+  {
+    title: '7. Limitation of Liability',
+    body: 'This app is provided "as is" for educational purposes. We are not liable for losses arising from use or reliance on its results.',
+  },
+  {
+    title: '8. Modifications',
+    body: 'We may modify or discontinue the service at any time. Continued use after changes constitutes acceptance of new terms.',
+  },
+  {
+    title: '9. Account Termination',
+    body: 'You may terminate your account anytime. We may suspend accounts that violate these terms. Some data may be retained for record-keeping.',
+  },
+  {
+    title: '10. Contact',
+    body: 'For questions or support, contact us through the Help Center within the application.',
+  },
+  {
+    title: '11. Governing Law',
+    body: 'These terms are governed by the laws of the Republic of the Philippines.',
+  },
+]
 
 const Terms = () => {
   return (
-    <View className='flex-1 bg-white'>
-      <ChevronLeft
-        onPress={() => router.push('/settings')}
-        style={{ marginTop: 50, marginLeft: 30 }}
-        color="black"
-        size={32}
-      />
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
 
-      <Text
-        className="mt-10 mx-7 text-2xl"
-        style={{ fontFamily: 'PoppinsSemiBold' }}
-      >
-        Terms of
-        <Text className="text-primary"> Service.</Text>
-      </Text>
-      <Text className='text-zinc-500 mx-7' style={{
-          fontFamily: 'PoppinsMedium',
-          fontSize: 16,
-          lineHeight: 24,
-        }}>
-          Last updated on April 01, 2026
+      {/* Header */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', gap: 12,
+        paddingTop: 56, paddingHorizontal: 24, paddingBottom: 8,
+      }}>
+        <Pressable
+          onPress={() => router.push('/settings')}
+          style={{
+            width: 36, height: 36, borderRadius: 18,
+            backgroundColor: '#f4f4f5',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+          <ChevronLeft size={18} color="#18181b" />
+        </Pressable>
+        <Text style={{ fontSize: 17, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
+          Terms of Service
         </Text>
-      <ScrollView showsVerticalScrollIndicator={false} className='mx-7 mt-5 mb-10'>
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>Summary</Text>
-        <Text className='text-zinc-500 text-sm mb-6' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
-        }}>
-          This application is designed to assist tuyo farmers in Labac, Naic, Cavite with image processing and quality assessment of sun-dried fish. By using this app, you agree to provide accurate personal information and use the service for its intended agricultural purposes.
-        </Text>
+      </View>
 
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>1. Acceptance of Terms</Text>
-        <Text className='text-zinc-500 text-sm mb-6' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
+      {/* Last updated */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', gap: 8,
+        paddingHorizontal: 24, paddingVertical: 12,
+      }}>
+        <View style={{
+          width: 28, height: 28, borderRadius: 8,
+          backgroundColor: '#EEEDFE',
+          alignItems: 'center', justifyContent: 'center',
         }}>
-          By creating an account and using this sun-dried fish image processing application, you agree to comply with and be bound by these Terms of Service. If you do not agree to these terms, please do not use the application.
+          <FileTextIcon size={13} color="#534AB7" />
+        </View>
+        <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+          Last updated — April 01, 2026
         </Text>
+      </View>
 
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>2. User Registration and Account</Text>
-        <Text className='text-zinc-500 text-sm mb-6' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
-        }}>
-          To use this application, you must register and provide accurate personal information including your full name, date of birth, mobile number, and other required details. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must be a tuyo farmer or authorized representative from Labac, Naic, Cavite to use this service.
-        </Text>
+      <ScrollView showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 60, gap: 0 }}>
 
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>3. Data Collection and Usage</Text>
-        <Text className='text-zinc-500 text-sm mb-6' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
+        {/* Summary card */}
+        <View style={{
+          padding: 14, backgroundColor: '#fafafa',
+          borderRadius: 12, borderWidth: 0.5, borderColor: '#f4f4f5',
+          marginBottom: 16,
         }}>
-          We collect personal information including name, birthdate, mobile number, and other basic data necessary for account creation and service delivery. This information is used solely for the purpose of providing image processing services for sun-dried fish quality assessment and improving our application. Your data will be stored securely and will not be shared with third parties without your consent, except as required by law or for research purposes related to this thesis project.
-        </Text>
+          <Text style={{
+            fontSize: 11, fontFamily: 'PoppinsMedium',
+            color: '#a1a1aa', letterSpacing: 0.8,
+            textTransform: 'uppercase', marginBottom: 6,
+          }}>
+            Summary
+          </Text>
+          <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#52525b', lineHeight: 20 }}>
+            This app assists tuyo farmers in Labac, Naic, Cavite with image processing and quality assessment
+            of sun-dried fish. By using this app, you agree to provide accurate information and use the service
+            for its intended agricultural purposes.
+          </Text>
+        </View>
 
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>4. Image Processing Services</Text>
-        <Text className='text-zinc-500 text-sm mb-6' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
-        }}>
-          This application provides image processing capabilities to analyze and assess the quality of sun-dried fish (tuyo). The results provided by the application are based on image analysis algorithms and should be used as a guide. We do not guarantee 100% accuracy in quality assessment and recommend using the results in conjunction with traditional assessment methods and professional judgment.
-        </Text>
+        {/* Sections */}
+        {sections.map((section, i) => (
+          <View key={i} style={{
+            paddingVertical: 14,
+            borderBottomWidth: i < sections.length - 1 ? 0.5 : 0,
+            borderBottomColor: '#f4f4f5',
+          }}>
+            <Text style={{
+              fontSize: 13, fontFamily: 'PoppinsMedium',
+              color: '#18181b', marginBottom: 5,
+            }}>
+              {section.title}
+            </Text>
+            <Text style={{
+              fontSize: 12, fontFamily: 'PoppinsRegular',
+              color: '#71717a', lineHeight: 20,
+            }}>
+              {section.body}
+            </Text>
+          </View>
+        ))}
 
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>5. User Responsibilities</Text>
-        <Text className='text-zinc-500 text-sm mb-6' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
-        }}>
-          You agree to use this application only for lawful purposes related to sun-dried fish farming and quality assessment. You must provide clear and accurate images for processing. You are responsible for any content you upload to the application and must ensure you have the right to use and share such images. Misuse of the application, including providing false information or attempting to manipulate results, may result in account suspension or termination.
-        </Text>
-
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>6. Research and Academic Use</Text>
-        <Text className='text-zinc-500 text-sm mb-6' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
-        }}>
-          This application is developed as part of a thesis project. Anonymized data and usage statistics may be used for academic research purposes. Your personal information will be kept confidential, and any published research will not include identifiable personal information without your explicit consent.
-        </Text>
-
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>7. Limitation of Liability</Text>
-        <Text className='text-zinc-500 text-sm mb-6' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
-        }}>
-          This application is provided &quot;as is&quot; for educational and research purposes. We are not liable for any losses, damages, or issues arising from the use of the application or reliance on its image processing results. Users should exercise their own judgment when making business decisions based on the application&apos;s assessments.
-        </Text>
-
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>8. Modifications to Service</Text>
-        <Text className='text-zinc-500 text-sm mb-6' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
-        }}>
-          We reserve the right to modify, suspend, or discontinue any aspect of the application at any time without prior notice. We may also update these Terms of Service periodically. Continued use of the application after such changes constitutes acceptance of the new terms.
-        </Text>
-
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>9. Account Termination</Text>
-        <Text className='text-zinc-500 text-sm mb-6' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
-        }}>
-          You may terminate your account at any time by contacting us through the application. We reserve the right to terminate or suspend accounts that violate these terms or engage in inappropriate use of the service. Upon termination, your access to the application will be revoked, though some data may be retained for research and record-keeping purposes.
-        </Text>
-
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>10. Contact Information</Text>
-        <Text className='text-zinc-500 text-sm mb-6' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
-        }}>
-          For questions, concerns, or support regarding these Terms of Service or the application, please contact us through the Help Center within the application or reach out to our support team. We are committed to assisting tuyo farmers in Labac, Naic, Cavite with their sun-dried fish quality assessment needs.
-        </Text>
-
-        <Text className='text-base mb-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>11. Governing Law</Text>
-        <Text className='text-zinc-500 text-sm mb-8' style={{
-          fontFamily: 'PoppinsRegular',
-          lineHeight: 22,
-        }}>
-          These Terms of Service are governed by the laws of the Republic of the Philippines. Any disputes arising from the use of this application shall be resolved in accordance with Philippine law and jurisdiction.
-        </Text>
-        <View className='mt-20'></View>
       </ScrollView>
     </View>
   )

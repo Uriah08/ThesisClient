@@ -1,45 +1,142 @@
-import { Text, Animated } from 'react-native';
+import { Text, Animated, View } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import SplashScreen from '@/components/pages/SplashScreen';
 import { useFonts } from 'expo-font';
 import { useSelector, useDispatch } from 'react-redux';
 import { setHasShownSplash } from '@/store';
 import NetInfo from '@react-native-community/netinfo';
-import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
+import Toast, { ToastConfig } from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CheckCircle, XCircle } from 'lucide-react-native';
 
-const toastConfig = {
-  success: (props: any) => (
-    <BaseToast
-      {...props}
-      style={{ borderLeftColor: '#155183', backgroundColor: '#ffffff' }}
-      contentContainerStyle={{ paddingHorizontal: 15 }}
-      text1Style={{
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#000000',
-      }}
-      text2Style={{
-        fontSize: 14,
-        color: '#000000',
-      }}
-    />
+const PRIMARY = '#155183';
+const PRIMARY_LIGHT = '#E6F1FB';
+const ERROR = '#dc2626';
+const ERROR_LIGHT = '#fef2f2';
+
+const toastConfig: ToastConfig = {
+  success: ({ text1, text2 }) => (
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: '#ffffff',
+      marginHorizontal: 16,
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      borderRadius: 14,
+      borderWidth: 0.5,
+      borderColor: '#f4f4f5',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.06,
+      shadowRadius: 12,
+      elevation: 4,
+    }}>
+      {/* Icon badge */}
+      <View style={{
+        width: 36, height: 36, borderRadius: 10,
+        backgroundColor: PRIMARY_LIGHT,
+        alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <CheckCircle size={18} color={PRIMARY} />
+      </View>
+
+      {/* Text */}
+      <View style={{ flex: 1, gap: 1 }}>
+        {text1 && (
+          <Text style={{
+            fontSize: 13,
+            fontFamily: 'PoppinsSemiBold',
+            color: '#18181b',
+          }}>
+            {text1}
+          </Text>
+        )}
+        {text2 && (
+          <Text style={{
+            fontSize: 12,
+            fontFamily: 'PoppinsRegular',
+            color: '#a1a1aa',
+          }}>
+            {text2}
+          </Text>
+        )}
+      </View>
+
+      {/* Left accent bar */}
+      <View style={{
+        position: 'absolute',
+        left: 0, top: 10, bottom: 10,
+        width: 3,
+        backgroundColor: PRIMARY,
+        borderRadius: 99,
+      }} />
+    </View>
   ),
-error: (props: any) => (
-    <ErrorToast
-      {...props}
-      style={{ borderLeftColor: '#155183', backgroundColor: '#ffffff' }}
-      text1Style={{
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#000000',
-      }}
-      text2Style={{
-        fontSize: 14,
-        color: '#000000',
-      }}
-    />
-  ),}
+
+  error: ({ text1, text2 }) => (
+    <View style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: '#ffffff',
+      marginHorizontal: 16,
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      borderRadius: 14,
+      borderWidth: 0.5,
+      borderColor: '#f4f4f5',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.06,
+      shadowRadius: 12,
+      elevation: 4,
+    }}>
+      {/* Icon badge */}
+      <View style={{
+        width: 36, height: 36, borderRadius: 10,
+        backgroundColor: ERROR_LIGHT,
+        alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <XCircle size={18} color={ERROR} />
+      </View>
+
+      {/* Text */}
+      <View style={{ flex: 1, gap: 1 }}>
+        {text1 && (
+          <Text style={{
+            fontSize: 13,
+            fontFamily: 'PoppinsSemiBold',
+            color: '#18181b',
+          }}>
+            {text1}
+          </Text>
+        )}
+        {text2 && (
+          <Text style={{
+            fontSize: 12,
+            fontFamily: 'PoppinsRegular',
+            color: '#a1a1aa',
+          }}>
+            {text2}
+          </Text>
+        )}
+      </View>
+
+      {/* Left accent bar */}
+      <View style={{
+        position: 'absolute',
+        left: 0, top: 10, bottom: 10,
+        width: 3,
+        backgroundColor: ERROR,
+        borderRadius: 99,
+      }} />
+    </View>
+  ),
+};
 
 const Network = ({ children }: { children: React.ReactNode }) => {
   const [loaded] = useFonts({

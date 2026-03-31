@@ -13,26 +13,13 @@ dayjs.extend(relativeTime);
 dayjs.extend(updateLocale);
 dayjs.updateLocale('en', {
   relativeTime: {
-    future: 'in %s',
-    past: '%s ago',
-    s: '1 sec',
-    ss: '%d sec',
-    m: '1 min',
-    mm: '%d min',
-    h: '1 hr',
-    hh: '%d hr',
-    d: '1 d',
-    dd: '%d d',
-    M: '1 mo',
-    MM: '%d mo',
-    y: '1 yr',
-    yy: '%d yr',
+    future: 'in %s', past: '%s ago', s: '1s', ss: '%ds', m: '1m',
+    mm: '%dm', h: '1h', hh: '%dh', d: '1d', dd: '%dd',
+    M: '1mo', MM: '%dmo', y: '1y', yy: '%dy',
   },
 });
 
-const formatTimeAgo = (dateString: string) => {
-  return dayjs(dateString).fromNow();
-};
+const formatTimeAgo = (dateString: string) => dayjs(dateString).fromNow();
 
 type NotificationProps = {
   notifications: Recipient[],
@@ -41,101 +28,135 @@ type NotificationProps = {
 }
 
 const Notifications = ({ notifications, isLoading, refetch }: NotificationProps) => {
-  const [ readNotifications ] = useReadNotificationsMutation();
+  const [readNotifications] = useReadNotificationsMutation();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
-    await refetch();
     setRefreshing(true);
-
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+    await refetch();
+    setRefreshing(false);
   };
 
-  const readNotifcation = async (ids: number[], read: boolean) => {
+  const handleRead = async (ids: number[], read: boolean) => {
     try {
-      if(!read) {
-        await readNotifications({ ids }).unwrap();
-      }
+      if (!read) await readNotifications({ ids }).unwrap();
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   if (isLoading) {
     return (
-      <View className="flex gap-3 p-5">
-        <SkeletonShimmer height={70} borderRadius={10} />
-        <SkeletonShimmer height={70} borderRadius={10} />
-        <SkeletonShimmer height={70} borderRadius={10} />
+      <View style={{ padding: 15, gap: 12 }}>
+        {[1, 2, 3].map((i) => (
+          <SkeletonShimmer key={i} height={80} borderRadius={16} />
+        ))}
       </View>
-    )
+    );
   }
-  
+
   return (
-    <ScrollView className='p-5'
-    refreshControl={
-      <RefreshControl style={{ zIndex: -1}} colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />
-    }
+    <ScrollView 
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+      refreshControl={
+        <RefreshControl tintColor="#185FA5" refreshing={refreshing} onRefresh={onRefresh} />
+      }
     >
-      <View className='flex-col gap-3'>
+      <View style={{ gap: 10 }}>
         {notifications.length === 0 ? (
-          <View className='flex-1 justify-center items-center gap-1' style={{ marginTop: 150 }}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 120, gap: 16 }}>
             <Image
               source={require('@/assets/images/hero-image.png')}
-              style={{ width: 200, height: 200, opacity: 0.5}}
-              resizeMode={'contain'}
-              />
-              <Text style={{
-                  fontSize: 20,
-                  fontFamily: 'PoppinsExtraBold',
-                  color: '#15518330'
-              }}>NO NOTIFICATIONS FOUND</Text>
+              style={{ width: 160, height: 160, opacity: 0.2 }}
+              resizeMode="contain"
+            />
+            <View style={{ alignItems: 'center', gap: 4 }}>
+              <Text style={{ fontSize: 16, fontFamily: 'PoppinsSemiBold', color: '#a1a1aa' }}>
+                All caught up!
+              </Text>
+              <Text style={{ fontSize: 13, fontFamily: 'PoppinsRegular', color: '#d4d4d8' }}>
+                No new notifications found.
+              </Text>
+            </View>
           </View>
         ) : (
-          notifications.map((notification) => (
-          <View
-          key={notification.id}
-          style={{
-            borderRadius: 12,
-            overflow: 'hidden',
-            borderWidth: 1,
-            borderColor: notification.read ? '#d4d4d8' : '#a2a2a6',
-            backgroundColor: notification.read ? '#ffffff' : '#f2f2f2',
-          }}
-          className="w-full rounded-xl">
-            <Pressable
-            onPress={() => {readNotifcation([notification.id],notification.read); router.push({ pathname: "/notification/[id]", params: { id: notification.id.toString() } });}}
-            android_ripple={{ color: '#d3d3d3', borderless: false }}
-            className='p-3 flex-row gap-3 relative'>
-              {!notification.read && <View style={{ height: 8, width: 8, borderRadius: 999, backgroundColor: '#0c5f1a', position: 'absolute', bottom: 15, right: 15}}></View>}
-              <NotificationIcon iconCode={notification.notification.type}/>
-              <View className='flex-1'>
-                  <View className='flex-row justify-between'>
+          notifications.map((notification) => {
+            const isRead = notification.read;
+            
+            return (
+              <View
+                key={notification.id}
+                style={{
+                  borderRadius: 16,
+                  overflow: 'hidden',
+                  backgroundColor: isRead ? '#ffffff' : '#F8FAFC', // Very slight blue-ish tint for unread
+                  borderWidth: 0.5,
+                  borderColor: isRead ? '#f4f4f5' : '#E2E8F0',
+                }}
+              >
+                <Pressable
+                  onPress={() => {
+                    handleRead([notification.id], isRead);
+                    router.push({ pathname: "/notification/[id]", params: { id: notification.id.toString() } });
+                  }}
+                  android_ripple={{ color: '#f1f5f9' }}
+                  style={{ flexDirection: 'row', padding: 14, gap: 12, alignItems: 'center' }}
+                >
+                  {/* Icon Container */}
+                  <View style={{ position: 'relative' }}>
+                    <NotificationIcon iconCode={notification.notification.type} />
+                    {!isRead && (
+                      <View 
+                        style={{ 
+                          height: 10, width: 10, borderRadius: 5, 
+                          backgroundColor: '#10b981', // Clean emerald green
+                          position: 'absolute', top: -2, right: -2,
+                          borderWidth: 2, borderColor: '#F8FAFC'
+                        }} 
+                      />
+                    )}
+                  </View>
+
+                  {/* Text Content */}
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text 
+                        numberOfLines={1}
+                        style={{ 
+                          fontSize: 14, 
+                          fontFamily: isRead ? 'PoppinsMedium' : 'PoppinsSemiBold', 
+                          color: isRead ? '#52525b' : '#18181b',
+                          flex: 1, marginRight: 8
+                        }}
+                      >
+                        {notification.notification.title}
+                      </Text>
+                      <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+                        {formatTimeAgo(notification.notification.created_at)}
+                      </Text>
+                    </View>
+
                     <Text 
-                      style={{ fontFamily: 'PoppinsSemiBold', fontSize: 14 }} 
-                      className='text-[#626262]'>
-                      {notification.notification.title.length > 18 
-                        ? notification.notification.title.slice(0, 18) + '...' 
-                        : notification.notification.title}
+                      numberOfLines={1} 
+                      style={{ 
+                        fontSize: 12, 
+                        fontFamily: 'PoppinsRegular', 
+                        color: isRead ? '#a1a1aa' : '#71717a',
+                        lineHeight: 18
+                      }}
+                    >
+                      {notification.notification.body}
                     </Text>
-                  <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 12, color: '#858585' }}>{formatTimeAgo(notification.notification.created_at)}</Text>
+                  </View>
+                </Pressable>
               </View>
-              <Text style={{ fontFamily: notification.read ? 'PoppinsRegular' :'PoppinsSemiBold', fontSize: 12, color: notification.read ? '#858585' : '#4a4a4a'}}>
-                {notification.notification.body.length > 33
-                 ? notification.notification.body.slice(0, 33) + '...' 
-                 : notification.notification.body}
-                </Text>
-              </View>
-            </Pressable>
-          </View>
-        ))
+            );
+          })
         )}
       </View>
-      <View className='mt-10'></View>
     </ScrollView>
-  )
+  );
 }
 
-export default Notifications
+export default Notifications;

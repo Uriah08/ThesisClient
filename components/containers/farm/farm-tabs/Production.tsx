@@ -6,13 +6,66 @@ import { useGetProductionsQuery } from '@/store/productionApi'
 import { FarmProduction } from '@/utils/types'
 import { router } from 'expo-router'
 
+const PRIMARY = '#155183'
+const PRIMARY_LIGHT = '#E6F1FB'
+
 type ProductionProps = {
-    owner: boolean
-    farmId: number
+  owner: boolean
+  farmId: number
 }
 
 const EMOJIS = ['😞', '😐', '🙂', '😊', '😁']
 
+// ── Filter chip ────────────────────────────────────────────────────────────────
+const FilterChip = ({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) => (
+  <Pressable
+    onPress={onPress}
+    style={{
+      paddingHorizontal: 12, paddingVertical: 6, borderRadius: 99,
+      backgroundColor: active ? PRIMARY : '#f4f4f5',
+      borderWidth: active ? 0 : 0.5, borderColor: '#e4e4e7',
+    }}
+  >
+    <Text style={{
+      fontSize: 11,
+      fontFamily: active ? 'PoppinsMedium' : 'PoppinsRegular',
+      color: active ? '#ffffff' : '#71717a',
+    }}>
+      {label}
+    </Text>
+  </Pressable>
+)
+
+// ── Filter panel ───────────────────────────────────────────────────────────────
+const FilterPanel = ({
+  sortFilter, setSortFilter,
+}: {
+  sortFilter: 'newest' | 'latest'
+  setSortFilter: (v: 'newest' | 'latest') => void
+}) => (
+  <View style={{
+    position: 'absolute', top: 100, right: 20, zIndex: 50,
+    backgroundColor: '#ffffff',
+    borderRadius: 16, borderWidth: 0.5, borderColor: '#f4f4f5',
+    padding: 16, gap: 10, width: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06, shadowRadius: 12, elevation: 6,
+  }}>
+    <Text style={{
+      fontSize: 10, fontFamily: 'PoppinsMedium',
+      color: '#a1a1aa', letterSpacing: 0.8, textTransform: 'uppercase',
+    }}>
+      Sort by
+    </Text>
+    <View style={{ flexDirection: 'row', gap: 6 }}>
+      <FilterChip label="Newest" active={sortFilter === 'newest'} onPress={() => setSortFilter('newest')} />
+      <FilterChip label="Oldest" active={sortFilter === 'latest'} onPress={() => setSortFilter('latest')} />
+    </View>
+  </View>
+)
+
+// ── Production card (grid view) ────────────────────────────────────────────────
 const ProductionCard = ({ item }: { item: FarmProduction }) => {
   const date = new Date(item.created_at).toLocaleDateString('en-PH', {
     month: 'short', day: 'numeric', year: 'numeric',
@@ -20,99 +73,104 @@ const ProductionCard = ({ item }: { item: FarmProduction }) => {
 
   return (
     <Pressable
-      onPress={() => 
-        router.push({
-          pathname: "/production/[id]/production",
-          params: { id: item.id.toString() },
-        })
-      }
+      onPress={() => router.push({ pathname: '/production/[id]/production', params: { id: item.id.toString() } })}
+      android_ripple={{ color: '#00000008', borderless: false }}
       style={{
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 14,
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: '#e4e4e7',
-        shadowColor: '#000',
-        shadowOpacity: 0.04,
-        shadowRadius: 4,
+        backgroundColor: '#fafafa',
+        borderRadius: 16, borderWidth: 0.5, borderColor: '#f4f4f5',
+        padding: 16, marginBottom: 10,
       }}
     >
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <Text numberOfLines={1} style={{ fontFamily: 'PoppinsSemiBold', fontSize: 14, color: '#18181b', flex: 1, marginRight: 8 }}>
+      {/* Title row */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+        <Text numberOfLines={1} style={{
+          fontFamily: 'PoppinsSemiBold', fontSize: 14,
+          color: '#18181b', flex: 1, marginRight: 8,
+        }}>
           {item.title}
         </Text>
         <Text style={{ fontSize: 18 }}>{EMOJIS[(item.satisfaction ?? 3) - 1]}</Text>
       </View>
 
-      <View style={{ flexDirection: 'row', gap: 16, marginBottom: 8 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <Package size={13} color="#155183" />
-          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#3f3f46' }}>
+      {/* Meta pills */}
+      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+        <View style={{
+          flexDirection: 'row', alignItems: 'center', gap: 5,
+          backgroundColor: PRIMARY_LIGHT, paddingHorizontal: 10,
+          paddingVertical: 4, borderRadius: 99,
+        }}>
+          <Package size={12} color={PRIMARY} />
+          <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 11, color: PRIMARY }}>
             {item.quantity} kg
           </Text>
         </View>
         {item.landing && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <MapPin size={13} color="#155183" />
-            <Text numberOfLines={1} style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#3f3f46', maxWidth: 120 }}>
+          <View style={{
+            flexDirection: 'row', alignItems: 'center', gap: 5,
+            backgroundColor: '#f4f4f5', paddingHorizontal: 10,
+            paddingVertical: 4, borderRadius: 99,
+          }}>
+            <MapPin size={12} color="#71717a" />
+            <Text numberOfLines={1} style={{
+              fontFamily: 'PoppinsRegular', fontSize: 11,
+              color: '#3f3f46', maxWidth: 120,
+            }}>
               {item.landing}
             </Text>
           </View>
         )}
       </View>
 
+      {/* Footer */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <View style={{ backgroundColor: '#eff6ff', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20 }}>
-          <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 10, color: '#155183' }}>#{item.id}</Text>
+        <View style={{
+          backgroundColor: PRIMARY_LIGHT, paddingHorizontal: 8,
+          paddingVertical: 3, borderRadius: 99,
+        }}>
+          <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 10, color: PRIMARY }}>
+            #{item.id}
+          </Text>
         </View>
-        <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#a1a1aa' }}>{date}</Text>
+        <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#a1a1aa' }}>
+          {date}
+        </Text>
       </View>
     </Pressable>
   )
 }
 
-const ProductionRow = ({ item }: { item: FarmProduction }) => {
+// ── Production row (list view) ─────────────────────────────────────────────────
+const ProductionRow = ({ item, isLast }: { item: FarmProduction; isLast: boolean }) => {
   const date = new Date(item.created_at).toLocaleDateString('en-PH', {
     month: 'short', day: 'numeric',
   })
 
   return (
     <Pressable
-      onPress={() => 
-        router.push({
-          pathname: "/production/[id]/production",
-          params: { id: item.id.toString() },
-        })
-      }
+      onPress={() => router.push({ pathname: '/production/[id]/production', params: { id: item.id.toString() } })}
+      android_ripple={{ color: '#00000008', borderless: false }}
       style={{
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        marginBottom: 6,
-        borderWidth: 1,
-        borderColor: '#e4e4e7',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
+        flexDirection: 'row', alignItems: 'center',
+        gap: 12, padding: 14, paddingHorizontal: 16,
+        borderBottomWidth: isLast ? 0 : 0.5,
+        borderBottomColor: '#f4f4f5',
       }}
     >
       <Text style={{ fontSize: 16, width: 22, textAlign: 'center' }}>
         {EMOJIS[(item.satisfaction ?? 3) - 1]}
       </Text>
-
-      <Text numberOfLines={1} style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#18181b', flex: 1 }}>
+      <Text numberOfLines={1} style={{
+        fontFamily: 'PoppinsSemiBold', fontSize: 13,
+        color: '#18181b', flex: 1,
+      }}>
         {item.title}
       </Text>
-
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-        <Package size={11} color="#155183" />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Package size={11} color={PRIMARY} />
         <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#3f3f46' }}>
           {item.quantity} kg
         </Text>
       </View>
-
       <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#a1a1aa', width: 58, textAlign: 'right' }}>
         {date}
       </Text>
@@ -120,6 +178,7 @@ const ProductionRow = ({ item }: { item: FarmProduction }) => {
   )
 }
 
+// ── Main ───────────────────────────────────────────────────────────────────────
 const Production = ({ owner, farmId }: ProductionProps) => {
   const [visible, setVisible] = useState(false)
   const [format, setFormat] = useState(true)
@@ -129,117 +188,174 @@ const Production = ({ owner, farmId }: ProductionProps) => {
   const [search, setSearch] = useState('')
 
   const filteredData = [...(data ?? [])]
-  .filter(item => item.title?.toLowerCase().includes(search.toLowerCase()))
-  .sort((a, b) => {
-    if (sortFilter === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  })
+    .filter(item => item.title?.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => sortFilter === 'newest'
+      ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      : new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+
+  const totalKg = data?.reduce((sum: number, p: FarmProduction) => sum + Number(p.quantity), 0) ?? 0
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
       <AddRecord visible={visible} setVisible={setVisible} farmId={farmId} />
 
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingHorizontal: 20 }}>
-        <Text style={{ fontFamily: 'PoppinsBold', fontSize: 20, color: '#3f3f46' }}>Production</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <TrendingUp size={16} color="#155183" />
-          <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 12, color: '#155183' }}>
-            {data?.reduce((sum: number, p: FarmProduction) => sum + Number(p.quantity), 0) ?? 0} kg total
-          </Text>
-        </View>
+      {/* Header */}
+      <View style={{
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        marginTop: 10, paddingHorizontal: 15, paddingBottom: 8,
+      }}>
+        <Text className='text-xl text-zinc-700' style={{ fontFamily: 'PoppinsBold', color: '#3f3f46' }}>Production</Text>
+        {totalKg > 0 && (
+          <View style={{
+            flexDirection: 'row', alignItems: 'center', gap: 5,
+            backgroundColor: PRIMARY_LIGHT, paddingHorizontal: 10,
+            paddingVertical: 4, borderRadius: 20,
+          }}>
+            <TrendingUp size={11} color={PRIMARY} />
+            <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 11, color: PRIMARY }}>
+              {totalKg} kg total
+            </Text>
+          </View>
+        )}
       </View>
 
-      {showFilter && (
-        <View style={{ top: 90 }} className="absolute right-5 z-50 bg-white border border-zinc-300 rounded-xl shadow-lg p-3 w-44">
-          <Text className='text-zinc-800' style={{ fontFamily: 'PoppinsMedium' }}>Sort</Text>
-
-          <Pressable
-            className={`w-full p-2 rounded-lg ${sortFilter === 'newest' && 'bg-zinc-100'}`}
-            onPress={() => { setSortFilter('newest'); setShowFilter(false) }}
-          >
-            <Text className="text-black text-base">Newest</Text>
-          </Pressable>
-          <Pressable
-            className={`w-full p-2 rounded-lg ${sortFilter === 'latest' && 'bg-zinc-100'}`}
-            onPress={() => { setSortFilter('latest'); setShowFilter(false) }}
-          >
-            <Text className="text-black text-base">Latest</Text>
-          </Pressable>
-        </View>
-      )}
-
-      <View className='flex-row gap-3 w-full px-5' style={{ marginBottom: 15, marginTop: 10 }}>
-        <View className='relative flex-1'>
+      {/* Search + controls */}
+      <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 15, paddingBottom: 14 }}>
+        <View style={{
+          flex: 1, flexDirection: 'row', alignItems: 'center',
+          backgroundColor: '#fafafa', borderRadius: 12,
+          borderWidth: 0.5, borderColor: '#f4f4f5',
+          paddingHorizontal: 14, gap: 10, height: 42,
+        }}>
+          <Search size={15} color="#d4d4d8" />
           <TextInput
-            style={{ backgroundColor: "#ffffff60", height: 40, width: "100%", borderColor: '#d4d4d8' }}
-            className='rounded-full pl-12 text-base text-black border'
-            placeholder='Search production...'
+            style={{ flex: 1, fontFamily: 'PoppinsRegular', fontSize: 13, color: '#18181b' }}
+            placeholder="Search production..."
+            placeholderTextColor="#d4d4d8"
             value={search}
             onChangeText={setSearch}
           />
-          <Search style={{ position: 'absolute', top: 8, left: 14 }} color={'#d4d4d8'} />
         </View>
+
+        {/* Filter button */}
         <Pressable
           onPress={() => setShowFilter(prev => !prev)}
-          className='flex items-center justify-center'
-          style={{ backgroundColor: '#155183', borderRadius: 10, padding: 8 }}
+          style={{
+            width: 42, height: 42, borderRadius: 12,
+            backgroundColor: showFilter ? PRIMARY : '#f4f4f5',
+            alignItems: 'center', justifyContent: 'center',
+          }}
         >
-          <FilterIcon color={'#ffffff'} size={20} />
+          <FilterIcon size={17} color={showFilter ? '#ffffff' : '#71717a'} />
         </Pressable>
+
+        {/* View toggle */}
         <Pressable
           onPress={() => setFormat(f => !f)}
-          className='flex items-center justify-center'
-          style={{ backgroundColor: '#155183', borderRadius: 10, padding: 8 }}
+          style={{
+            width: 42, height: 42, borderRadius: 12,
+            backgroundColor: '#f4f4f5',
+            alignItems: 'center', justifyContent: 'center',
+          }}
         >
-          {format ? <List color={'#ffffff'} size={20} /> : <LayoutDashboard color={'#ffffff'} size={20} />}
+          {format
+            ? <List size={17} color="#71717a" />
+            : <LayoutDashboard size={17} color="#71717a" />
+          }
         </Pressable>
       </View>
 
+      {/* Filter panel */}
+      {showFilter && (
+        <FilterPanel sortFilter={sortFilter} setSortFilter={setSortFilter} />
+      )}
+
+      {/* Content */}
       {isLoading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator color="#155183" />
+          <ActivityIndicator color={PRIMARY} />
         </View>
       ) : !filteredData || filteredData.length === 0 ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40 }}>
-          <Text style={{ fontSize: 36, marginBottom: 8 }}>📦</Text>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40, gap: 8 }}>
+          <View style={{
+            width: 52, height: 52, borderRadius: 14,
+            backgroundColor: '#f4f4f5',
+            alignItems: 'center', justifyContent: 'center',
+            marginBottom: 4,
+          }}>
+            <Package size={24} color="#d4d4d8" />
+          </View>
           <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15, color: '#3f3f46', textAlign: 'center' }}>
             No records yet
           </Text>
-          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#a1a1aa', textAlign: 'center', marginTop: 4 }}>
+          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#a1a1aa', textAlign: 'center' }}>
             {owner ? 'Tap "Add Record" to log your first production.' : 'No production records have been added.'}
           </Text>
         </View>
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
+          contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 100 }}
         >
+          {/* List view header */}
           {!format && (
-            <View style={{ flexDirection: 'row', paddingHorizontal: 12, marginBottom: 4 }}>
-              <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 10, color: '#a1a1aa', flex: 1, marginLeft: 32 }}>TITLE</Text>
-              <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 10, color: '#a1a1aa', width: 55 }}>QTY</Text>
-              <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 10, color: '#a1a1aa', width: 58, textAlign: 'right' }}>DATE</Text>
-            </View>
+            <>
+              <View style={{
+                backgroundColor: '#fafafa', borderRadius: 16,
+                borderWidth: 0.5, borderColor: '#f4f4f5',
+                overflow: 'hidden',
+              }}>
+                {/* Column headers */}
+                <View style={{
+                  flexDirection: 'row', paddingHorizontal: 16,
+                  paddingVertical: 10, borderBottomWidth: 0.5,
+                  borderBottomColor: '#f4f4f5',
+                }}>
+                  <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 10, color: '#a1a1aa', flex: 1, marginLeft: 34, letterSpacing: 0.6 }}>
+                    TITLE
+                  </Text>
+                  <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 10, color: '#a1a1aa', width: 55, letterSpacing: 0.6 }}>
+                    QTY
+                  </Text>
+                  <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 10, color: '#a1a1aa', width: 58, textAlign: 'right', letterSpacing: 0.6 }}>
+                    DATE
+                  </Text>
+                </View>
+
+                {filteredData.map((item: FarmProduction, i) => (
+                  <ProductionRow key={item.id} item={item} isLast={i === filteredData.length - 1} />
+                ))}
+              </View>
+            </>
           )}
 
-          {filteredData.map((item: FarmProduction) =>
-            format
-              ? <ProductionCard key={item.id} item={item} />
-              : <ProductionRow key={item.id} item={item} />
-          )}
+          {/* Card view */}
+          {format && filteredData.map((item: FarmProduction) => (
+            <ProductionCard key={item.id} item={item} />
+          ))}
         </ScrollView>
       )}
 
       {/* FAB */}
       {owner && (
-        <View style={{ position: 'absolute', bottom: 20, right: 20, borderRadius: 999, overflow: 'hidden', zIndex: 999 }}>
+        <View style={{ position: 'absolute', bottom: 20, right: 20, zIndex: 999 }}>
           <Pressable
             onPress={() => setVisible(true)}
-            android_ripple={{ color: '#ffffff50', borderless: false }}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 20, paddingVertical: 10, backgroundColor: '#155183', borderRadius: 999 }}
+            android_ripple={{ color: '#ffffff30', borderless: false }}
+            style={{
+              flexDirection: 'row', alignItems: 'center', gap: 8,
+              backgroundColor: PRIMARY, paddingVertical: 12,
+              paddingHorizontal: 20, borderRadius: 99,
+              shadowColor: PRIMARY,
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
+            }}
           >
-            <Text style={{ color: '#fff', fontFamily: 'PoppinsSemiBold' }}>Add Record</Text>
-            <Plus color="#fff" size={18} />
+            <Plus size={16} color="#ffffff" />
+            <Text style={{ color: '#fff', fontFamily: 'PoppinsSemiBold', fontSize: 13 }}>
+              Add Record
+            </Text>
           </Pressable>
         </View>
       )}

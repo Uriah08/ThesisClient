@@ -1,568 +1,504 @@
-import { View, Text, ScrollView, Image } from 'react-native'
+import {
+  View, Text, ScrollView, Image, Pressable,
+} from 'react-native'
 import React from 'react'
 import { router } from 'expo-router'
-import { ChevronLeft, CircleCheck, CircleX, PanelLeftDashed, Play, Scan, Smartphone } from 'lucide-react-native'
+import {
+  ChevronLeft, CircleCheck, CircleX,
+  PanelLeftDashed, Play, Scan, Smartphone,
+  CloudSunIcon,
+} from 'lucide-react-native'
 
+// ─── section header ────────────────────────────────────────────────────────────
+type SectionHeaderProps = {
+  icon: any
+  label: string
+  iconBg: string
+  iconColor: string
+}
+const SectionHeader = ({ icon: Icon, label, iconBg, iconColor }: SectionHeaderProps) => (
+  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 28, marginBottom: 12 }}>
+    <View style={{
+      width: 30, height: 30, borderRadius: 8,
+      backgroundColor: iconBg,
+      alignItems: 'center', justifyContent: 'center',
+    }}>
+      <Icon size={14} color={iconColor} />
+    </View>
+    <Text style={{ fontSize: 13, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
+      {label}
+    </Text>
+  </View>
+)
+
+// ─── sub-heading ───────────────────────────────────────────────────────────────
+const SubHeading = ({ children }: { children: React.ReactNode }) => (
+  <Text style={{
+    fontSize: 13, fontFamily: 'PoppinsMedium',
+    color: '#18181b', marginTop: 14, marginBottom: 4,
+  }}>
+    {children}
+  </Text>
+)
+
+// ─── body text ─────────────────────────────────────────────────────────────────
+const Body = ({ children }: { children: React.ReactNode }) => (
+  <Text style={{
+    fontSize: 12, fontFamily: 'PoppinsRegular',
+    color: '#71717a', lineHeight: 20, marginTop: 2,
+  }}>
+    {children}
+  </Text>
+)
+
+// ─── highlight span ────────────────────────────────────────────────────────────
+const Hi = ({ children }: { children: React.ReactNode }) => (
+  <Text style={{ color: '#155183', fontFamily: 'PoppinsMedium' }}>
+    {children}
+  </Text>
+)
+
+// ─── divider ───────────────────────────────────────────────────────────────────
+const Divider = () => (
+  <View style={{ height: 0.5, backgroundColor: '#f4f4f5', marginTop: 24 }} />
+)
+
+// ─── weather row ───────────────────────────────────────────────────────────────
+type WeatherRowProps = {
+  src: any
+  label: string
+  description: string
+}
+const WeatherRow = ({ src, label, description }: WeatherRowProps) => (
+  <View style={{
+    flexDirection: 'row', alignItems: 'flex-start', gap: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 0.5, borderBottomColor: '#f4f4f5',
+  }}>
+    <Image source={src} style={{ width: 28, height: 28 }} resizeMode="contain" />
+    <View style={{ flex: 1 }}>
+      <Text style={{ fontSize: 12, fontFamily: 'PoppinsMedium', color: '#18181b', marginBottom: 2 }}>
+        {label}
+      </Text>
+      <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#71717a', lineHeight: 18 }}>
+        {description}
+      </Text>
+    </View>
+  </View>
+)
+
+// ─── alert table ───────────────────────────────────────────────────────────────
+type AlertRow = { rain: string; cloud: string; label: string; color: string }
+const alertRows: AlertRow[] = [
+  { rain: '0%',         cloud: 'Below 50%',   label: 'Excellent', color: '#16a34a' },
+  { rain: '0%',         cloud: '50% – 100%',  label: 'Good',      color: '#2563eb' },
+  { rain: '1% – 80%',   cloud: 'Up to 100%',  label: 'Caution',   color: '#ca8a04' },
+  { rain: '81% – 98%',  cloud: 'Any',         label: 'Warning',   color: '#ea580c' },
+  { rain: '99% – 100%', cloud: 'Any',         label: 'Danger',    color: '#dc2626' },
+]
+
+const AlertTable = () => (
+  <View style={{
+    borderRadius: 12, borderWidth: 0.5, borderColor: '#e4e4e7',
+    overflow: 'hidden', marginTop: 12,
+  }}>
+    {/* header */}
+    <View style={{
+      flexDirection: 'row', backgroundColor: '#fafafa',
+      borderBottomWidth: 0.5, borderBottomColor: '#e4e4e7',
+    }}>
+      {['Rain %', 'Cloud %', 'Alert'].map((h, i) => (
+        <Text key={i} style={{
+          flex: 1, padding: 10, fontSize: 11,
+          fontFamily: 'PoppinsSemiBold', color: '#52525b',
+        }}>
+          {h}
+        </Text>
+      ))}
+    </View>
+    {/* rows */}
+    {alertRows.map((row, i) => (
+      <View key={i} style={{
+        flexDirection: 'row',
+        borderTopWidth: i === 0 ? 0 : 0.5, borderTopColor: '#f4f4f5',
+      }}>
+        <Text style={{ flex: 1, padding: 10, fontSize: 11, fontFamily: 'PoppinsRegular', color: '#71717a' }}>
+          {row.rain}
+        </Text>
+        <Text style={{ flex: 1, padding: 10, fontSize: 11, fontFamily: 'PoppinsRegular', color: '#71717a' }}>
+          {row.cloud}
+        </Text>
+        <Text style={{ flex: 1, padding: 10, fontSize: 11, fontFamily: 'PoppinsSemiBold', color: row.color }}>
+          {row.label}
+        </Text>
+      </View>
+    ))}
+  </View>
+)
+
+// ─── classification table ──────────────────────────────────────────────────────
+type ClassRow = { status: string; desc: string; color: string }
+const classRows: ClassRow[] = [
+  { status: 'Reject',  desc: 'Not suitable due to spoilage or defects.',   color: '#961515' },
+  { status: 'Undried', desc: 'Still moist and needs more drying time.',     color: '#c47f00' },
+  { status: 'Dry',     desc: 'Fully dried and ready for storage or sale.',  color: '#127312' },
+]
+
+const ClassTable = () => (
+  <View style={{
+    borderRadius: 12, borderWidth: 0.5, borderColor: '#e4e4e7',
+    overflow: 'hidden', marginTop: 12,
+  }}>
+    <View style={{
+      flexDirection: 'row', backgroundColor: '#fafafa',
+      borderBottomWidth: 0.5, borderBottomColor: '#e4e4e7',
+    }}>
+      {['Status', 'Description'].map((h, i) => (
+        <Text key={i} style={{
+          padding: 10, fontSize: 11,
+          fontFamily: 'PoppinsSemiBold', color: '#52525b',
+          width: i === 0 ? '38%' : '62%',
+        }}>
+          {h}
+        </Text>
+      ))}
+    </View>
+    {classRows.map((row, i) => (
+      <View key={i} style={{
+        flexDirection: 'row',
+        borderTopWidth: i === 0 ? 0 : 0.5, borderTopColor: '#f4f4f5',
+      }}>
+        <Text style={{
+          padding: 10, fontSize: 11, width: '38%',
+          fontFamily: 'PoppinsSemiBold', color: row.color,
+        }}>
+          {row.status}
+        </Text>
+        <Text style={{
+          padding: 10, fontSize: 11, width: '62%',
+          fontFamily: 'PoppinsRegular', color: '#71717a', lineHeight: 18,
+        }}>
+          {row.desc}
+        </Text>
+      </View>
+    ))}
+  </View>
+)
+
+// ─── main screen ───────────────────────────────────────────────────────────────
 const HelpCenter = () => {
   return (
-    <View className="flex-1 bg-white">
-      <ChevronLeft
-        onPress={() => router.push('/settings')}
-        style={{ marginTop: 50, marginLeft: 30 }}
-        color="black"
-        size={32}
-      />
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
 
-      <Text
-        className="mt-10 mx-7 text-2xl"
-        style={{ fontFamily: 'PoppinsSemiBold' }}
+      {/* Header */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', gap: 12,
+        paddingTop: 56, paddingHorizontal: 24, paddingBottom: 8,
+      }}>
+        <Pressable
+          onPress={() => router.push('/settings')}
+          style={{
+            width: 36, height: 36, borderRadius: 18,
+            backgroundColor: '#f4f4f5',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+          <ChevronLeft size={18} color="#18181b" />
+        </Pressable>
+        <Text style={{ fontSize: 17, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
+          Help Center
+        </Text>
+      </View>
+
+      {/* summary chip row */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', gap: 8,
+        paddingHorizontal: 24, paddingVertical: 12,
+      }}>
+        <View style={{
+          width: 28, height: 28, borderRadius: 8,
+          backgroundColor: '#E6F1FB',
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          <CloudSunIcon size={13} color="#185FA5" />
+        </View>
+        <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+          FiScan — User guide & reference
+        </Text>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 60 }}
       >
-        Help
-        <Text className="text-primary"> Center.</Text>
-      </Text>
-      <ScrollView showsVerticalScrollIndicator={false} className='mx-7 mt-5 mb-10'>
-        <View className='flex flex-row items-center gap-2 mt-5'>
-          <View className='bg-primary p-2 rounded-full'>
-            <Play size={15} color={'#ffffff'}/>
-          </View>
-          <Text className='text-lg' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>Getting Started</Text>
-        </View>
-        <Text className='text-base mt-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>1. Create an account</Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>Open the app and tap <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>Register.</Text></Text>
-        <Text className='text-sm' style={{ fontFamily: 'PoppinsRegular' }}>Enter your username, email, create a password, and follow the complete profile steps.</Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>A success message will appear once your registration is complete before proceeding to the app.</Text>
 
-        <Text className='text-base mt-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>2. Logging in your account</Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>Tap <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>Log In</Text>, enter your registered email and password, then press <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>Login.</Text></Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>You&apos;ll see a confirmation message when login is successful before being redirected to complete your profile.</Text>
-
-        <Text className='text-base mt-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>3. Complete your profile</Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>After your first login, you&apos;ll be directed to the <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>Complete Profile</Text> page.</Text>
-        <Text className='text-sm' style={{ fontFamily: 'PoppinsRegular' }}>Fill in all required information including your full name, birthdate, mobile number, and other farmer details.</Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>Once completed, you&apos;ll be redirected to the dashboard and can start using the app.</Text>
-
-        <View className='flex flex-row items-center gap-2 mt-5'>
-          <View className='bg-primary p-2 rounded-full'>
-            <Smartphone size={15} color={'#ffffff'}/>
-          </View>
-          <Text className='text-lg' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>Navigating the App</Text>
+        {/* summary card */}
+        <View style={{
+          padding: 14, backgroundColor: '#fafafa',
+          borderRadius: 12, borderWidth: 0.5, borderColor: '#f4f4f5',
+          marginBottom: 4,
+        }}>
+          <Text style={{
+            fontSize: 11, fontFamily: 'PoppinsMedium',
+            color: '#a1a1aa', letterSpacing: 0.8,
+            textTransform: 'uppercase', marginBottom: 6,
+          }}>
+            Overview
+          </Text>
+          <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#52525b', lineHeight: 20 }}>
+            This guide walks you through account setup, app navigation, drying area roles, and the image scan feature
+            for quality assessment of sun-dried fish.
+          </Text>
         </View>
 
-        <Text className='text-base mt-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>1. Dashboard</Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>Your main hub displays a personalized welcome message, today&apos;s weather forecast, and drying recommendations.</Text>
-        <Text className='text-sm' style={{ fontFamily: 'PoppinsRegular' }}>View weather charts and receive warnings about <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>whether conditions</Text> are suitable for sun-drying your tuyo today.</Text>
+        {/* ── Getting Started ─────────────────────────────────────── */}
+        <SectionHeader
+          icon={Play}
+          label="Getting Started"
+          iconBg="#E1F5EE"
+          iconColor="#0F6E56"
+        />
 
-        <Text
-          className="text-base mt-4"
-          style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}
-        >
+        <SubHeading>1. Create an account</SubHeading>
+        <Body>
+          Open the app and tap <Hi>Register</Hi>. Enter your username, email, and create a password,
+          then follow the complete profile steps. A success message will appear once registration is complete.
+        </Body>
+
+        <SubHeading>2. Log in to your account</SubHeading>
+        <Body>
+          Tap <Hi>Log In</Hi>, enter your registered email and password, then press <Hi>Login</Hi>.
+          You&apos;ll see a confirmation message when login is successful before being redirected to complete your profile.
+        </Body>
+
+        <SubHeading>3. Complete your profile</SubHeading>
+        <Body>
+          After your first login, you&apos;ll be directed to the <Hi>Complete Profile</Hi> page.
+          Fill in all required information including your full name, birthdate, mobile number, and other farmer details.
+          Once completed, you&apos;ll be redirected to the dashboard.
+        </Body>
+
+        <Divider />
+
+        {/* ── Navigating the App ──────────────────────────────────── */}
+        <SectionHeader
+          icon={Smartphone}
+          label="Navigating the App"
+          iconBg="#E6F1FB"
+          iconColor="#185FA5"
+        />
+
+        <SubHeading>1. Dashboard</SubHeading>
+        <Body>
+          Your main hub displays a personalized welcome message, today&apos;s weather forecast, and drying recommendations.
+          View weather charts and receive warnings about <Hi>whether conditions</Hi> are suitable for sun-drying your tuyo.
+        </Body>
+
+        {/* weather icons */}
+        <Text style={{
+          fontSize: 11, fontFamily: 'PoppinsMedium', color: '#a1a1aa',
+          letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 14, marginBottom: 8,
+        }}>
           Weather Icons Guide
         </Text>
+        <Body>
+          The app uses weather icons to help you quickly assess current conditions and determine whether sun-drying is safe.
+        </Body>
 
-        <Text
-          className="text-sm mt-1"
-          style={{ fontFamily: 'PoppinsRegular' }}
-        >
-          The app uses weather icons to help you quickly understand current weather
-          conditions and determine whether it is safe and effective to sun-dry tuyo.
-          Each icon represents a specific weather condition that may affect the drying
-          process.
-        </Text>
-
-       <View className="mt-4">
-        <View className="flex-row gap-2 items-center mt-2">
-          <Image
-            style={{ width: 30, height: 30 }}
-            resizeMode="contain"
-            source={require('@/assets/images/weather-icons/1.png')}
-          />
-          <Text className="text-sm" style={{ fontFamily: 'PoppinsMedium' }}>
-            Clear Sky
-          </Text>
-        </View>
-        <Text
-          className="text-sm ml-10"
-          style={{ fontFamily: 'PoppinsRegular', lineHeight: 20 }}
-        >
-          Ideal drying conditions with strong sunlight and clear skies.
-        </Text>
-
-        <View className="flex-row gap-2 items-center mt-3">
-          <Image
-            style={{ width: 30, height: 30 }}
-            resizeMode="contain"
-            source={require('@/assets/images/weather-icons/2.png')}
-          />
-          <Text className="text-sm" style={{ fontFamily: 'PoppinsMedium' }}>
-            Few Clouds
-          </Text>
-        </View>
-        <Text
-          className="text-sm ml-10"
-          style={{ fontFamily: 'PoppinsRegular', lineHeight: 20 }}
-        >
-          Mostly sunny with minimal cloud cover. Drying is still recommended.
-        </Text>
-
-        <View className="flex-row gap-2 items-center mt-3">
-          <Image
-            style={{ width: 30, height: 30 }}
-            resizeMode="contain"
-            source={require('@/assets/images/weather-icons/3.png')}
-          />
-          <Text className="text-sm" style={{ fontFamily: 'PoppinsMedium' }}>
-            Scattered Clouds
-          </Text>
-        </View>
-        <Text
-          className="text-sm ml-10"
-          style={{ fontFamily: 'PoppinsRegular', lineHeight: 20 }}
-        >
-          Partial cloud coverage. Drying may take longer but remains possible.
-        </Text>
-
-        <View className="flex-row gap-2 items-center mt-3">
-          <Image
-            style={{ width: 30, height: 30 }}
-            resizeMode="contain"
-            source={require('@/assets/images/weather-icons/4.png')}
-          />
-          <Text className="text-sm" style={{ fontFamily: 'PoppinsMedium' }}>
-            Broken Clouds
-          </Text>
-        </View>
-        <Text
-          className="text-sm ml-10"
-          style={{ fontFamily: 'PoppinsRegular', lineHeight: 20 }}
-        >
-          Cloudy skies with limited sunlight. Drying efficiency may be reduced.
-        </Text>
-
-        <View className="flex-row gap-2 items-center mt-3">
-          <Image
-            style={{ width: 30, height: 30 }}
-            resizeMode="contain"
-            source={require('@/assets/images/weather-icons/6.png')}
-          />
-          <Text className="text-sm" style={{ fontFamily: 'PoppinsMedium' }}>
-            Shower Rain
-          </Text>
-        </View>
-        <Text
-          className="text-sm ml-10"
-          style={{ fontFamily: 'PoppinsRegular', lineHeight: 20 }}
-        >
-          Light or intermittent rain. Sun-drying is not recommended.
-        </Text>
-
-        <View className="flex-row gap-2 items-center mt-3">
-          <Image
-            style={{ width: 30, height: 30 }}
-            resizeMode="contain"
-            source={require('@/assets/images/weather-icons/5.png')}
-          />
-          <Text className="text-sm" style={{ fontFamily: 'PoppinsMedium' }}>
-            Rain
-          </Text>
-        </View>
-        <Text
-          className="text-sm ml-10"
-          style={{ fontFamily: 'PoppinsRegular', lineHeight: 20 }}
-        >
-          Continuous rainfall. Drying is unsafe and ineffective.
-        </Text>
-
-        <View className="flex-row gap-2 items-center mt-3">
-          <Image
-            style={{ width: 30, height: 30 }}
-            resizeMode="contain"
-            source={require('@/assets/images/weather-icons/7.png')}
-          />
-          <Text className="text-sm" style={{ fontFamily: 'PoppinsMedium' }}>
-            Thunderstorm
-          </Text>
-        </View>
-        <Text
-          className="text-sm ml-10"
-          style={{ fontFamily: 'PoppinsRegular', lineHeight: 20 }}
-        >
-          Severe weather with heavy rain and thunderstorm. Drying should be avoided.
-        </Text>
-      </View>
-
-      <Text
-        className="text-base mt-4"
-        style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}
-      >
-        Weather Alerts for Drying Fish
-      </Text>
-
-      <Text
-        className="text-sm mt-1"
-        style={{ fontFamily: 'PoppinsRegular' }}
-      >
-        Our app provides weather-based alerts to help you determine whether it is safe and effective to sun-dry your fish. 
-        Alerts are calculated using the current rain probability and cloud coverage. Each alert level indicates the 
-        expected drying conditions and the risk associated with drying fish outdoors.
-      </Text>
-
-      <View className="mt-4 border border-zinc-300 rounded-lg overflow-hidden">
-        {/* Header */}
-        <View className="flex-row bg-zinc-100">
-          <Text className="flex-1 p-3 text-sm font-semibold" style={{ fontFamily: 'PoppinsSemiBold' }}>
-            Rain %
-          </Text>
-          <Text className="flex-1 p-3 text-sm font-semibold" style={{ fontFamily: 'PoppinsSemiBold' }}>
-            Cloud %
-          </Text>
-          <Text className="flex-1 p-3 text-sm font-semibold" style={{ fontFamily: 'PoppinsSemiBold' }}>
-            Alert
-          </Text>
+        <View style={{
+          marginTop: 10, padding: 14, backgroundColor: '#fafafa',
+          borderRadius: 12, borderWidth: 0.5, borderColor: '#f4f4f5',
+        }}>
+          {[
+            { src: require('@/assets/images/weather-icons/1.png'), label: 'Clear Sky',        desc: 'Ideal drying conditions with strong sunlight.' },
+            { src: require('@/assets/images/weather-icons/2.png'), label: 'Few Clouds',       desc: 'Mostly sunny. Drying is still recommended.' },
+            { src: require('@/assets/images/weather-icons/3.png'), label: 'Scattered Clouds', desc: 'Partial coverage. Drying may take longer.' },
+            { src: require('@/assets/images/weather-icons/4.png'), label: 'Broken Clouds',    desc: 'Limited sunlight. Drying efficiency reduced.' },
+            { src: require('@/assets/images/weather-icons/6.png'), label: 'Shower Rain',      desc: 'Light rain. Sun-drying not recommended.' },
+            { src: require('@/assets/images/weather-icons/5.png'), label: 'Rain',             desc: 'Continuous rainfall. Drying is unsafe.' },
+            { src: require('@/assets/images/weather-icons/7.png'), label: 'Thunderstorm',     desc: 'Severe weather. Drying should be avoided.' },
+          ].map((w, i, arr) => (
+            <View key={i} style={i < arr.length - 1 ? {} : { borderBottomWidth: 0 }}>
+              <WeatherRow src={w.src} label={w.label} description={w.desc} />
+            </View>
+          ))}
         </View>
 
-        {/* Excellent */}
-        <View className="flex-row border-t border-zinc-200">
-          <Text className="flex-1 p-3 text-sm" style={{ fontFamily: 'PoppinsRegular' }}>
-            0%
-          </Text>
-          <Text className="flex-1 p-3 text-sm" style={{ fontFamily: 'PoppinsRegular' }}>
-            Below 50%
-          </Text>
-          <Text
-            className="flex-1 p-3 text-sm"
-            style={{ fontFamily: 'PoppinsSemiBold', color: '#22c55e' }}
-          >
-            Excellent
-          </Text>
-        </View>
-
-        {/* Good */}
-        <View className="flex-row border-t border-zinc-200">
-          <Text className="flex-1 p-3 text-sm" style={{ fontFamily: 'PoppinsRegular' }}>
-            0%
-          </Text>
-          <Text className="flex-1 p-3 text-sm" style={{ fontFamily: 'PoppinsRegular' }}>
-            50% – 100%
-          </Text>
-          <Text
-            className="flex-1 p-3 text-sm"
-            style={{ fontFamily: 'PoppinsSemiBold', color: '#3b82f6' }}
-          >
-            Good
-          </Text>
-        </View>
-
-        {/* Caution */}
-        <View className="flex-row border-t border-zinc-200">
-          <Text className="flex-1 p-3 text-sm" style={{ fontFamily: 'PoppinsRegular' }}>
-            1% – 80%
-          </Text>
-          <Text className="flex-1 p-3 text-sm" style={{ fontFamily: 'PoppinsRegular' }}>
-            Up to 100%
-          </Text>
-          <Text
-            className="flex-1 p-3 text-sm"
-            style={{ fontFamily: 'PoppinsSemiBold', color: '#eab308' }}
-          >
-            Caution
-          </Text>
-        </View>
-
-        {/* Warning */}
-        <View className="flex-row border-t border-zinc-200">
-          <Text className="flex-1 p-3 text-sm" style={{ fontFamily: 'PoppinsRegular' }}>
-            81% – 98%
-          </Text>
-          <Text className="flex-1 p-3 text-sm" style={{ fontFamily: 'PoppinsRegular' }}>
-            Any
-          </Text>
-          <Text
-            className="flex-1 p-3 text-sm"
-            style={{ fontFamily: 'PoppinsSemiBold', color: '#f97316' }}
-          >
-            Warning
-          </Text>
-        </View>
-
-        {/* Danger */}
-        <View className="flex-row border-t border-zinc-200">
-          <Text className="flex-1 p-3 text-sm" style={{ fontFamily: 'PoppinsRegular' }}>
-            99% – 100%
-          </Text>
-          <Text className="flex-1 p-3 text-sm" style={{ fontFamily: 'PoppinsRegular' }}>
-            Any
-          </Text>
-          <Text
-            className="flex-1 p-3 text-sm"
-            style={{ fontFamily: 'PoppinsSemiBold', color: '#ef4444' }}
-          >
-            Danger
-          </Text>
-        </View>
-      </View>
-
-      <Text className='text-base mt-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>
-        2. Drying
-      </Text>
-      <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-        Monitor and track your <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>sun-dried fish drying process</Text>. View ongoing batches and drying progress.
-      </Text>
-      <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-        The Drying page also includes a dedicated drying module, designed for beginners and new users in tuyo farming. 
-        Here, you can create your own drying area to start a batch, or join existing drying areas to collaborate with other users.
-      </Text>
-      <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-        The module provides step-by-step guidance, real-time updates, and <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>progress tracking</Text> to help ensure optimal drying conditions for your tuyo batches.
-      </Text>
-
-        <Text className='text-base mt-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>
-          3. Scan
+        {/* alert table */}
+        <Text style={{
+          fontSize: 11, fontFamily: 'PoppinsMedium', color: '#a1a1aa',
+          letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 18, marginBottom: 4,
+        }}>
+          Weather Alerts for Drying Fish
         </Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          Capture images of your tuyo to analyze quality, detect defects, and get instant assessment results.
-        </Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          Users can choose between using the <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>phone camera</Text> or selecting a saved picture from their gallery. 
-          Once the picture is taken or chosen, tap <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>Scan</Text> to start the analysis.
-        </Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          The app will provide instant results or remarks, detecting whether the tuyo is <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>undried, dry, or rejected</Text>.
-        </Text>
+        <Body>
+          Alerts are calculated from rain probability and cloud coverage to indicate the risk of outdoor drying.
+        </Body>
+        <AlertTable />
 
-        <Text className='text-base mt-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>
-          4. Notifications
-        </Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          Stay updated with alerts, reminders, and important updates about your drying batches and app activities.
-        </Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          The app sends <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>weather notifications</Text> up to two days in advance, timed to your scheduled drying activities, so you can prepare ahead.
-        </Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          You will also receive updates about <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>drying progress</Text> and important <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>announcements</Text> related to app features and system updates.
-        </Text>
+        <SubHeading>2. Drying</SubHeading>
+        <Body>
+          Monitor and track your <Hi>sun-dried fish drying process</Hi>. View ongoing batches and drying progress.
+          Create your own drying area to start a batch, or join existing areas to collaborate with other users.
+          The module provides step-by-step guidance and <Hi>real-time progress tracking</Hi>.
+        </Body>
 
-        <Text className='text-base mt-2' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>
-          5. Settings
-        </Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          Manage your profile, adjust app preferences, access help center, and customize your experience.
-        </Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          In Settings, users can view and update their <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>user profile</Text>, change their password, and manage account information.
-        </Text>
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          This section also provides access to the <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>FAQ</Text>, <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>Help Center</Text>, <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>Terms of Service</Text>, and <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>About</Text> pages, as well as the option to securely <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>log out</Text> of the app.
-        </Text>
+        <SubHeading>3. Scan</SubHeading>
+        <Body>
+          Capture images of your tuyo to analyze quality and get instant assessment results.
+          Choose between your <Hi>phone camera</Hi> or gallery, then tap <Hi>Scan</Hi> to begin analysis.
+          Results detect whether the tuyo is <Hi>undried, dry, or rejected</Hi>.
+        </Body>
 
-        <View className='flex flex-row items-center gap-2 mt-5'>
-          <View className='bg-primary p-2 rounded-full'>
-            <PanelLeftDashed size={15} color={'#ffffff'} />
-          </View>
-          <Text className='text-lg' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>
-            Drying Area Roles & Permissions
-          </Text>
-        </View>
+        <SubHeading>4. Notifications</SubHeading>
+        <Body>
+          Stay updated with alerts and reminders about your drying batches.
+          The app sends <Hi>weather notifications</Hi> up to two days in advance, timed to your scheduled drying activities.
+          You&apos;ll also receive <Hi>drying progress</Hi> updates and important <Hi>announcements</Hi>.
+        </Body>
 
-        <Text className='text-sm mt-2' style={{ fontFamily: 'PoppinsRegular' }}>
-          After joining or creating a drying area, users are assigned roles that determine what actions they can perform within that area.
-        </Text>
+        <SubHeading>5. Settings</SubHeading>
+        <Body>
+          Manage your profile, change your password, and access the <Hi>FAQ</Hi>, <Hi>Help Center</Hi>,{' '}
+          <Hi>Terms of Service</Hi>, and <Hi>About</Hi> pages. You can also securely <Hi>log out</Hi> from here.
+        </Body>
 
-        <Text className='text-base mt-3' style={{ fontFamily: 'PoppinsMedium' }}>
-          Admin (Drying Area Owner)
-        </Text>
+        <Divider />
 
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          Users who <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>create a drying area</Text> automatically become the admin and have full control over its management.
-        </Text>
+        {/* ── Drying Area Roles ───────────────────────────────────── */}
+        <SectionHeader
+          icon={PanelLeftDashed}
+          label="Drying Area Roles & Permissions"
+          iconBg="#FAEEDA"
+          iconColor="#854F0B"
+        />
 
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          Admins can edit drying area information, <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>create and delete trays</Text>, manage drying timelines, harvest batches, and delete the entire drying area when necessary.
-        </Text>
+        <Body>
+          After joining or creating a drying area, users are assigned roles that determine what actions they can perform.
+        </Body>
 
-        <Text className='text-base mt-3' style={{ fontFamily: 'PoppinsMedium' }}>
-          Member
-        </Text>
-
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          Members have limited access and can only use trays created by the admin. They can create drying timelines, monitor drying progress, and harvest their assigned batches.
-        </Text>
-
-        <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-          This role-based setup ensures proper control, organized workflows, and smooth collaboration inside each drying area.
-        </Text>
-
-        <View className='flex flex-row items-center gap-2 mt-5'>
-          <View className='bg-primary p-2 rounded-full'>
-            <Scan size={15} color={'#ffffff'} />
-          </View>
-          <Text className='text-lg' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>
-            Scan Methods & Guidelines
-          </Text>
-        </View>
-
-        <Text className='text-sm mt-2' style={{ fontFamily: 'PoppinsRegular' }}>
-            The Scan feature allows users to analyze dried fish quality using image recognition. There are two ways to access the scan feature within the app.
-          </Text>
-
-          <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-            The first scan option is available from the <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>main hub</Text>, located between the Drying and Notifications sections. 
-            The second scan option can be accessed inside a tray, positioned in the middle of the timeline and history view.
-          </Text>
-
-          <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-            When Scan is tapped, users may open the camera or choose an image from the gallery. After taking or selecting a photo, tap <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>Scan</Text> to begin image analysis.
-          </Text>
-
-          <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-            For accurate results, the fish must be <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>laid flat</Text>, not tilted, and the camera distance should be no more than <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>30 cm</Text> to properly capture texture details.
-          </Text>
-
-          <View className='flex flex-row gap-3 mt-3 justify-between'>
-            <View className='flex gap-2 items-center justify-center'>
-              <View
-                style={{
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                  width: 145,
-                  height: 200,
-                }}
-              >
-                <Image
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode='cover'
-                  source={require('@/assets/images/help/good.jpg')}
-                />
+        {/* role cards */}
+        {[
+          {
+            role: 'Admin',
+            subtitle: 'Drying Area Owner',
+            desc: 'Users who create a drying area automatically become the admin with full control. Admins can edit area info, create and delete trays, manage drying timelines, harvest batches, and delete the entire drying area.',
+            bg: '#FAEEDA', color: '#854F0B',
+          },
+          {
+            role: 'Member',
+            subtitle: 'Limited Access',
+            desc: 'Members can only use trays created by the admin. They can create drying timelines, monitor progress, and harvest their assigned batches. This ensures organized workflows and smooth collaboration.',
+            bg: '#E6F1FB', color: '#185FA5',
+          },
+        ].map((r, i) => (
+          <View key={i} style={{
+            marginTop: 10,
+            padding: 14, backgroundColor: '#fafafa',
+            borderRadius: 12, borderWidth: 0.5, borderColor: '#f4f4f5',
+            gap: 6,
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View style={{
+                paddingHorizontal: 10, paddingVertical: 2,
+                backgroundColor: r.bg, borderRadius: 20,
+              }}>
+                <Text style={{ fontSize: 11, fontFamily: 'PoppinsMedium', color: r.color }}>
+                  {r.role}
+                </Text>
               </View>
-              <CircleCheck size={20} color={'#00B44A'}/>
+              <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+                {r.subtitle}
+              </Text>
             </View>
-            <View className='flex gap-2 items-center justify-center'>
-              <View
-                style={{
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                  width: 145,
-                  height: 200,
-                }}
-              >
-                <Image
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode='cover'
-                  source={require('@/assets/images/help/slant.jpg')}
-                />
+            <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#71717a', lineHeight: 20 }}>
+              {r.desc}
+            </Text>
+          </View>
+        ))}
+
+        <Divider />
+
+        {/* ── Scan Methods ────────────────────────────────────────── */}
+        <SectionHeader
+          icon={Scan}
+          label="Scan Methods & Guidelines"
+          iconBg="#EEEDFE"
+          iconColor="#534AB7"
+        />
+
+        <Body>
+          The Scan feature analyzes dried fish quality using image recognition. Access it from the{' '}
+          <Hi>main hub</Hi> or from inside a tray. After taking or selecting a photo, tap <Hi>Scan</Hi> to begin.
+        </Body>
+
+        <Body>
+          For accurate results, lay the fish <Hi>flat</Hi> (not tilted), with the camera no more than{' '}
+          <Hi>30 cm</Hi> away to properly capture texture details.
+        </Body>
+
+        {/* good / bad images */}
+        <View style={{ flexDirection: 'row', gap: 12, marginTop: 14 }}>
+          {[
+            { src: require('@/assets/images/help/good.jpg'),  icon: CircleCheck, color: '#16a34a', caption: 'Correct' },
+            { src: require('@/assets/images/help/slant.jpg'), icon: CircleX,     color: '#dc2626', caption: 'Incorrect' },
+          ].map((item, i) => (
+            <View key={i} style={{
+              flex: 1, alignItems: 'center', gap: 8,
+              padding: 10, backgroundColor: '#fafafa',
+              borderRadius: 14, borderWidth: 0.5, borderColor: '#f4f4f5',
+            }}>
+              <View style={{ borderRadius: 10, overflow: 'hidden', width: '100%', height: 160 }}>
+                <Image source={item.src} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
               </View>
-              <CircleX size={20} color={'#FF0000'}/>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                <item.icon size={14} color={item.color} />
+                <Text style={{ fontSize: 11, fontFamily: 'PoppinsMedium', color: item.color }}>
+                  {item.caption}
+                </Text>
+              </View>
             </View>
-          </View>
+          ))}
+        </View>
 
-      
-          <Text className='text-sm mt-3' style={{ fontFamily: 'PoppinsRegular' }}>
-            This scanning feature is designed specifically for <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>lawlaw fish</Text>. Scanning other fish types may result in inaccurate results.
-          </Text>
+        <View style={{ marginTop: 10 }}>
+          <Body>
+            This feature is designed specifically for <Hi>lawlaw fish</Hi>. Scanning other fish types may produce inaccurate results.
+          </Body>
+        </View>
 
-          <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular' }}>
-            The scan result will identify whether the fish is <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>dry</Text>, <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>undried</Text>, or <Text className='text-primary' style={{ fontFamily: 'PoppinsMedium' }}>rejected</Text>.
-          </Text>
+        {/* classification table */}
+        <Text style={{
+          fontSize: 11, fontFamily: 'PoppinsMedium', color: '#a1a1aa',
+          letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 18, marginBottom: 4,
+        }}>
+          Classification Results
+        </Text>
+        <Body>
+          Each scan result is color-coded for quick identification of dryness level and quality.
+        </Body>
+        <ClassTable />
 
-          <Text
-            className="text-base mt-6"
-            style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}
-          >
-            Sun-Dried Fish Classification
-          </Text>
+        <Divider />
 
-          <Text
-            className="text-sm mt-1"
-            style={{ fontFamily: 'PoppinsRegular' }}
-          >
-            The scan feature classifies your fish based on dryness level and quality.
-            Each result is color-coded for quick identification.
-          </Text>
-
-          <View className="mt-4 border border-zinc-300 rounded-lg overflow-hidden">
-            {/* Header */}
-            <View className="flex-row bg-zinc-100">
-              <Text
-                className="p-3 text-sm"
-                style={{ width: '40%', fontFamily: 'PoppinsSemiBold' }}
-              >
-                Status
-              </Text>
-              <Text
-                className="p-3 text-sm"
-                style={{ width: '60%', fontFamily: 'PoppinsSemiBold' }}
-              >
-                Description
-              </Text>
-            </View>
-
-            {/* Reject */}
-            <View className="flex-row border-t border-zinc-200">
-              <Text
-                className="p-3 text-sm"
-                style={{ width: '40%', fontFamily: 'PoppinsSemiBold', color: '#961515' }}
-              >
-                Reject
-              </Text>
-              <Text
-                className="p-3 text-sm"
-                style={{ width: '60%', fontFamily: 'PoppinsRegular' }}
-              >
-                Not suitable due to spoilage or defects.
-              </Text>
-            </View>
-
-            {/* Undried */}
-            <View className="flex-row border-t border-zinc-200">
-              <Text
-                className="p-3 text-sm"
-                style={{ width: '40%', fontFamily: 'PoppinsSemiBold', color: '#c47f00' }}
-              >
-                Undried
-              </Text>
-              <Text
-                className="p-3 text-sm"
-                style={{ width: '60%', fontFamily: 'PoppinsRegular' }}
-              >
-                Still moist and needs more drying time.
-              </Text>
-            </View>
-
-            {/* Dry */}
-            <View className="flex-row border-t border-zinc-200">
-              <Text
-                className="p-3 text-sm"
-                style={{ width: '40%', fontFamily: 'PoppinsSemiBold', color: '#127312' }}
-              >
-                Dry
-              </Text>
-              <Text
-                className="p-3 text-sm"
-                style={{ width: '60%', fontFamily: 'PoppinsRegular' }}
-              >
-                Fully dried and ready for storage or selling.
-              </Text>
-            </View>
-          </View>
-
-          <Text className='text-base mt-6' style={{ fontFamily: 'PoppinsMedium', lineHeight: 24 }}>
+        {/* ── Need more help ──────────────────────────────────────── */}
+        <View style={{
+          marginTop: 20, padding: 14, backgroundColor: '#fafafa',
+          borderRadius: 12, borderWidth: 0.5, borderColor: '#f4f4f5',
+          gap: 6,
+        }}>
+          <Text style={{
+            fontSize: 11, fontFamily: 'PoppinsMedium', color: '#a1a1aa',
+            letterSpacing: 0.8, textTransform: 'uppercase',
+          }}>
             Need more help?
           </Text>
-
-          <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular', lineHeight: 22 }}>
-            If you have additional questions or need further assistance, feel free to explore the Help Center, review the FAQ, 
-            or check the Terms of Service and About sections for more information.
+          <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#52525b', lineHeight: 20 }}>
+            Explore the FAQ, review the Terms of Service, or visit the About section for more information.
+            For issues not covered here, contact the developer through the <Hi>About</Hi> section.
           </Text>
+        </View>
 
-          <Text className='text-sm mt-1' style={{ fontFamily: 'PoppinsRegular', lineHeight: 22 }}>
-            We are committed to helping you achieve better and safer tuyo drying through reliable tools and clear guidance.
-          </Text>
-
-          <Text className='text-sm mt-2' style={{ fontFamily: 'PoppinsRegular', lineHeight: 22 }}>
-            If you encounter issues not covered here, you may contact the developer through the About section.
-          </Text>
-
-        <View className='mt-10'/>
+        <View style={{ height: 40 }} />
       </ScrollView>
     </View>
   )
