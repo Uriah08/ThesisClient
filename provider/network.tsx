@@ -1,6 +1,7 @@
 import { Text, Animated, View } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import SplashScreen from '@/components/pages/SplashScreen';
+import SecondSplashScreen from '@/components/pages/SecondSplashScreen';
 import { useFonts } from 'expo-font';
 import { useSelector, useDispatch } from 'react-redux';
 import { setHasShownSplash } from '@/store';
@@ -33,7 +34,6 @@ const toastConfig: ToastConfig = {
       shadowRadius: 12,
       elevation: 4,
     }}>
-      {/* Icon badge */}
       <View style={{
         width: 36, height: 36, borderRadius: 10,
         backgroundColor: PRIMARY_LIGHT,
@@ -42,30 +42,18 @@ const toastConfig: ToastConfig = {
       }}>
         <CheckCircle size={18} color={PRIMARY} />
       </View>
-
-      {/* Text */}
       <View style={{ flex: 1, gap: 1 }}>
         {text1 && (
-          <Text style={{
-            fontSize: 13,
-            fontFamily: 'PoppinsSemiBold',
-            color: '#18181b',
-          }}>
+          <Text style={{ fontSize: 13, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
             {text1}
           </Text>
         )}
         {text2 && (
-          <Text style={{
-            fontSize: 12,
-            fontFamily: 'PoppinsRegular',
-            color: '#a1a1aa',
-          }}>
+          <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
             {text2}
           </Text>
         )}
       </View>
-
-      {/* Left accent bar */}
       <View style={{
         position: 'absolute',
         left: 0, top: 10, bottom: 10,
@@ -94,7 +82,6 @@ const toastConfig: ToastConfig = {
       shadowRadius: 12,
       elevation: 4,
     }}>
-      {/* Icon badge */}
       <View style={{
         width: 36, height: 36, borderRadius: 10,
         backgroundColor: ERROR_LIGHT,
@@ -103,30 +90,18 @@ const toastConfig: ToastConfig = {
       }}>
         <XCircle size={18} color={ERROR} />
       </View>
-
-      {/* Text */}
       <View style={{ flex: 1, gap: 1 }}>
         {text1 && (
-          <Text style={{
-            fontSize: 13,
-            fontFamily: 'PoppinsSemiBold',
-            color: '#18181b',
-          }}>
+          <Text style={{ fontSize: 13, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
             {text1}
           </Text>
         )}
         {text2 && (
-          <Text style={{
-            fontSize: 12,
-            fontFamily: 'PoppinsRegular',
-            color: '#a1a1aa',
-          }}>
+          <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
             {text2}
           </Text>
         )}
       </View>
-
-      {/* Left accent bar */}
       <View style={{
         position: 'absolute',
         left: 0, top: 10, bottom: 10,
@@ -152,7 +127,9 @@ const Network = ({ children }: { children: React.ReactNode }) => {
 
   const dispatch = useDispatch();
   const hasShownSplash = useSelector((state: any) => state.global.hasShownSplash);
+
   const [isLoading, setIsLoading] = useState(!hasShownSplash);
+  const [showSecondSplash, setShowSecondSplash] = useState(!hasShownSplash);
   const [isConnected, setIsConnected] = useState(true);
   const slideAnim = useRef(new Animated.Value(-100)).current;
 
@@ -161,20 +138,27 @@ const Network = ({ children }: { children: React.ReactNode }) => {
       const connected = Boolean(state.isConnected) && state.isInternetReachable !== false;
       setIsConnected(connected);
     });
-
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     if (loaded && !hasShownSplash) {
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-        dispatch(setHasShownSplash(true));
+      const firstTimer = setTimeout(() => {
+        setIsLoading(false); // dismiss first splash, show second
       }, 1000);
 
-      return () => clearTimeout(timer);
+      const secondTimer = setTimeout(() => {
+        setShowSecondSplash(false); // dismiss second splash, show app
+        dispatch(setHasShownSplash(true));
+      }, 1000 + 1500); // 2500ms total
+
+      return () => {
+        clearTimeout(firstTimer);
+        clearTimeout(secondTimer);
+      };
     } else if (hasShownSplash && loaded) {
       setIsLoading(false);
+      setShowSecondSplash(false);
     }
   }, [loaded, hasShownSplash, dispatch]);
 
@@ -186,39 +170,40 @@ const Network = ({ children }: { children: React.ReactNode }) => {
     }).start();
   }, [isConnected, slideAnim]);
 
-                                                          const printUser = async () => {
-                                                            try {
-                                                              const expoToken = await AsyncStorage.getItem('expoPushToken');
-                                                              const storedUser = await AsyncStorage.getItem('user');
-                                                              const token = await AsyncStorage.getItem('authToken')
-                                                              if (storedUser !== null && token !== null) {
-                                                                const parsedUser = JSON.parse(storedUser);
-                                                                console.log('User:', parsedUser);
-                                                                console.log('Token:', token);
-                                                                console.log('Expo Push Token:', expoToken);
-                                                                
-                                                              } else {
-                                                                console.log('No user found in AsyncStorage.');
-                                                                console.log('Expo Push Token:', expoToken);
-                                                              }
-                                                            } catch (error) {
-                                                              console.error('Error reading user from AsyncStorage:', error);
-                                                            }
-                                                          };
+  useEffect(() => {
+    const printUser = async () => {
+      try {
+        const expoToken = await AsyncStorage.getItem('expoPushToken');
+        const storedUser = await AsyncStorage.getItem('user');
+        const token = await AsyncStorage.getItem('authToken');
+        if (storedUser !== null && token !== null) {
+          const parsedUser = JSON.parse(storedUser);
+          console.log('User:', parsedUser);
+          console.log('Token:', token);
+          console.log('Expo Push Token:', expoToken);
+        } else {
+          console.log('No user found in AsyncStorage.');
+          console.log('Expo Push Token:', expoToken);
+        }
+      } catch (error) {
+        console.error('Error reading user from AsyncStorage:', error);
+      }
+    };
 
-                                                          useEffect(() => {
-                                                            printUser();
-                                                          }, []);
+    printUser();
+  }, []);
 
-  
   if (isLoading) {
     return <SplashScreen />;
   }
-  
+
+  if (showSecondSplash) {
+    return <SecondSplashScreen />;
+  }
+
   return (
     <>
       {children}
-
       <Animated.View
         style={{
           transform: [{ translateY: slideAnim }],
@@ -234,15 +219,13 @@ const Network = ({ children }: { children: React.ReactNode }) => {
         }}
       >
         <Text
-        className='text-white text-center absolute text-sm'
-          style={{
-            fontFamily: 'PoppinsRegular',
-          }}
+          className='text-white text-center absolute text-sm'
+          style={{ fontFamily: 'PoppinsRegular' }}
         >
           No Internet Connection
         </Text>
       </Animated.View>
-      <Toast config={toastConfig}/>
+      <Toast config={toastConfig} />
     </>
   );
 };
