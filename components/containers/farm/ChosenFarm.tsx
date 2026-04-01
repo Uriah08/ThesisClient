@@ -167,7 +167,7 @@ const ChosenFarm = ({ onBack, selectedFarm, setSelectedFarm }: ChosenFarmProps) 
                   {item.title}
                 </Text>
                 <View style={{
-                  width: 4, height: 4, borderRadius: 2,
+                  width: 10, height: 1, borderRadius: 999,
                   backgroundColor: isActive ? PRIMARY : 'transparent',
                 }} />
               </Pressable>

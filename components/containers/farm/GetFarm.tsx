@@ -27,7 +27,7 @@ const GetFarm = ({ data, isLoading, onSelect, isFetching }: FarmProps) => {
   }
 
   if (isLoading || isFetching) return (
-    <View style={{ paddingHorizontal: 24, gap: 10 }}>
+    <View style={{ paddingHorizontal: 15, gap: 10 }}>
       <SkeletonShimmer height={88} borderRadius={14} />
       <SkeletonShimmer height={88} borderRadius={14} />
       <SkeletonShimmer height={88} borderRadius={14} />
@@ -51,7 +51,7 @@ const GetFarm = ({ data, isLoading, onSelect, isFetching }: FarmProps) => {
   )
 
   return (
-    <View style={{ paddingHorizontal: 24, gap: 10 }}>
+    <View style={{ paddingHorizontal: 15, gap: 10 }}>
       {data?.map((farm, index) => (
         <Pressable
           key={index}

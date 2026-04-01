@@ -23,6 +23,13 @@ type DialogsProps = {
   onBack?: () => void
 }
 
+const typeLabel = (type: DialogsProps['type']) => {
+  if (type === 'tray' || type === 'farm-tray') return 'tray'
+  if (type === 'announcement') return 'announcement'
+  if (type === 'production') return 'record'
+  return 'session'
+}
+
 const DeleteClass = ({
   setVisible,
   visible,
@@ -31,18 +38,22 @@ const DeleteClass = ({
   sessionId,
   onBack,
   announcementId,
-  productionId
+  productionId,
 }: DialogsProps) => {
-  const [deleteTray, { isLoading: trayLoading }] = useDeleteTrayMutation()
-  const [deleteSession, { isLoading: sessionLoading }] = useDeleteSessionMutation()
-  const [deleteFarmTray, { isLoading: farmTrayLoading }] = useDeleteFarmTrayMutation()
+  const [deleteTray, { isLoading: trayLoading }]               = useDeleteTrayMutation()
+  const [deleteSession, { isLoading: sessionLoading }]         = useDeleteSessionMutation()
+  const [deleteFarmTray, { isLoading: farmTrayLoading }]       = useDeleteFarmTrayMutation()
   const [deleteAnnouncement, { isLoading: announcementLoading }] = useDeleteAnnouncementMutation()
-  const [deleteProduction, { isLoading: productionLoading }] = useDeleteProductionMutation()
+  const [deleteProduction, { isLoading: productionLoading }]   = useDeleteProductionMutation()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const handleDeleteTray = async () => {
+  const isBusy = trayLoading || sessionLoading || farmTrayLoading || announcementLoading || productionLoading
+  const label  = typeLabel(type)
+  const title  = `Delete ${label.charAt(0).toUpperCase() + label.slice(1)}`
+
+  const handleDelete = async () => {
+    setErrorMessage(null)
     try {
-      setErrorMessage(null)
       if (type === 'session') {
         await deleteSession(sessionId).unwrap()
         setVisible(false)
@@ -72,117 +83,97 @@ const DeleteClass = ({
     } catch (error: any) {
       if (error?.data?.detail) {
         setErrorMessage(error.data.detail)
-        Toast.show({
-          type: 'error',
-          text1: error.data.detail,
-        })
+        Toast.show({ type: 'error', text1: error.data.detail })
       }
     }
   }
 
   return (
-    <Dialogs onVisible={setVisible} visible={visible} title={`Delete ${(type === 'tray' || type === 'farm-tray') ? 'Tray' : type === 'announcement' ? 'Announcement' : 'Session'}`}>
-      <Dialog.Content>
+    <Dialogs onVisible={setVisible} visible={visible} title={title} subtitle="Danger zone">
+      <Dialog.Content style={{ paddingHorizontal: 20, paddingBottom: 20, gap: 14, marginTop: 10 }}>
+
+        {/* Warning strip — shown for non-announcement types */}
         {type !== 'announcement' && (
-          <View className="flex-row gap-3 justify-center items-center bg-zinc-200 p-2 rounded-full mb-4">
-            <AlertCircle color={'#b91c1c'} />
-            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>
-              This process cannot be undone. {'\n'}All your changes will be lost.
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            backgroundColor: '#fef2f2',
+            borderWidth: 0.5,
+            borderColor: '#fecaca',
+            borderRadius: 8,
+            padding: 10,
+          }}>
+            <AlertCircle color="#dc2626" size={15} />
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#7f1d1d', flex: 1, lineHeight: 18 }}>
+              This action cannot be undone. All associated data will be permanently lost.
             </Text>
           </View>
         )}
 
-        <Text style={{ fontFamily: 'PoppinsRegular', marginBottom: 10 }}>
-          Are you sure you want to delete this {(type === 'tray' || type === 'farm-tray') ? 'tray' : type === 'announcement' ? 'announcement' : type === 'production' ? 'Record' : 'session'}?
+        {/* Confirm message */}
+        <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13.5, color: '#18181b', lineHeight: 21 }}>
+          Are you sure you want to delete this{' '}
+          <Text style={{ fontFamily: 'PoppinsSemiBold', color: '#b91c1c' }}>{label}</Text>?
         </Text>
 
+        {/* Inline error */}
         {errorMessage && (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingVertical: 6,
-              paddingHorizontal: 10,
-              borderWidth: 1,
-              borderColor: '#fca5a5',
-              backgroundColor: '#fef2f2',
-              borderRadius: 6,
-              marginBottom: 12,
-            }}
-          >
-            <AlertTriangle color="#dc2626" size={16} style={{ marginRight: 6 }} />
-            <Text
-              style={{
-                color: '#b91c1c',
-                fontFamily: 'PoppinsRegular',
-                fontSize: 13,
-                flex: 1,
-              }}
-            >
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            backgroundColor: '#fef2f2',
+            borderWidth: 0.5,
+            borderColor: '#fecaca',
+            borderRadius: 8,
+            padding: 10,
+          }}>
+            <AlertTriangle color="#dc2626" size={15} />
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#7f1d1d', flex: 1 }}>
               {errorMessage}
             </Text>
           </View>
         )}
 
-        <View
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            marginTop: 10,
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            gap: 10,
-          }}
-        >
+        {/* Footer */}
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 2 }}>
           <Pressable
             onPress={() => setVisible(false)}
             style={{
-              borderWidth: 1,
-              borderColor: '#d4d4d8',
-              paddingHorizontal: 12,
+              paddingHorizontal: 14,
               paddingVertical: 8,
               borderRadius: 8,
+              borderWidth: 0.5,
+              borderColor: '#d4d4d8',
+              backgroundColor: '#fafafa',
             }}
           >
-            <Text
-              className="text-zinc-500"
-              style={{
-                fontFamily: 'PoppinsRegular',
-              }}
-            >
-              Cancel
-            </Text>
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#71717a' }}>Cancel</Text>
           </Pressable>
 
           <Pressable
-            onPress={handleDeleteTray}
+            onPress={handleDelete}
+            disabled={isBusy}
             style={{
-              backgroundColor: '#b91c1c',
-              paddingHorizontal: 12,
+              paddingHorizontal: 14,
               paddingVertical: 8,
               borderRadius: 8,
-              display: 'flex',
+              backgroundColor: '#b91c1c',
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 8,
+              gap: 6,
+              opacity: isBusy ? 0.75 : 1,
             }}
-            disabled={trayLoading || sessionLoading || farmTrayLoading || announcementLoading || productionLoading}
           >
-            {trayLoading || sessionLoading || farmTrayLoading || announcementLoading || productionLoading  ? (
-              <ActivityIndicator size={15} color="#ffffff" />
-            ) : (
-              <Trash color={'#ffffff'} size={15} />
-            )}
-            <Text
-              className="text-white"
-              style={{
-                fontFamily: 'PoppinsRegular',
-              }}
-            >
-              Delete
-            </Text>
+            {isBusy
+              ? <ActivityIndicator size={14} color="#fff" />
+              : <Trash color="#fff" size={14} />
+            }
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#fff' }}>Delete</Text>
           </Pressable>
         </View>
+
       </Dialog.Content>
     </Dialogs>
   )

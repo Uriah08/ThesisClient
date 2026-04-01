@@ -1,6 +1,9 @@
 import { View, Pressable, ActivityIndicator, Text, ScrollView, RefreshControl } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { ArrowLeft, PanelsLeftRight, CircleCheck, Play, CalendarDays, Fish, AlertTriangle, CheckCircle } from 'lucide-react-native'
+import {
+  ArrowLeft, PanelsLeftRight, CircleCheck, Play,
+  CalendarDays, Fish, AlertTriangle, CheckCircle
+} from 'lucide-react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useGetFarmTrayByIdQuery, useTrayDashboardQuery } from '@/store/farmTrayApi'
 import { useGetTrayByIdQuery } from '@/store/trayApi'
@@ -9,20 +12,65 @@ import ActivateSession from '@/components/containers/dialogs/ActivateSession'
 import FarmDashboardBarChart from '@/components/containers/charts/FarmDashboardBarChart'
 import DateRangePicker from '@/components/ui/DateRangeFilter'
 
+const PRIMARY = '#155183'
+
 const displayDate = (str: string) =>
   new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
+// ── StatBox — same as FarmDashboard ──────────────────────────────────────────
+type StatBoxProps = {
+  icon: any
+  label: string
+  value: string | number
+  unit?: string
+  iconBg: string
+  iconColor: string
+  fullWidth?: boolean
+}
+
+const StatBox = ({ icon: Icon, label, value, unit, iconBg, iconColor, fullWidth }: StatBoxProps) => (
+  <View style={{
+    flex: fullWidth ? undefined : 1,
+    width: fullWidth ? '100%' : undefined,
+    padding: 14,
+    backgroundColor: '#fafafa',
+    borderRadius: 14, borderWidth: 0.5, borderColor: '#f4f4f5',
+    gap: 10,
+  }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View style={{
+        width: 30, height: 30, borderRadius: 8,
+        backgroundColor: iconBg,
+        alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Icon size={15} color={iconColor} />
+      </View>
+      <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+        {label}
+      </Text>
+    </View>
+    <Text style={{ fontSize: 26, fontFamily: 'PoppinsBold', color: '#18181b' }}>
+      {value}
+      {unit && (
+        <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+          {' '}{unit}
+        </Text>
+      )}
+    </Text>
+  </View>
+)
+
+// ── Main ─────────────────────────────────────────────────────────────────────
 const Dashboard = () => {
   const { id } = useLocalSearchParams()
-  const [show, setShow] = useState(false)
+  const [show, setShow]               = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
-  const [refreshing, setRefreshing] = useState(false)
-  const [chartKey, setChartKey] = useState(0)
+  const [refreshing, setRefreshing]   = useState(false)
+  const [chartKey, setChartKey]       = useState(0)
+  const [from, setFrom]               = useState<string | null>(null)
+  const [to, setTo]                   = useState<string | null>(null)
 
-  const [from, setFrom] = useState<string | null>(null)
-  const [to, setTo] = useState<string | null>(null)
-
-  const { data, isLoading } = useGetFarmTrayByIdQuery(Number(id))
+  const { data, isLoading }                             = useGetFarmTrayByIdQuery(Number(id))
   const { data: sessionTray, isLoading: sessionTrayLoading } = useGetTrayByIdQuery(data?.id, { skip: !data?.id })
   const { data: dashboard, isLoading: dashboardLoading, refetch } = useTrayDashboardQuery({
     id: Number(id),
@@ -31,29 +79,29 @@ const Dashboard = () => {
   })
 
   useEffect(() => {
-    const storeActiveTrayId = async () => {
+    const store = async () => {
       await AsyncStorage.setItem('active_tray_id', sessionTray?.active_session_tray?.id?.toString() || '')
     }
-    storeActiveTrayId()
+    store()
   }, [sessionTray?.active_session_tray?.id])
 
   useEffect(() => { refetch() }, [refetch])
 
   const onRefresh = async () => {
-    await refetch()
     setRefreshing(true)
+    await refetch()
     setChartKey(prev => prev + 1)
     setTimeout(() => setRefreshing(false), 1000)
   }
 
-  const harvestTrays = dashboard?.session_tray_count.reduce((total, item) => total + item.count, 0) ?? 0
-  const summary = dashboard?.detection_summary
-  const rejectRate = summary?.reject_rate ?? 0
-  const isHighReject = rejectRate > 15
+  const harvestTrays  = dashboard?.session_tray_count.reduce((t, i) => t + i.count, 0) ?? 0
+  const summary       = dashboard?.detection_summary
+  const rejectRate    = summary?.reject_rate ?? 0
+  const isHighReject  = rejectRate > 15
 
   if (isLoading || sessionTrayLoading || dashboardLoading) return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
-      <ActivityIndicator size={30} color="#155183" />
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
+      <ActivityIndicator size={30} color={PRIMARY} />
     </View>
   )
 
@@ -61,21 +109,37 @@ const Dashboard = () => {
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
 
       {/* Header */}
-      <View style={{ backgroundColor: '#155183', paddingTop: 48, paddingBottom: 20, paddingHorizontal: 20 }}>
-        <ActivateSession visible={show} setVisible={setShow} trayId={data?.id || Number(id)} active={data?.status === 'active'} />
+      <View style={{
+        paddingTop: 56, paddingBottom: 16, paddingHorizontal: 24,
+        borderBottomWidth: 0.5, borderBottomColor: '#f4f4f5',
+      }}>
+        <ActivateSession
+          visible={show} setVisible={setShow}
+          trayId={data?.id || Number(id)}
+          active={data?.status === 'active'}
+        />
 
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <Pressable onPress={() => router.back()} android_ripple={{ color: '#ffffff30', borderless: true }}>
-              <ArrowLeft color="#fff" size={24} />
+            <Pressable
+              onPress={() => router.back()}
+              style={{
+                width: 36, height: 36, borderRadius: 18,
+                backgroundColor: '#f4f4f5',
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+              <ArrowLeft size={18} color="#18181b" />
             </Pressable>
             <View>
-              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 18, color: '#fff' }}>
-                {data?.name && data.name.length > 14 ? `${data.name.slice(0, 14)}...` : data?.name}
+              <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 17, color: '#18181b' }}>
+                {data?.name && data.name.length > 16 ? `${data.name.slice(0, 16)}…` : data?.name}
               </Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                <View style={{ width: 7, height: 7, borderRadius: 99, backgroundColor: data?.status === 'active' ? '#4ade80' : '#94a3b8' }} />
-                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#ffffffaa', marginTop: 2 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}>
+                <View style={{
+                  width: 7, height: 7, borderRadius: 99,
+                  backgroundColor: data?.status === 'active' ? '#4ade80' : '#d4d4d8',
+                }} />
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#a1a1aa' }}>
                   {data?.status === 'active' ? 'Active' : 'Inactive'}
                 </Text>
               </View>
@@ -85,24 +149,112 @@ const Dashboard = () => {
           {/* Date filter */}
           <Pressable
             onPress={() => setShowCalendar(true)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#ffffff20', borderRadius: 10, paddingVertical: 5, paddingHorizontal: 8 }}
-          >
-            <CalendarDays size={12} color="#fff" />
-            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#fff' }}>
+            style={{
+              flexDirection: 'row', alignItems: 'center', gap: 6,
+              backgroundColor: '#fafafa',
+              borderWidth: 0.5, borderColor: '#f4f4f5',
+              borderRadius: 12, paddingVertical: 6, paddingHorizontal: 10,
+            }}>
+            <CalendarDays size={13} color={PRIMARY} />
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#52525b' }}>
               {from && to ? `${displayDate(from)} – ${displayDate(to)}` : 'All time'}
             </Text>
           </Pressable>
         </View>
 
-        {/* Reject rate warning banner */}
+        {/* High reject warning */}
         {isHighReject && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#7f1d1d50', borderRadius: 10, padding: 10, marginTop: 14 }}>
-            <AlertTriangle size={14} color="#fca5a5" />
-            <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 12, color: '#fca5a5', flex: 1 }}>
-              High reject rate detected — {rejectRate}% of fish were rejected
+          <View style={{
+            flexDirection: 'row', alignItems: 'center', gap: 8,
+            backgroundColor: '#FCEBEB',
+            borderRadius: 12, padding: 12, marginTop: 14,
+            borderWidth: 0.5, borderColor: '#fecaca',
+          }}>
+            <View style={{
+              width: 28, height: 28, borderRadius: 8,
+              backgroundColor: '#fee2e2',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <AlertTriangle size={13} color="#A32D2D" />
+            </View>
+            <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 12, color: '#A32D2D', flex: 1 }}>
+              High reject rate — {rejectRate}% of fish were rejected
             </Text>
           </View>
         )}
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl colors={[PRIMARY]} refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100, gap: 10, paddingTop: 16 }}
+      >
+
+        {/* Row 1 — Harvested + Reject rate */}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <StatBox
+            icon={PanelsLeftRight}
+            label="Harvested"
+            value={harvestTrays}
+            unit="sessions"
+            iconBg="#E6F1FB"
+            iconColor={PRIMARY}
+          />
+          <StatBox
+            icon={isHighReject ? AlertTriangle : CheckCircle}
+            label="Reject Rate"
+            value={`${rejectRate}%`}
+            iconBg={isHighReject ? '#FCEBEB' : '#E1F5EE'}
+            iconColor={isHighReject ? '#A32D2D' : '#0F6E56'}
+          />
+        </View>
+
+        {/* Row 2 — Detected + Rejects */}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <StatBox
+            icon={Fish}
+            label="Total Detected"
+            value={summary?.total_detected ?? 0}
+            unit="fish"
+            iconBg="#E6F1FB"
+            iconColor={PRIMARY}
+          />
+          <StatBox
+            icon={Fish}
+            label="Total Rejects"
+            value={summary?.total_rejects ?? 0}
+            unit="fish"
+            iconBg="#FCEBEB"
+            iconColor="#A32D2D"
+          />
+        </View>
+
+        {/* Chart */}
+        <FarmDashboardBarChart
+          data={dashboard?.detected_and_reject_by_day || []}
+          chartKey={chartKey}
+        />
+
+      </ScrollView>
+
+      {/* FAB */}
+      <View style={{ position: 'absolute', bottom: 24, right: 20 }}>
+        <Pressable
+          onPress={() => setShow(true)}
+          android_ripple={{ color: '#ffffff50', borderless: false }}
+          style={{
+            flexDirection: 'row', alignItems: 'center', gap: 8,
+            paddingHorizontal: 20, paddingVertical: 12,
+            backgroundColor: PRIMARY, borderRadius: 999,
+          }}>
+          {data?.status === 'active'
+            ? <CircleCheck size={14} color="#fff" />
+            : <Play size={14} color="#fff" />
+          }
+          <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#fff' }}>
+            {data?.status === 'active' ? 'Finish Drying' : 'Start Drying'}
+          </Text>
+        </Pressable>
       </View>
 
       <DateRangePicker
@@ -117,90 +269,6 @@ const Dashboard = () => {
         }}
       />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl colors={['#155183']} refreshing={refreshing} onRefresh={onRefresh} />}
-        contentContainerStyle={{ paddingBottom: 100 }}
-      >
-        {/* Stat cards */}
-        <View style={{ paddingHorizontal: 16, marginTop: 16, gap: 10 }}>
-
-          {/* Row 1 — Harvested + Reject rate */}
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <View style={{ flex: 1, backgroundColor: '#155183', borderRadius: 14, padding: 14 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <View style={{ backgroundColor: '#ffffff20', borderRadius: 8, padding: 5 }}>
-                  <PanelsLeftRight color="#fff" size={14} />
-                </View>
-                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 12, color: '#ffffffcc' }}>Harvested</Text>
-              </View>
-              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 28, color: '#fff' }}>{harvestTrays}</Text>
-              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#ffffff80', marginTop: 2 }}>sessions finished</Text>
-            </View>
-
-            <View style={{ flex: 1, backgroundColor: isHighReject ? '#7f1d1d' : '#155183', borderRadius: 14, padding: 14 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <View style={{ backgroundColor: '#ffffff20', borderRadius: 8, padding: 5 }}>
-                  {isHighReject
-                    ? <AlertTriangle color="#fca5a5" size={14} />
-                    : <CheckCircle color="#fff" size={14} />
-                  }
-                </View>
-                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 12, color: '#ffffffcc' }}>Reject Rate</Text>
-              </View>
-              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 28, color: isHighReject ? '#fca5a5' : '#fff' }}>
-                {rejectRate}%
-              </Text>
-              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#ffffff80', marginTop: 2 }}>
-                {isHighReject ? 'Above 15% threshold' : 'Within normal range'}
-              </Text>
-            </View>
-          </View>
-
-          {/* Row 2 — Detected + Rejects */}
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <View style={{ flex: 1, backgroundColor: '#eff6ff', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#bfdbfe' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <Fish size={13} color="#155183" />
-                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 11, color: '#155183' }}>Total Detected</Text>
-              </View>
-              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 26, color: '#155183' }}>{summary?.total_detected ?? 0}</Text>
-              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#93c5fd', marginTop: 2 }}>fish counted</Text>
-            </View>
-
-            <View style={{ flex: 1, backgroundColor: '#fff1f2', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#fecdd3' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <Fish size={13} color="#e05252" />
-                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 11, color: '#e05252' }}>Total Rejects</Text>
-              </View>
-              <Text style={{ fontFamily: 'PoppinsBold', fontSize: 26, color: '#e05252' }}>{summary?.total_rejects ?? 0}</Text>
-              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#fda4af', marginTop: 2 }}>fish rejected</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Chart */}
-        <View style={{ paddingTop: 18, paddingBottom: 10, paddingRight: 18, paddingLeft: 10 }}>
-          <FarmDashboardBarChart data={dashboard?.detected_and_reject_by_day || []} chartKey={chartKey} />
-        </View>
-      </ScrollView>
-
-      {/* FAB */}
-      <View style={{ position: 'absolute', bottom: 24, right: 20, borderRadius: 999, overflow: 'hidden' }}>
-        <Pressable
-          onPress={() => setShow(true)}
-          android_ripple={{ color: '#ffffff50', borderless: false }}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 18, paddingVertical: 10, backgroundColor: '#155183', borderRadius: 999 }}
-        >
-          {data?.status === 'active'
-            ? <CircleCheck size={14} color="#fff" />
-            : <Play size={14} color="#fff" />
-          }
-          <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#fff' }}>
-            {data?.status === 'active' ? 'Finish Drying' : 'Start Drying'}
-          </Text>
-        </Pressable>
-      </View>
     </View>
   )
 }

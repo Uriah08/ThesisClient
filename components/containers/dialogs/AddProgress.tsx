@@ -1,346 +1,281 @@
-import { View, Text, Pressable, TextInput, Image } from 'react-native'
-import React, { useEffect, useState} from 'react'
+import { View, Text, Pressable, TextInput, Image, ActivityIndicator } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import Dialogs from './Dialog'
-import { ActivityIndicator, Dialog } from 'react-native-paper'
-import { ImagePlusIcon, Plus } from 'lucide-react-native';
-import { router } from 'expo-router';
-import Toast from 'react-native-toast-message';
-import * as ImagePicker from 'expo-image-picker';
-import { uploadImageToSupabase } from '@/utils/lib/supabase';
-import { useCreateTrayProgressMutation } from '@/store/trayApi';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Dialog } from 'react-native-paper'
+import { ImagePlusIcon, Plus, ScanLine } from 'lucide-react-native'
+import { router } from 'expo-router'
+import Toast from 'react-native-toast-message'
+import * as ImagePicker from 'expo-image-picker'
+import { uploadImageToSupabase } from '@/utils/lib/supabase'
+import { useCreateTrayProgressMutation } from '@/store/trayApi'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
+const PRIMARY = '#155183'
 
 type DialogsProps = {
-  setVisible: (visible: boolean) => void;
-  visible: boolean;
-  setFocus: (focus: string) => void;
-  focus: string;
+  setVisible: (visible: boolean) => void
+  visible: boolean
+  setFocus: (focus: string) => void
+  focus: string
   trayId?: number
   activetrayId?: number
-};
+}
 
 const AddProgress = ({ setVisible, visible, setFocus, focus, trayId, activetrayId }: DialogsProps) => {
-    useEffect(() => {
-        const storeActiveTrayId = async () => {
-            await AsyncStorage.setItem('active_tray_id', activetrayId?.toString() || '');
-        }
-        storeActiveTrayId();
-    }, [activetrayId]);
-    const [isFocused, setIsFocused] = useState('');
-    const [title, setTitle] = useState('Tray Timeline');
-    const [description, setDescription] = useState('')
+  useEffect(() => {
+    const store = async () => {
+      await AsyncStorage.setItem('active_tray_id', activetrayId?.toString() || '')
+    }
+    store()
+  }, [activetrayId])
 
-    const [image, setImage] = useState<string | null>(null);
-    const [supabaseLoading, setSupabaseLoading] = useState(false)
+  const [isFocused, setIsFocused]                   = useState('')
+  const [title, setTitle]                           = useState('Tray Timeline')
+  const [description, setDescription]               = useState('')
+  const [image, setImage]                           = useState<string | null>(null)
+  const [supabaseLoading, setSupabaseLoading]       = useState(false)
+  const [errors, setErrors]                         = useState<{ [key: string]: string }>({})
+  const [createTrayProgress, { isLoading }]         = useCreateTrayProgressMutation()
 
-    const [createTrayProgress, { isLoading }] = useCreateTrayProgressMutation()
-    // const [harvestTray, { isLoading: harvestLoading }] = useHarvestTrayMutation();
+  const isBusy = isLoading || supabaseLoading
 
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const inputStyle = (field: string) => ({
+    borderWidth: isFocused === field ? 1 : 0.5,
+    borderColor: errors[field] ? '#ef4444' : isFocused === field ? PRIMARY : '#e4e4e7',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: 13.5,
+    color: '#18181b',
+    backgroundColor: isFocused === field ? '#f4f8fc' : '#fafafa',
+    fontFamily: 'PoppinsRegular',
+  })
 
-    const handleSubmit = async () => {
-            if (!validate()) return;
-            let imageURL = ''
-            try {
-                if (image) {
-                    const uploadedUrl = await uploadImageToSupabase(image, 'tray', setSupabaseLoading);
-                    if (uploadedUrl) imageURL = uploadedUrl;
-                }
+  const pickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (!permission.granted) { alert('Permission is required to access media library'); return }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'], allowsEditing: true, quality: 1,
+    })
+    if (!result.canceled) setImage(result.assets[0].uri)
+  }
 
-                await createTrayProgress({ title, description, image: imageURL, tray: activetrayId }).unwrap()
-                setVisible(false)
-                setIsFocused('')
-            } catch (error: any) {
-                console.log(error);
-                      
-                if (error?.data?.detail) {
-                Toast.show({
-                    type: 'error',
-                    text1: error.data.detail,
-                });
-                }
-                
-                const serverErrors: { [key: string]: string } = {};
-                if (error?.data) {
-                for (const key in error.data) {
-                    serverErrors[key] = error.data[key][0];
-                }
-                setErrors((prev) => ({ ...prev, ...serverErrors }));
-                } else {
-                console.log('Unexpected error:', error);
-                }  
-            }
-        }
-    
-        const validate = () => {
-            const newErrors: { [key: string]: string } = {};
-    
-            if (!title.trim()) {
-              newErrors.title = 'Progress title is required.';
-            }
+  const validate = () => {
+    const newErrors: { [key: string]: string } = {}
+    if (!title.trim()) newErrors.title = 'Progress title is required.'
+    if (image) {
+      const ext = image.split('.').pop()?.toLowerCase()
+      if (!ext || !['jpg', 'jpeg', 'png'].includes(ext))
+        newErrors.image = 'Only JPEG or PNG images are allowed.'
+    }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
-            if (image) {
-                const allowedExtensions = ['jpg', 'jpeg', 'png'];
-                const extension = image.split('.').pop()?.toLowerCase();
-                if (!extension || !allowedExtensions.includes(extension)) {
-                    newErrors.profilePicture = 'Only JPEG or PNG images are allowed.';
-                }
-            }
-    
-            setErrors(newErrors);
-            return Object.keys(newErrors).length === 0;
-          };
+  const handleSubmit = async () => {
+    if (!validate()) return
+    let imageURL = ''
+    try {
+      if (image) {
+        const uploaded = await uploadImageToSupabase(image, 'tray', setSupabaseLoading)
+        if (uploaded) imageURL = uploaded
+      }
+      await createTrayProgress({ title, description, image: imageURL, tray: activetrayId }).unwrap()
+      setVisible(false)
+      setIsFocused('')
+    } catch (error: any) {
+      if (error?.data?.detail) Toast.show({ type: 'error', text1: error.data.detail })
+      if (error?.data) {
+        const serverErrors: { [key: string]: string } = {}
+        for (const key in error.data) serverErrors[key] = error.data[key][0]
+        setErrors((prev) => ({ ...prev, ...serverErrors }))
+      }
+    }
+  }
 
-          const pickImage = async () => {
-              const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-              if (!permission.granted) {
-                alert('Permission is required to access media library');
-                return;
-              }
-              let result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ['images'],
-                allowsEditing: true,
-                quality: 1,
-              });
-          
-              if (!result.canceled) {
-                setImage(result.assets[0].uri);
-              }
-            };
   return (
-    <Dialogs onVisible={setVisible} visible={visible} title={'Add Timeline'}>
-        <Dialog.Content>
-            {focus === 'custom' ? (
-                <View>
-                    <TextInput
-                        className={`rounded-md p-3 text-base text-black ${ 
-                        isFocused === 'title' ? 'border-[2px] border-black' : 'border border-zinc-300'
-                        }`}
-                        onFocus={() => setIsFocused('title')}
-                        onBlur={() => setIsFocused('')}
-                        placeholder="Progress Title"
-                        placeholderTextColor="#9ca3af"
-                        value={title}
-                        onChangeText={setTitle}
-                    />
-                    {errors.name && (
-                        <Text className="text-error mt-1 ml-1 text-sm">{errors.title}</Text>
-                    )}
-                    <TextInput
-                        className={`rounded-md mt-5 p-3 text-base text-black ${ 
-                        isFocused === 'description' ? 'border-[2px] border-black' : 'border border-zinc-300'
-                        }`}
-                        onFocus={() => setIsFocused('description')}
-                        onBlur={() => setIsFocused('')}
-                        placeholder="Decription"
-                        placeholderTextColor="#9ca3af"
-                        value={description}
-                        onChangeText={setDescription}
-                    />
-                    <Pressable onPress={pickImage}>
-                        <View className='w-full mt-5 flex items-center justify-center'
-                        style={{
-                            borderStyle: 'dashed',
-                            borderWidth: 2,
-                            borderColor: '#d4d4d8',
-                            borderRadius: 8,
-                        }}>
-                            {image ? (
-                            <Image 
-                            source={{ uri: image}}
-                            style={{ width: '100%', height: 100 }}
-                            resizeMode="cover"/>
-                            ) : (
-                            <>
-                            <ImagePlusIcon color={'#d4d4d8'} style={{ marginTop: 30}}/>
-                            <Text style={{
-                                fontFamily: 'PoppinsBold',
-                                color: '#d4d4d8',
-                                marginBottom: 30
-                            }}>INSERT IMAGE</Text>
-                            </>
-                            )}
-                        </View>
-                        </Pressable>
-                        {errors.image && (
-                            <Text className="text-error mt-1 ml-1 text-sm">{errors.image}</Text>
-                        )}
-                    <View
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        marginTop: 20,
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                        gap: 10,
-                    }}
-                    >
-                        <Pressable onPress={() => {setVisible(false); setFocus('')}} className='border border-zinc-300 p-2 rounded-lg'
-                        style={{
-                            borderWidth: 1,
-                            borderColor: '#d4d4d8',
-                            paddingHorizontal: 12,
-                            paddingVertical: 8,
-                            borderRadius: 8,
-                        }}>
-                        <Text className='text-zinc-500' style={{
-                        fontFamily: 'PoppinsRegular'
-                        }}>Cancel</Text>
-                        </Pressable>
-                        <Pressable onPress={() => handleSubmit()}
-                        style={{
-                            backgroundColor: '#155183',
-                            paddingHorizontal: 12,
-                            paddingVertical: 8,
-                            borderRadius: 8,
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 8,
-                        }}
-                        disabled={isLoading || supabaseLoading}
-                        >
-                        {isLoading || supabaseLoading ? (
-                            <ActivityIndicator size={15} color={'#ffffff'}/>
-                        ) : (
-                            <Plus color={'#ffffff'} size={15}/>
-                        )}
-                        <Text
-                            className="text-white"
-                            style={{
-                                fontFamily: 'PoppinsRegular',
-                            }}
-                            >
-                            Add
-                            </Text>
-                        </Pressable>
-                    </View>
-                </View>
-            ) : 
-            // focus === 'harvest' ? (
-            //     <View>
-            //         <View className='flex-row gap-3 justify-center items-center bg-zinc-200 p-2 rounded-full' style={{ marginBottom: 15 }}>
-            //             <AlertCircle color={'#155183'}/>
-            //             <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>This process cannot be undone.</Text>
-            //         </View>
-            //         <Text style={{ fontFamily: 'PoppinsRegular' }}>Are you sure you want to harvest this tray?</Text>
-            //         <View
-            //         style={{
-            //             display: 'flex',
-            //             flexDirection: 'row',
-            //             marginTop: 20,
-            //             justifyContent: 'flex-end',
-            //             alignItems: 'center',
-            //             gap: 10,
-            //         }}
-            //         >
-            //         <Pressable onPress={() => setVisible(false)} className='border border-zinc-300 p-2 rounded-lg'
-            //             style={{
-            //                 borderWidth: 1,
-            //                 borderColor: '#d4d4d8',
-            //                 paddingHorizontal: 12,
-            //                 paddingVertical: 8,
-            //                 borderRadius: 8,
-            //             }}>
-            //             <Text className='text-zinc-500' style={{
-            //             fontFamily: 'PoppinsRegular'
-            //             }}>Cancel</Text>
-            //             </Pressable>
-            //             <Pressable
-            //             onPress={handleHarvest}
-            //             style={{
-            //                 backgroundColor: '#155183',
-            //                 paddingHorizontal: 12,
-            //                 paddingVertical: 8,
-            //                 borderRadius: 8,
-            //                 display: 'flex',
-            //                 flexDirection: 'row',
-            //                 alignItems: 'center',
-            //                 gap: 8,
-            //             }}
-            //             disabled={isLoading}
-            //             >
-            //                 {harvestLoading ? (
-            //                     <ActivityIndicator size={15} color={'#ffffff'}/>
-            //                 ) : (
-            //                     <CheckCircle color={'#ffffff'} size={15} />
-            //                 )}
-            //             <Text
-            //                 className="text-white"
-            //                 style={{
-            //                     fontFamily: 'PoppinsRegular',
-            //                 }}
-            //                 >
-            //                 Harvest
-            //                 </Text>
-            //             </Pressable>
-            //         </View>
-            //     </View>
-            // ) : 
-            (
-                <View className='flex gap-3 '>
-                <View
-                    style={{ overflow: "hidden", borderRadius: 8 }}
-                >
-                    <Pressable
-                    onPress={() => setFocus('custom')}
-                    android_ripple={{ color: "#ffffff50", borderless: false }}
-                    className={`flex flex-row items-center gap-3 px-5 bg-primary rounded-lg justify-center`}
-                    style={{ paddingVertical: 10 }}
-                    >
-                    <Text
-                        className="text-white"
-                        style={{ fontFamily: "PoppinsSemiBold" }}
-                    >
-                        Add Custom Timeline
-                    </Text>
-                    </Pressable>
-                </View>
-                <View
-                    style={{ overflow: "hidden", borderRadius: 8 }}
-                >
-                    <Pressable
-                    onPress={() => {
-                        if (!trayId) return;
+    <Dialogs onVisible={setVisible} visible={visible} title="Add Timeline" subtitle="Tray progress">
+      <Dialog.Content style={{ paddingHorizontal: 20, paddingBottom: 20, gap: 14, marginTop: 10 }}>
 
-                        setVisible(false);
-                        router.push({
-                            pathname: "/tray/[id]/scan",
-                            params: { id: trayId.toString() },
-                        });
-                    }}
-                    android_ripple={{ color: "#ffffff50", borderless: false }}
-                    className={`flex flex-row items-center gap-3 px-5 bg-primary rounded-lg justify-center`}
-                    style={{ paddingVertical: 10 }}
-                    >
-                    <Text
-                        className="text-white"
-                        style={{ fontFamily: "PoppinsSemiBold" }}
-                    >
-                        Camera
-                    </Text>
-                    </Pressable>
-                </View>
-                {/* <View
-                    style={{ overflow: "hidden", borderRadius: 8 }}
-                >
-                    <Pressable
-                    onPress={() => setFocus('harvest')}
-                    android_ripple={{ color: "#ffffff50", borderless: false }}
-                    className={`flex flex-row items-center gap-3 px-5 bg-primary rounded-lg justify-center`}
-                    style={{ paddingVertical: 10 }}
-                    >
-                    <Text
-                        className="text-white"
-                        style={{ fontFamily: "PoppinsSemiBold" }}
-                    >
-                        Harvest
-                    </Text>
-                    </Pressable>
-                </View> */}
+        {focus === 'custom' ? (
+          <>
+            {/* Title */}
+            <View style={{ gap: 5 }}>
+              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11.5, color: '#71717a', fontWeight: '500' }}>
+                Progress Title <Text style={{ color: '#ef4444' }}>*</Text>
+              </Text>
+              <TextInput
+                style={inputStyle('title')}
+                onFocus={() => setIsFocused('title')}
+                onBlur={() => setIsFocused('')}
+                placeholder="e.g. Day 3 Check"
+                placeholderTextColor="#c4c4c8"
+                value={title}
+                onChangeText={(t) => { setTitle(t); setErrors((p) => ({ ...p, title: '' })) }}
+              />
+              {errors.title && (
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#ef4444', marginLeft: 1 }}>
+                  {errors.title}
+                </Text>
+              )}
             </View>
-            )}
-        </Dialog.Content>
+
+            {/* Description */}
+            <View style={{ gap: 5 }}>
+              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11.5, color: '#71717a', fontWeight: '500' }}>
+                Description{' '}
+                <Text style={{ color: '#a1a1aa', fontSize: 11, fontWeight: '400' }}>(optional)</Text>
+              </Text>
+              <TextInput
+                style={inputStyle('description')}
+                onFocus={() => setIsFocused('description')}
+                onBlur={() => setIsFocused('')}
+                placeholder="Add a short description…"
+                placeholderTextColor="#c4c4c8"
+                value={description}
+                onChangeText={setDescription}
+              />
+            </View>
+
+            {/* Image picker */}
+            <View style={{ gap: 5 }}>
+              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11.5, color: '#71717a', fontWeight: '500' }}>
+                Image{' '}
+                <Text style={{ color: '#a1a1aa', fontSize: 11, fontWeight: '400' }}>(optional)</Text>
+              </Text>
+              <Pressable onPress={pickImage}>
+                <View style={{
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderColor: errors.image ? '#ef4444' : '#d4d4d8',
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                  height: 90,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#fafafa',
+                }}>
+                  {image ? (
+                    <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                  ) : (
+                    <View style={{ alignItems: 'center', gap: 6 }}>
+                      <ImagePlusIcon color="#c4c4c8" size={20} />
+                      <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#c4c4c8' }}>
+                        Tap to upload an image
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </Pressable>
+              {errors.image && (
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#ef4444', marginLeft: 1 }}>
+                  {errors.image}
+                </Text>
+              )}
+            </View>
+
+            {/* Footer */}
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 2 }}>
+              <Pressable
+                onPress={() => { setVisible(false); setFocus('') }}
+                style={{
+                  paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8,
+                  borderWidth: 0.5, borderColor: '#d4d4d8',
+                  backgroundColor: '#fafafa',
+                }}
+              >
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#71717a' }}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                onPress={handleSubmit}
+                disabled={isBusy}
+                style={{
+                  paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8,
+                  backgroundColor: PRIMARY,
+                  flexDirection: 'row', alignItems: 'center', gap: 6,
+                  opacity: isBusy ? 0.75 : 1,
+                }}
+              >
+                {isBusy
+                  ? <ActivityIndicator size={14} color="#fff" />
+                  : <Plus color="#fff" size={14} />
+                }
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#fff' }}>Add</Text>
+              </Pressable>
+            </View>
+          </>
+        ) : (
+          /* Action picker */
+          <View style={{ gap: 10 }}>
+            <Pressable
+              onPress={() => setFocus('custom')}
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                borderRadius: 8,
+                borderWidth: 0.5,
+                borderColor: '#bfdbfe',
+                backgroundColor: '#eff6ff',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+              }}
+            >
+              <View style={{
+                width: 32, height: 32, borderRadius: 8,
+                backgroundColor: PRIMARY,
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Plus color="#fff" size={16} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#1e3a5f' }}>
+                  Add Custom Timeline
+                </Text>
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#6b8aaa', marginTop: 1 }}>
+                  Manually enter progress details
+                </Text>
+              </View>
+            </Pressable>
+
+            <Pressable
+              onPress={() => {
+                if (!trayId) return
+                setVisible(false)
+                router.push({ pathname: '/tray/[id]/scan', params: { id: trayId.toString() } })
+              }}
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                borderRadius: 8,
+                borderWidth: 0.5,
+                borderColor: '#bfdbfe',
+                backgroundColor: '#eff6ff',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+              }}
+            >
+              <View style={{
+                width: 32, height: 32, borderRadius: 8,
+                backgroundColor: PRIMARY,
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <ScanLine color="#fff" size={16} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#1e3a5f' }}>
+                  Camera Scan
+                </Text>
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#6b8aaa', marginTop: 1 }}>
+                  Scan tray using your camera
+                </Text>
+              </View>
+            </Pressable>
+          </View>
+        )}
+
+      </Dialog.Content>
     </Dialogs>
   )
 }

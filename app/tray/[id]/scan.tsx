@@ -162,14 +162,26 @@ const ScanPage = () => {
           onCameraReady={handleCameraReady}
         />
       )}
-      <View className='absolute' style={{ opacity: 0.5, height: 2, backgroundColor: '#ffffff', width: 100, top: 50, left: 20}}/>
-      <View className='absolute' style={{ opacity: 0.5, height: 100, backgroundColor: '#ffffff', width: 2, top: 50, left: 20}}/>
-      <View className='absolute' style={{ opacity: 0.5, height: 2, backgroundColor: '#ffffff', width: 100, top: 50, right: 20}}/>
-      <View className='absolute' style={{ opacity: 0.5, height: 100, backgroundColor: '#ffffff', width: 2, top: 50, right: 20}}/>
-      <View className='absolute' style={{ opacity: 0.5, height: 2, backgroundColor: '#ffffff', width: 100, bottom: 30, left: 20}}/>
-      <View className='absolute' style={{ opacity: 0.5, height: 100, backgroundColor: '#ffffff', width: 2, bottom: 30, left: 20}}/>
-      <View className='absolute' style={{ opacity: 0.5, height: 2, backgroundColor: '#ffffff', width: 100, bottom: 30, right: 20}}/>
-      <View className='absolute' style={{ opacity: 0.5, height: 100, backgroundColor: '#ffffff', width: 2, bottom: 30, right: 20}}/>
+      <View pointerEvents="none" style={{ position: 'absolute', top: 50, left: 20 }}>
+        <View style={{ width: 100, height: 2, backgroundColor: '#fff', borderTopLeftRadius: 2, opacity: 0.7 }} />
+        <View style={{ width: 2, height: 100, backgroundColor: '#fff', borderBottomLeftRadius: 2, opacity: 0.7 }} />
+      </View>
+
+      <View pointerEvents="none" style={{ position: 'absolute', top: 50, right: 20, alignItems: 'flex-end' }}>
+        <View style={{ width: 100, height: 2, backgroundColor: '#fff', borderTopRightRadius: 2, opacity: 0.7 }} />
+        <View style={{ width: 2, height: 100, backgroundColor: '#fff', borderBottomRightRadius: 2, alignSelf: 'flex-end', opacity: 0.7 }} />
+      </View>
+
+      <View pointerEvents="none" style={{ position: 'absolute', bottom: 30, left: 20 }}>
+        <View style={{ width: 2, height: 100, backgroundColor: '#fff', borderTopLeftRadius: 2, opacity: 0.7 }} />
+        <View style={{ width: 100, height: 2, backgroundColor: '#fff', borderBottomLeftRadius: 2, opacity: 0.7 }} />
+      </View>
+
+      <View pointerEvents="none" style={{ position: 'absolute', bottom: 30, right: 20, alignItems: 'flex-end' }}>
+        <View style={{ width: 2, height: 100, backgroundColor: '#fff', borderTopRightRadius: 2, alignSelf: 'flex-end', opacity: 0.7 }} />
+        <View style={{ width: 100, height: 2, backgroundColor: '#fff', borderBottomRightRadius: 2, opacity: 0.7 }} />
+      </View>
+
       <TouchableOpacity style={{ bottom: 45, opacity: 0.5 }} onPress={toggleCameraFacing} className='absolute left-10 z-10 h-[50px] w-[50px] rounded-full bg-white flex items-center justify-center'>
         <RotateCcw/>
       </TouchableOpacity>

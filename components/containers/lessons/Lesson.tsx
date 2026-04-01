@@ -11,7 +11,7 @@ const Lesson = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   return (
-    <View style={{ marginBottom: 8, paddingHorizontal: 24 }}>
+    <View style={{ marginBottom: 8, paddingHorizontal:15 }}>
 
       {/* label + dots */}
       <View style={{
@@ -36,7 +36,7 @@ const Lesson = () => {
         loop
         autoPlay
         autoPlayInterval={10000}
-        width={width - 48}
+        width={width - 30}
         height={124}
         data={modules}
         scrollAnimationDuration={800}

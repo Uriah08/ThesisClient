@@ -1,274 +1,198 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
-  View,
-  Text,
-  LayoutChangeEvent,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import ImageViewing from 'react-native-image-viewing';
-import { TrayProgress } from '@/utils/types';
+  View, Text, ScrollView,
+  Image, TouchableOpacity, ActivityIndicator, RefreshControl,
+} from 'react-native'
+import ImageViewing from 'react-native-image-viewing'
+import { CheckCircle, Circle } from 'lucide-react-native'
+import { TrayProgress } from '@/utils/types'
+
+const PRIMARY = '#155183'
 
 type Props = {
-  created_at?: string;
-  finished_at?: string | null;
-  owner?: string;
-  owner_pfp?: string | null;
-  progress?: TrayProgress[];
-  loading: boolean;
-  refreshing?: boolean;
-  onRefresh?: () => void;
-};
+  created_at?: string
+  finished_at?: string | null
+  owner?: string
+  owner_pfp?: string | null
+  progress?: TrayProgress[]
+  loading: boolean
+  refreshing?: boolean
+  onRefresh?: () => void
+}
 
-export default function BottomToTopProgress({
-  created_at,
-  finished_at,
-  owner,
-  owner_pfp,
-  progress,
-  loading,
-  refreshing,
-  onRefresh,
+const formatDateTime = (isoDate: string | undefined): string => {
+  if (!isoDate) return ''
+  return new Date(isoDate).toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  })
+}
+
+export default function ProgressSteps({
+  created_at, finished_at, owner, owner_pfp,
+  progress, loading, refreshing, onRefresh,
 }: Props) {
-  const [heights, setHeights] = useState<number[]>([]);
-  const [visible, setVisible] = useState(false);
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [visible, setVisible] = useState(false)
+  const [imageUri, setImageUri] = useState<string | null>(null)
 
-  const handleLayout = (index: number, event: LayoutChangeEvent) => {
-    const { height } = event.nativeEvent.layout;
-    setHeights(prev => {
-      const updated = [...prev];
-      updated[index] = height;
-      return updated;
-    });
-  };
+  const finishedStep = finished_at ? {
+    title: 'Harvested',
+    description: 'Tray has been harvested.',
+    datetime: formatDateTime(finished_at),
+    created_by_username: owner || 'N/A',
+    created_by_profile_picture: owner_pfp || null,
+    image: null,
+  } : null
 
-  const formatDateTime = (isoDate: string | undefined): string => {
-    if (!isoDate) return '';
-    const date = new Date(isoDate);
-    return date.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  };
+  const startingStep = created_at ? {
+    title: 'Started',
+    description: 'Drying on this tray has started.',
+    datetime: formatDateTime(created_at),
+    created_by_username: owner || 'N/A',
+    created_by_profile_picture: owner_pfp || null,
+    image: null,
+  } : null
 
-  const finishedStep = finished_at
-    ? {
-        title: 'Harvested',
-        description: 'Tray has been harvested.',
-        datetime: formatDateTime(finished_at),
-        created_by_username: owner || 'N/A',
-        created_by_profile_picture: owner_pfp || null,
-        image: null,
-      }
-    : null;
-
-  const startingStep = created_at
-    ? {
-        title: 'Started',
-        description: 'Drying on this tray has started.',
-        datetime: formatDateTime(created_at),
-        created_by_username: owner || 'N/A',
-        created_by_profile_picture: owner_pfp || null,
-        image: null,
-      }
-    : null;
-
-  const formattedProgress =
-    progress?.map(item => ({
-      title: item.title,
-      description: item.description,
-      datetime: formatDateTime(item.datetime),
-      created_by_username: item.created_by_username,
-      created_by_profile_picture: item.created_by_profile_picture,
-      image: item.image || null,
-    })) || [];
+  const formattedProgress = progress?.map(item => ({
+    title: item.title,
+    description: item.description,
+    datetime: formatDateTime(item.datetime),
+    created_by_username: item.created_by_username,
+    created_by_profile_picture: item.created_by_profile_picture,
+    image: item.image || null,
+  })) || []
 
   const combinedSteps = startingStep
     ? [startingStep, ...formattedProgress, finishedStep].filter(Boolean)
-    : formattedProgress;
+    : formattedProgress
 
-  const shownSteps = combinedSteps.slice(0).reverse();
+  const shownSteps = [...combinedSteps].reverse()
 
-  if (loading)
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator
-          size={30}
-          color="#155183"
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        />
-      </View>
-    );
+  if (loading) return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }}>
+      <ActivityIndicator size={30} color={PRIMARY} />
+    </View>
+  )
 
   return (
     <ScrollView
-      contentContainerStyle={{ paddingVertical: 20 }}
+      contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+      showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
-          style={{ zIndex: -1 }}
-          colors={['#155183']}
+          colors={[PRIMARY]}
           refreshing={refreshing || false}
           onRefresh={onRefresh}
         />
       }
     >
-      <View className="flex-col p-5 bg-white rounded-3xl">
-        {shownSteps.map((step, index) => {
-          const isTop = index === 0;
-          const isBottom = index === shownSteps.length - 1;
-          const isHarvestedStep = step?.title === 'Harvested';
+      {shownSteps.map((step, index) => {
+        const isBottom        = index === shownSteps.length - 1
+        const isHarvestedStep = step?.title === 'Harvested'
 
-          return (
-            <View key={index} className="flex-row gap-3" style={{ marginTop: isTop && isHarvestedStep ? -20 : 40 }}>
-              <View className="relative items-center" style={{ width: 80 }}>
-                <View
-                  className="flex items-center justify-center"
-                  style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 999,
-                    backgroundColor: isHarvestedStep ? '#28a745' : '#155183',
-                    borderWidth: 2,
-                    borderColor: '#ffffff',
-                  }}
-                >
-                  {isHarvestedStep ? (
-                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>✔</Text>
-                  ) : (
-                    <View
-                      style={{
-                        backgroundColor: '#ffffff',
-                        width: 10,
-                        height: 10,
-                        borderRadius: 999,
-                      }}
-                    />
-                  )}
-                </View>
-
-                {!isBottom && (
-                  <View
-                    style={{
-                      width: 2,
-                      height: heights[index] ? heights[index] + 30 : 0,
-                      position: 'absolute',
-                      top: 30,
-                      backgroundColor: '#155183',
-                    }}
-                  />
-                )}
-
-                {isTop && !isHarvestedStep && (
-                  <LinearGradient
-                    colors={['transparent', '#155183']}
-                    style={{
-                      position: 'absolute',
-                      top: -70,
-                      width: 2,
-                      height: 70,
-                      borderRadius: 999,
-                    }}
-                  />
-                )}
+        return (
+          <View
+            key={index}
+            style={{
+              flexDirection: 'row',
+              gap: 16,
+              // minHeight ensures even short steps have enough room for the line
+              minHeight: 60,
+            }}
+          >
+            {/* Left column — dot + line, stretches to full row height via alignSelf stretch */}
+            <View style={{ alignItems: 'center', width: 20 }}>
+              {/* Dot */}
+              <View style={{
+                width: 20, height: 20, borderRadius: 999,
+                backgroundColor: isHarvestedStep ? '#E1F5EE' : '#E6F1FB',
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                {isHarvestedStep
+                  ? <CheckCircle size={14} color="#0F6E56" />
+                  : <Circle size={14} color={PRIMARY} />
+                }
               </View>
 
-              <View
-                className="flex gap-2 flex-1"
-                onLayout={event => handleLayout(index, event)}
-              >
-                <View>
-                  <View className="flex-row gap-3 items-center">
-                    <Text
-                      className="text-lg text-primary"
-                      style={{
-                        fontFamily: 'PoppinsSemiBold',
-                        color: '#155183',
-                      }}
-                    >
-                      {step?.title}
-                    </Text>
-                    <View className="flex-row items-center" style={{ gap: 5 }}>
-                      <Image
-                        source={
-                          step?.created_by_profile_picture
-                            ? { uri: step?.created_by_profile_picture }
-                            : require('@/assets/images/default-profile.png')
-                        }
-                        style={{ width: 15, height: 15, borderRadius: 999 }}
-                        resizeMode="cover"
-                      />
-                      <Text
-                        className="text-zinc-500"
-                        style={{
-                          fontFamily: 'PoppinsRegular',
-                          fontSize: 12,
-                          marginTop: 3,
-                        }}
-                      >
-                        {step?.created_by_username
-                          ? step.created_by_username[0].toUpperCase() +
-                            step.created_by_username.slice(1)
-                          : 'N/A'}
-                      </Text>
-                    </View>
-                  </View>
+              {/* Line — flex:1 fills remaining height of the row naturally, no onLayout needed */}
+              {!isBottom && (
+                <View style={{
+                  flex: 1,
+                  width: 1.5,
+                  backgroundColor: '#e4e4e7',
+                  marginTop: 4,
+                  marginBottom: -4,
+                }} />
+              )}
+            </View>
 
-                  {step?.datetime && (
-                    <Text
-                      className="text-zinc-500"
-                      style={{
-                        fontFamily: 'PoppinsRegular',
-                        fontSize: 12,
-                      }}
-                    >
-                      {step.datetime}
-                    </Text>
-                  )}
+            {/* Right column — content */}
+            <View style={{ flex: 1, paddingBottom: isBottom ? 0 : 24 }}>
+
+              {/* Title + author */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                <Text style={{
+                  fontFamily: 'PoppinsSemiBold', fontSize: 14,
+                  color: isHarvestedStep ? '#0F6E56' : PRIMARY,
+                }}>
+                  {step?.title}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Image
+                    source={
+                      step?.created_by_profile_picture
+                        ? { uri: step.created_by_profile_picture }
+                        : require('@/assets/images/default-profile.png')
+                    }
+                    style={{ width: 14, height: 14, borderRadius: 999 }}
+                    resizeMode="cover"
+                  />
+                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#71717a' }}>
+                    {step?.created_by_username
+                      ? step.created_by_username[0].toUpperCase() + step.created_by_username.slice(1)
+                      : 'N/A'}
+                  </Text>
                 </View>
+              </View>
 
-                {step?.description && (
-                  <Text
-                    className="text-base text-gray-600"
-                    style={{ fontFamily: 'PoppinsRegular' }}
-                  >
+              {/* Datetime */}
+              {step?.datetime && (
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#a1a1aa', marginBottom: 6 }}>
+                  {step.datetime}
+                </Text>
+              )}
+
+              {/* Description */}
+              {step?.description && (
+                <View style={{
+                  backgroundColor: '#fafafa',
+                  borderRadius: 12, borderWidth: 0.5, borderColor: '#f4f4f5',
+                  padding: 12,
+                }}>
+                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#52525b', lineHeight: 20 }}>
                     {step.description}
                   </Text>
-                )}
+                </View>
+              )}
 
-                {step?.image && (
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => {
-                      setImageUri(step.image!);
-                      setVisible(true);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: step.image }}
-                      style={{
-                        width: '100%',
-                        height: 160,
-                        borderRadius: 12,
-                        marginTop: 8,
-                      }}
-                      resizeMode="cover"
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
+              {/* Image */}
+              {step?.image && (
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  onPress={() => { setImageUri(step.image!); setVisible(true) }}
+                  style={{ marginTop: 8 }}
+                >
+                  <Image
+                    source={{ uri: step.image }}
+                    style={{ width: '100%', height: 160, borderRadius: 12 }}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+              )}
             </View>
-          );
-        })}
-      </View>
+          </View>
+        )
+      })}
 
       <ImageViewing
         images={imageUri ? [{ uri: imageUri }] : []}
@@ -281,5 +205,5 @@ export default function BottomToTopProgress({
         backgroundColor="white"
       />
     </ScrollView>
-  );
+  )
 }
