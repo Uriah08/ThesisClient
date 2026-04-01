@@ -19,173 +19,136 @@ type DialogProps = {
 }
 
 const DeleteFarm = ({ visible, setVisible, farmId, type, setSelectedFarm, onBack }: DialogProps) => {
-  const [confirmText, setConfirmText] = useState("")
+  const [confirmText, setConfirmText] = useState('')
   const [deleteFarm, { isLoading: deletingFarm }] = useDeleteFarmMutation()
-  const [leaveFarmm, { isLoading: leavingFarm }] = useLeaveFarmMutation();
+  const [leaveFarmm, { isLoading: leavingFarm }] = useLeaveFarmMutation()
   const [loading, setLoading] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
 
   const handleDelete = async () => {
     setLoading(true)
     try {
-      if(type === 'delete') await deleteFarm(farmId).unwrap()
+      if (type === 'delete') await deleteFarm(farmId).unwrap()
       else await leaveFarmm(farmId).unwrap()
       await AsyncStorage.removeItem('farm')
       await new Promise(resolve => setTimeout(resolve, 2000))
       setSelectedFarm(null)
-
-      Toast.show({
-        type: 'success',
-        text1: type === 'delete' ? 'Farm Deleted' : 'Left Farm',
-      })
-
+      Toast.show({ type: 'success', text1: type === 'delete' ? 'Farm deleted.' : 'Left farm.' })
       setVisible(false)
-      setConfirmText("")
+      setConfirmText('')
       router.push('/(tabs)/farm')
-      setLoading(false)
     } catch (error: any) {
       if (error?.data?.detail) {
-        Toast.show({
-          type: 'error',
-          text1: error.data.detail,
-        })
+        Toast.show({ type: 'error', text1: error.data.detail })
       }
     } finally {
       setLoading(false)
     }
   }
 
-  const isDelete = type === "delete"
-
-  const title = isDelete ? "Delete Farm" : "Leave Farm"
-  const keyword = isDelete ? "delete" : "leave"
-  const actionLabel = isDelete ? "Delete Farm" : "Leave Farm"
-
-  const warningTitle = isDelete
-    ? "You’re about to delete this farm"
-    : "You’re about to leave this farm"
+  const isDelete = type === 'delete'
+  const keyword   = isDelete ? 'delete' : 'leave'
+  const title     = isDelete ? 'Delete Farm' : 'Leave Farm'
+  const subtitle  = isDelete ? 'Danger zone' : 'Confirm action'
 
   const warningText = isDelete
-    ? "Deleting this farm will permanently remove all data, members, trays, sessions, and records associated with it. This action cannot be undone."
-    : "Leaving this farm will permanently remove all your related data, including your tray information, session history, and any changes you've made. This action cannot be undone."
+    ? 'Deleting this farm will permanently remove all data, members, trays, sessions, and records. This cannot be undone.'
+    : 'Leaving this farm will permanently remove your tray info, session history, and all related changes. This cannot be undone.'
 
-  const actionColor = isDelete ? "#b91c1c" : "#f97316"
-  const rippleColor = isDelete ? "#7f1d1d" : "#c2410c"
+  // delete = red, leave = orange
+  const accentBg     = isDelete ? '#fef2f2' : '#fff7ed'
+  const accentBorder = isDelete ? '#fecaca' : '#fed7aa'
+  const accentIcon   = isDelete ? '#dc2626' : '#f97316'
+  const accentText   = isDelete ? '#7f1d1d' : '#7c2d12'
+  const actionBg     = isDelete ? '#b91c1c' : '#ea580c'
+  const actionPress  = isDelete ? '#991b1b' : '#c2410c'
 
+  const isBusy    = deletingFarm || leavingFarm || loading
   const isAllowed = confirmText.trim().toLowerCase() === keyword
 
   return (
-    <Dialogs visible={visible} onVisible={setVisible} title={title}>
-      <Dialog.Content>
+    <Dialogs visible={visible} onVisible={setVisible} title={title} subtitle={subtitle}>
+      <Dialog.Content style={{ paddingHorizontal: 20, paddingBottom: 20, gap: 14, marginTop: 10 }}>
 
-        {/* Warning Box */}
-        <View
-          className="flex flex-row items-start gap-3 mt-2 p-3 rounded-lg"
-          style={{
-            backgroundColor: isDelete ? "#fee2e2" : "#ffedd5", // light red or orange
-            borderWidth: 1,
-            borderColor: isDelete ? "#fca5a5" : "#fb923c", // border
-          }}
-        >
-          <TriangleAlert size={18} color={isDelete ? "#b91c1c" : "#f97316"} />
-
-          <View className="flex-1">
-            <Text
-              style={{
-                fontFamily: "PoppinsMedium",
-                fontSize: 13,
-                color: isDelete ? "#7f1d1d" : "#9a3412", // dark red/orange
-                marginBottom: 2,
-              }}
-            >
-              {warningTitle}
-            </Text>
-
-            <Text
-              style={{
-                fontFamily: "PoppinsRegular",
-                fontSize: 12,
-                color: isDelete ? "#7f1d1d" : "#9a3412",
-              }}
-            >
-              {warningText}
-            </Text>
-          </View>
+        {/* Warning strip */}
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: 10,
+          backgroundColor: accentBg,
+          borderWidth: 0.5,
+          borderColor: accentBorder,
+          borderRadius: 10,
+          padding: 12,
+        }}>
+          <TriangleAlert size={15} color={accentIcon} style={{ marginTop: 1 }} />
+          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: accentText, flex: 1, lineHeight: 18 }}>
+            {warningText}
+          </Text>
         </View>
 
-        {/* Confirm Input */}
-        <View className="mt-3">
-          <Text
-            style={{
-              fontFamily: "PoppinsMedium",
-              fontSize: 12,
-              marginBottom: 5,
-              color: "#6b7280",
-            }}
-          >
-            Type &quot;{keyword}&quot; to confirm:
+        {/* Confirm input */}
+        <View style={{ gap: 5 }}>
+          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11.5, color: '#71717a', fontWeight: '500' }}>
+            Type{' '}
+            <Text style={{ fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>&quot;{keyword}&quot;</Text>
+            {' '}to confirm
           </Text>
-
           <TextInput
             value={confirmText}
             onChangeText={setConfirmText}
             placeholder={keyword}
             autoCapitalize="none"
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             style={{
-              borderWidth: 1,
-              borderColor: "#d4d4d8",
-              borderRadius: 7,
-              paddingVertical: 8,
-              paddingHorizontal: 10,
-              fontFamily: "PoppinsRegular",
+              borderWidth: isFocused ? 1 : 0.5,
+              borderColor: isFocused ? accentIcon : '#e4e4e7',
+              borderRadius: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 9,
+              fontSize: 13.5,
+              color: '#18181b',
+              backgroundColor: isFocused ? (isDelete ? '#fef2f2' : '#fff7ed') : '#fafafa',
+              fontFamily: 'PoppinsRegular',
             }}
           />
         </View>
 
-        <View className="mt-5" style={{ overflow: "hidden", borderRadius: 7 }}>
+        {/* Action button */}
+        <View style={{ gap: 8, marginTop: 2 }}>
           <Pressable
             onPress={handleDelete}
-            android_ripple={isAllowed ? { color: rippleColor } : undefined}
-            disabled={!isAllowed || deletingFarm || leavingFarm || loading}
+            disabled={!isAllowed || isBusy}
             style={{
-              paddingVertical: 8,
-              paddingHorizontal: 15,
-              backgroundColor: actionColor,
-              borderRadius: 7,
-              opacity: isAllowed ? 1 : 0.5,
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+              borderRadius: 8,
+              backgroundColor: isAllowed ? actionPress : actionBg,
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: isAllowed ? 1 : 0.4,
             }}
           >
-            <Text
-              className="text-center text-white"
-              style={{ fontFamily: "PoppinsMedium" }}
-            >
-              {deletingFarm || leavingFarm || loading ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : actionLabel}
-            </Text>
+            {isBusy
+              ? <ActivityIndicator size={15} color="#fff" />
+              : <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#fff' }}>{title}</Text>
+            }
           </Pressable>
-        </View>
 
-        <View className="mt-3" style={{ overflow: "hidden", borderRadius: 7 }}>
           <Pressable
-            onPress={() => {
-              setConfirmText("")
-              setVisible(false)
-            }}
-            android_ripple={{ color: "#a1a1aa" }}
+            onPress={() => { setConfirmText(''); setVisible(false) }}
             style={{
-              paddingVertical: 8,
-              paddingHorizontal: 15,
-              borderRadius: 7,
-              borderWidth: 1,
-              borderColor: "#a1a1aa",
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+              borderRadius: 8,
+              borderWidth: 0.5,
+              borderColor: '#d4d4d8',
+              backgroundColor: '#fafafa',
+              alignItems: 'center',
             }}
           >
-            <Text
-              className="text-center text-zinc-400"
-              style={{ fontFamily: "PoppinsMedium" }}
-            >
-              Cancel
-            </Text>
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#71717a' }}>Cancel</Text>
           </Pressable>
         </View>
 

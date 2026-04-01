@@ -1,4 +1,4 @@
-import { View, Text, Image, Animated, Easing, Pressable, ScrollView } from 'react-native';
+import { View, Text, Image, Animated, Easing, Pressable, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, CircleAlert, CircleCheck, ClockPlus, Download, ImageUp, ScanSearch, TriangleAlert } from 'lucide-react-native';
 import { useScanMutation } from '@/store/scanApi';
@@ -7,13 +7,15 @@ import { Detections, Photo } from '@/utils/types';
 import ImageViewing from "react-native-image-viewing";
 import BarChartComponent from '../charts/BarChart';
 import { remarkMessages } from '@/constants/Colors';
-
 import * as ImagePicker from 'expo-image-picker'
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import AddCameraProgress from '../dialogs/AddCameraProgress';
 import { useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const PRIMARY = '#155183'
+const PRIMARY_DARK = '#0c3b62'
 
 type Props = {
   photo: { uri: string; base64?: string } | null;
@@ -26,12 +28,11 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
   useEffect(() => {
     const fetchActiveTrayId = async () => {
       const active = await AsyncStorage.getItem('active_tray_id')
-      if (active) {
-        setActiveTrayId(Number(active));
-      }
+      if (active) setActiveTrayId(Number(active));
     }
     fetchActiveTrayId();
-  },[])
+  }, [])
+
   const { id } = useLocalSearchParams();
   const scanAnim = useRef(new Animated.Value(0)).current;
   const [scan, { isLoading }] = useScanMutation();
@@ -44,7 +45,6 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
   const [show, setShow] = useState(false)
   const [fishCount, setFishCount] = useState(0);
   const [rejectCount, setRejectCount] = useState(0);
-
   const [reject, setReject] = useState(0)
   const [dry, setDry] = useState(0)
   const [undried, setUndried] = useState(0)
@@ -56,128 +56,68 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
     return acc;
   }, {});
 
-  console.log('Label:',labelCounts);
-
   useEffect(() => {
     if (labelCounts) {
       setReject(labelCounts['REJECT'] || 0);
       setDry(labelCounts['DRY'] || 0);
       setUndried(labelCounts['UNDRIED'] || 0);
     }
-  },[labelCounts])
+  }, [labelCounts])
 
   const statuses = [
-  { color: '#961515', label: 'Reject' },
-  { color: '#c47f00', label: 'Undried' },
-  { color: '#127312', label: 'Dry' }
-];
+    { color: '#961515', label: 'Reject' },
+    { color: '#c47f00', label: 'Undried' },
+    { color: '#127312', label: 'Dry' },
+  ];
 
   const pickImage = async () => {
-        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permission.granted) {
-          alert('Permission is required to access media library');
-          return;
-        }
-        let result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ['images'],
-          allowsEditing: true,
-          quality: 1,
-        });
-    
-        if (!result.canceled) {
-          const uri = result.assets[0].uri;
-          const base64 = result.assets[0].base64;
-          setImage({
-            uri,
-            base64: base64 ?? undefined,
-          });
-        }
-      };
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) { alert('Permission is required to access media library'); return; }
+    let result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 1 });
+    if (!result.canceled) {
+      setImage({ uri: result.assets[0].uri, base64: result.assets[0].base64 ?? undefined });
+    }
+  };
 
   const saveAnnotatedImageInDevice = async () => {
     setSaving(true);
     if (!annotatedPhoto) {
-      Toast.show({
-        type: 'error',
-        text1: 'No annotated image to save.',
-      });
-      setSaving(false);
-      return;
+      Toast.show({ type: 'error', text1: 'No annotated image to save.' });
+      setSaving(false); return;
     }
-
     try {
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== 'granted') {
-        Toast.show({
-          type: 'error',
-          text1: 'Permission to access gallery was denied.',
-        });
+        Toast.show({ type: 'error', text1: 'Permission to access gallery was denied.' });
         return;
       }
-
       const fileUri = FileSystem.documentDirectory + 'annotated_scan.jpg';
       const { uri } = await FileSystem.downloadAsync(annotatedPhoto, fileUri);
-
       const asset = await MediaLibrary.createAssetAsync(uri);
       await MediaLibrary.createAlbumAsync('Download', asset, false);
-
-      Toast.show({
-        type: 'success',
-        text1: 'Image saved successfully!',
-      });
-
-      setSaving(false);
-      setSaved(true);
+      Toast.show({ type: 'success', text1: 'Image saved successfully!' });
+      setSaving(false); setSaved(true);
     } catch (error) {
-      console.error('Error saving image:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Failed to save image.',
-      });
+      Toast.show({ type: 'error', text1: 'Failed to save image.' });
       setSaving(false);
     }
-  }
+  };
 
   const handleScan = async () => {
     const sourceUri = image?.uri || photo?.uri;
     if (!sourceUri) return;
-
     try {
       const formData = new FormData();
-      formData.append('image', {
-        uri: sourceUri,
-        name: 'scan.jpg',
-        type: 'image/jpeg',
-      } as any);
-
+      formData.append('image', { uri: sourceUri, name: 'scan.jpg', type: 'image/jpeg' } as any);
       const result = await scan(formData).unwrap();
-      console.log('✅ Scan result:', result);
-
       if (result.image_url) {
         setAnnotatedPhoto(result.image_url);
         setDetections(result);
-
-        const fishDetected = result.detections.filter(
-          (d: any) => d.class === 'fish'
-        ).length;
-
-        const rejectDetected = result.detections.filter(
-          (d: any) => d.class === 'reject'
-        ).length;
-
-        setFishCount(fishDetected);
-        setRejectCount(rejectDetected);
-
-        console.log('Fish detected:', fishDetected);
-        console.log('Rejects detected:', rejectDetected);
+        setFishCount(result.detections.filter((d: any) => d.class === 'fish').length);
+        setRejectCount(result.detections.filter((d: any) => d.class === 'reject').length);
       }
     } catch (error: any) {
-      console.log(error.data.detail);
-      
-      Toast.show({
-        type: 'error',
-        text1: error?.data?.detail || 'Failed to scan image.',
-      });
+      Toast.show({ type: 'error', text1: error?.data?.detail || 'Failed to scan image.' });
     }
   };
 
@@ -185,289 +125,278 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
     if (photo) {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(scanAnim, {
-            toValue: 1,
-            duration: 2000,
-            easing: Easing.linear,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scanAnim, {
-            toValue: 0,
-            duration: 2000,
-            easing: Easing.linear,
-            useNativeDriver: true,
-          }),
+          Animated.timing(scanAnim, { toValue: 1, duration: 2000, easing: Easing.linear, useNativeDriver: true }),
+          Animated.timing(scanAnim, { toValue: 0, duration: 2000, easing: Easing.linear, useNativeDriver: true }),
         ])
       ).start();
     }
   }, [photo, scanAnim]);
 
-  const scanTranslateY = scanAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 400],
-  });
+  const scanTranslateY = scanAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 400] });
 
-  // Compute dryness percentages and make it descriptive
-    const totalCount = labelCounts
-      ? Object.values(labelCounts).reduce((sum, val) => sum + val, 0)
-      : 0;
+  const totalCount = labelCounts
+    ? Object.values(labelCounts).reduce((sum, val) => sum + val, 0)
+    : 0;
 
-    let drynessDescription = 'No detections available';
-
-    if (totalCount > 0) {
-      // Compute and sort percentages (highest first)
-      const sorted = Object.entries(labelCounts!)
-        .map(([label, count]) => ({
-          label: label
-            .replace(/_/g, ' ')
-            .toLowerCase()
-            .replace(/\b\w/g, (c) => c.toUpperCase()),
-          percentage: ((count / totalCount) * 100).toFixed(1),
-        }))
-        .sort((a, b) => Number(b.percentage) - Number(a.percentage));
-
-      // Build readable summary
-      const mainLabel = sorted[0];
-      const others = sorted.slice(1);
-
-      if (others.length === 0) {
-        drynessDescription = `The scanned image shows that all detected fish are ${mainLabel.label} (${mainLabel.percentage}%).`;
-      } else {
-        const otherParts = others
-          .map((o) => `${o.label.toLowerCase()} (${o.percentage}%)`)
-          .join(', ');
-
-        drynessDescription = `The scanned image shows that most fish are ${mainLabel.label} (${mainLabel.percentage}%), while some are ${otherParts}.`;
-      }
+  let drynessDescription = 'No detections available';
+  if (totalCount > 0) {
+    const sorted = Object.entries(labelCounts!)
+      .map(([label, count]) => ({
+        label: label.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()),
+        percentage: ((count / totalCount) * 100).toFixed(1),
+      }))
+      .sort((a, b) => Number(b.percentage) - Number(a.percentage));
+    const mainLabel = sorted[0];
+    const others = sorted.slice(1);
+    if (others.length === 0) {
+      drynessDescription = `The scanned image shows that all detected fish are ${mainLabel.label} (${mainLabel.percentage}%).`;
+    } else {
+      const otherParts = others.map((o) => `${o.label.toLowerCase()} (${o.percentage}%)`).join(', ');
+      drynessDescription = `The scanned image shows that most fish are ${mainLabel.label} (${mainLabel.percentage}%), while some are ${otherParts}.`;
     }
+  }
 
-    let drynessRemark = remarkMessages.noFish;
+  let drynessRemark = remarkMessages.noFish;
+  if (totalCount > 0) {
+    if (dry > 0 && undried === 0) drynessRemark = remarkMessages.dry;
+    else if (undried > 0 && dry === 0) drynessRemark = remarkMessages.undried;
+    else if (undried > dry && dry > 0) drynessRemark = remarkMessages.mostlyUndried;
+    else if (dry > undried && undried > 0) drynessRemark = remarkMessages.mostlyDry;
+    if (reject > 0) drynessRemark = `${drynessRemark} (${remarkMessages.reject})`;
+  }
 
-    if (totalCount > 0) {
-      if (dry > 0 && undried === 0) {
-        drynessRemark = remarkMessages.dry;
-      } else if (undried > 0 && dry === 0) {
-        drynessRemark = remarkMessages.undried;
-      } else if (undried > dry && dry > 0) {
-        drynessRemark = remarkMessages.mostlyUndried;
-      } else if (dry > undried && undried > 0) {
-        drynessRemark = remarkMessages.mostlyDry;
-      }
+  // ── Status icon for dryness result ────────────────────────────────────────
+  const StatusIcon = () => {
+    if (reject > 0) return <CircleAlert color="#b91c1c" size={18} />
+    if (totalCount === 0 || undried > dry || undried === dry) return <TriangleAlert color="#ca8a04" size={18} />
+    return <CircleCheck color="#15803d" size={18} />
+  }
 
-      if (reject > 0) {
-        drynessRemark = `${drynessRemark} (${remarkMessages.reject})`;
-      }
-    }
+  const statusBg = reject > 0
+    ? 'rgba(185,28,28,0.06)'
+    : (totalCount === 0 || undried >= dry)
+      ? 'rgba(202,138,4,0.06)'
+      : 'rgba(21,128,61,0.06)'
 
+  const statusBorder = reject > 0
+    ? 'rgba(185,28,28,0.15)'
+    : (totalCount === 0 || undried >= dry)
+      ? 'rgba(202,138,4,0.15)'
+      : 'rgba(21,128,61,0.15)'
 
   return (
-    <View className='flex-1 bg-white'>
-      <AddCameraProgress setVisible={setShow} visible={show} trayId={Number(id)} image={imageUri}
-      defaultDescription={drynessDescription} rejects={rejectCount} detected={fishCount}
-      activetrayId={activeTrayId!}
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      <AddCameraProgress
+        setVisible={setShow} visible={show}
+        trayId={Number(id)} image={imageUri}
+        defaultDescription={drynessDescription}
+        rejects={rejectCount} detected={fishCount}
+        activetrayId={activeTrayId!}
       />
-      <ChevronLeft onPress={() => setPhoto(null)} style={{ top: 51, left: 20, position: 'absolute' }} />
-      <View className="w-full items-center" style={{ marginTop: 50, marginBottom: 20 }}>
-        <Text className="text-lg text-zinc-800" style={{ fontFamily: 'PoppinsSemiBold' }}>
-          Photo <Text className='text-primary'>Preview</Text>
-        </Text>
-      </View>
-      <ScrollView showsVerticalScrollIndicator={false}>
 
-        {annotatedPhoto ? (
-            <>
-            <View className='p-5 flex-row justify-between gap-3'>
-                <View className='w-full' style={{ borderRadius: 5, overflow: 'hidden' }}>
-                <Pressable
-                    onPress={saveAnnotatedImageInDevice}
-                    disabled={saved || saving}
-                    android_ripple={{ color: '#0c3b62' }}
-                    className='flex-row gap-3 bg-primary'
-                    style={{ borderRadius: 5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 20 }}
-                >
-                    <Download color={'#ffffff'} />
-                    <Text className='text-white' style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>
-                    {saved ? 'Saved' : saving ? 'Saving...' : 'Save on Device'}
-                    </Text>
-                </Pressable>
-                </View>
-            </View>
-            {(type === 'tray') && (
-              <View style={{ borderRadius: 5, overflow: 'hidden', paddingHorizontal: 18, paddingBottom: 18 }}>
-                <Pressable
-                    onPress={() => setShow(true)}
-                    disabled={saved || saving}
-                    android_ripple={{ color: '#0c3b62' }}
-                    className='flex-row gap-3 bg-primary'
-                    style={{ borderRadius: 5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 20 }}
-                >
-                    <ClockPlus color={'#ffffff'} />
-                    <Text className='text-white' style={{ fontFamily: 'PoppinsRegular', fontSize: 12 }}>
-                     Save as Timeline
-                    </Text>
-                </Pressable>
-                </View>
-            )}
-            </>
-        ) : (
-            <>
-            <View className='p-5 flex-row justify-between gap-3'>
-                <View style={{ borderRadius: 5, overflow: 'hidden', width: '48%' }}>
-                <Pressable
-                    onPress={handleScan}
-                    disabled={isLoading}
-                    android_ripple={{ color: '#0c3b62' }}
-                    className='flex-row gap-3 bg-primary'
-                    style={{ borderRadius: 5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 20 }}
-                >
-                    <ScanSearch color={'#ffffff'} />
-                    <Text className='text-white' style={{ fontFamily: 'PoppinsRegular' }}>
-                    {isLoading ? 'Scanning...' : 'Scan'}
-                    </Text>
-                </Pressable>
-                </View>
-
-                <View style={{ borderRadius: 5, overflow: 'hidden', width: '48%' }}>
-                <Pressable onPress={pickImage} android_ripple={{ color: '#969696' }} className='flex-row gap-3' style={{ borderWidth: 1, borderColor: '#a1a1aa', borderRadius: 5, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, paddingHorizontal: 20 }}>
-                    <ImageUp color={'#a1a1aa'} />
-                    <Text style={{ fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>Gallery</Text>
-                </Pressable>
-                </View>
-            </View>
-            </>
-        )}
-
-      {(photo || image) && (
-        <View className="items-center justify-center">
-            <Pressable
-            disabled={isLoading}
-            style={{ 
-              width: '90%',
-              height: 400 }}
-            onPress={() => setVisible(true)}
-          >
-            <Image
-              source={{ uri: imageUri }}
-              style={{ width: '100%', height: '100%', opacity: isLoading ? 0.5 : 1 }}
-              resizeMode="cover"
-            />
-            {isLoading && (
-              <Animated.View
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 5,
-                  backgroundColor: '#155183',
-                  transform: [{ translateY: scanTranslateY }],
-                  shadowColor: '#155183',
-                  shadowOpacity: 0.9,
-                  shadowRadius: 10,
-                  elevation: 5,
-                }}
-              />
-            )}
-          </Pressable>
-        </View>
-      )}
-      <ImageViewing
-      backgroundColor='#ffffff'
-        images={[{ uri: imageUri }]}
-        imageIndex={0}
-        visible={visible}
-        onRequestClose={() => setVisible(false)}
-        swipeToCloseEnabled={true}
-        doubleTapToZoomEnabled={true}
-        presentationStyle="overFullScreen"
-      />
-      <View
-      className='flex-row mt-2'
-        style={{
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          rowGap: 2,
-          columnGap: 10,
-          paddingHorizontal: 17,
-        }}
-      >
-        {statuses.map((item, index) => (
-          <View
-            key={index}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 5,
-            }}
-          >
-            <View
-              style={{
-                borderRadius: 99,
-                backgroundColor: item.color,
-                height: 8,
-                width: 8,
-              }}
-            />
-            <Text
-              className="text-zinc-500"
-              style={{ fontFamily: 'PoppinsRegular', fontSize: 10 }}
-            >
-              {item.label}
-            </Text>
-          </View>
-        ))}
-      </View>
-      {(detections || annotatedPhoto) && (
-        <>
-        <View
-          className="flex flex-col mt-10"
+      {/* ── Header ── */}
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 52,
+        paddingBottom: 14,
+        paddingHorizontal: 20,
+        backgroundColor: '#ffffff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#f1f1f1',
+      }}>
+        <TouchableOpacity
+          onPress={() => setPhoto(null)}
           style={{
-            borderWidth: 1,
-            borderColor: '#d4d4d8',
-            borderRadius: 12,
-            paddingVertical: 12,
-            paddingHorizontal: 14,
-            marginHorizontal: 17,
-            gap: 10,
+            width: 36, height: 36,
+            borderRadius: 18,
+            backgroundColor: '#f4f4f5',
+            alignItems: 'center', justifyContent: 'center',
           }}
         >
-          <View className='justify-center' style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            {reject > 0 ? (
-              <CircleAlert color="#b91c1c" size={20} />
-            ) : totalCount === 0 ? (
-              <TriangleAlert color="#ca8a04" size={20} />
-            ) : undried > dry ? (
-              <TriangleAlert color="#ca8a04" size={20} />
-            ) : dry > undried ? (
-              <CircleCheck color="#15803d" size={20} />
-            ) : (
-              <TriangleAlert color="#ca8a04" size={20} />
-            )}
+          <ChevronLeft color="#18181b" size={20} />
+        </TouchableOpacity>
+        <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 16, color: '#18181b', marginLeft: 12 }}>
+          Photo <Text style={{ color: PRIMARY }}>Preview</Text>
+        </Text>
+      </View>
 
-            <Text style={{ fontFamily: "PoppinsSemiBold", fontSize: 14, color: "#18181b" }}>
-              Dryness Result
-            </Text>
-          </View>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
-          <Text
-            style={{
-              fontFamily: "PoppinsRegular",
-              fontSize: 12,
-              color: "#3f3f46",
-              lineHeight: 18,
-            }}
-            className='text-center'
-          >
-            {drynessRemark}
-          </Text>
+        {/* ── Action buttons ── */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 16, gap: 10 }}>
+          {annotatedPhoto ? (
+            <>
+              {/* Save to device */}
+              <View style={{ borderRadius: 10, overflow: 'hidden' }}>
+                <Pressable
+                  onPress={saveAnnotatedImageInDevice}
+                  disabled={saved || saving}
+                  android_ripple={{ color: PRIMARY_DARK }}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+                    gap: 8, backgroundColor: PRIMARY,
+                    paddingVertical: 13, borderRadius: 10,
+                    opacity: saved || saving ? 0.6 : 1,
+                  }}
+                >
+                  <Download color="#fff" size={16} />
+                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#fff' }}>
+                    {saved ? 'Saved' : saving ? 'Saving...' : 'Save to Device'}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Save as timeline */}
+              {type === 'tray' && (
+                <View style={{ borderRadius: 10, overflow: 'hidden' }}>
+                  <Pressable
+                    onPress={() => setShow(true)}
+                    disabled={saving}
+                    android_ripple={{ color: PRIMARY_DARK }}
+                    style={{
+                      flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+                      gap: 8, backgroundColor: '#ffffff',
+                      borderWidth: 1, borderColor: PRIMARY,
+                      paddingVertical: 13, borderRadius: 10,
+                      opacity: saved || saving ? 0.6 : 1,
+                    }}
+                  >
+                    <ClockPlus color={PRIMARY} size={16} />
+                    <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: PRIMARY }}>
+                      Save as Timeline
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
+            </>
+          ) : (
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {/* Scan */}
+              <View style={{ flex: 1, borderRadius: 10, overflow: 'hidden' }}>
+                <Pressable
+                  onPress={handleScan}
+                  disabled={isLoading}
+                  android_ripple={{ color: PRIMARY_DARK }}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+                    gap: 8, backgroundColor: PRIMARY,
+                    paddingVertical: 13, borderRadius: 10,
+                    opacity: isLoading ? 0.7 : 1,
+                  }}
+                >
+                  <ScanSearch color="#fff" size={16} />
+                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#fff' }}>
+                    {isLoading ? 'Scanning...' : 'Scan'}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Gallery */}
+              <View style={{ flex: 1, borderRadius: 10, overflow: 'hidden' }}>
+                <Pressable
+                  onPress={pickImage}
+                  android_ripple={{ color: '#e4e4e7' }}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+                    gap: 8, backgroundColor: '#ffffff',
+                    borderWidth: 1, borderColor: '#e4e4e7',
+                    paddingVertical: 13, borderRadius: 10,
+                  }}
+                >
+                  <ImageUp color="#71717a" size={16} />
+                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#71717a' }}>Gallery</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
         </View>
-        <View style={{ paddingBottom: 20 }}>
-          <View>
-            <BarChartComponent data={labelCounts}/>
+
+        {/* ── Image preview ── */}
+        {(photo || image) && (
+          <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
+            <Pressable
+              disabled={isLoading}
+              onPress={() => setVisible(true)}
+              style={{ borderRadius: 12, overflow: 'hidden', height: 380 }}
+            >
+              <Image
+                source={{ uri: imageUri }}
+                style={{ width: '100%', height: '100%', opacity: isLoading ? 0.5 : 1 }}
+                resizeMode="cover"
+              />
+              {isLoading && (
+                <Animated.View
+                  style={{
+                    position: 'absolute', top: 0, left: 0, right: 0,
+                    height: 3,
+                    backgroundColor: PRIMARY,
+                    transform: [{ translateY: scanTranslateY }],
+                    shadowColor: PRIMARY,
+                    shadowOpacity: 0.9,
+                    shadowRadius: 10,
+                    elevation: 5,
+                  }}
+                />
+              )}
+            </Pressable>
+
+            {/* Legend */}
+            <View style={{ flexDirection: 'row', gap: 14, marginTop: 10, paddingHorizontal: 2 }}>
+              {statuses.map((item, index) => (
+                <View key={index} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: item.color }} />
+                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#71717a' }}>
+                    {item.label}
+                  </Text>
+                </View>
+              ))}
+            </View>
           </View>
-        </View>
-        </>
-      )}
+        )}
+
+        <ImageViewing
+          backgroundColor="#ffffff"
+          images={[{ uri: imageUri }]}
+          imageIndex={0}
+          visible={visible}
+          onRequestClose={() => setVisible(false)}
+          swipeToCloseEnabled
+          doubleTapToZoomEnabled
+          presentationStyle="overFullScreen"
+        />
+
+        {/* ── Dryness result card ── */}
+        {(detections || annotatedPhoto) && (
+          <View style={{ paddingHorizontal: 15, marginTop: 20, gap: 16 }}>
+            <View style={{
+              backgroundColor: statusBg,
+              borderWidth: 1,
+              borderColor: statusBorder,
+              borderRadius: 12,
+              paddingVertical: 16,
+              paddingHorizontal: 16,
+              gap: 8,
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <StatusIcon />
+                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#18181b' }}>
+                  Dryness Result
+                </Text>
+              </View>
+              <Text style={{
+                fontFamily: 'PoppinsRegular',
+                fontSize: 12,
+                color: '#52525b',
+                lineHeight: 19,
+              }}>
+                {drynessRemark}
+              </Text>
+            </View>
+
+            <BarChartComponent data={labelCounts} />
+          </View>
+        )}
       </ScrollView>
     </View>
   );

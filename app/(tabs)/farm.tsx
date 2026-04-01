@@ -153,7 +153,7 @@ const Farm = () => {
 
       {/* Header */}
       <View style={{
-        paddingTop: 56, paddingHorizontal: 24, paddingBottom: 12, gap: 14,
+        paddingTop: 56, paddingHorizontal: 15, paddingBottom: 12, gap: 14,
       }}>
         <Text style={{ fontSize: 26, fontFamily: 'PoppinsBold', color: '#18181b' }}>
           Drying Areas

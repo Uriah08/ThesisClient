@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
-import { View, Text, Modal, Pressable, ScrollView, FlatList } from 'react-native'
+import React, { useRef, useState } from 'react'
+import { View, Text, Pressable, FlatList } from 'react-native'
 import { Calendar, DateData } from 'react-native-calendars'
-import { X, ChevronDown } from 'lucide-react-native'
+import { ChevronDown } from 'lucide-react-native'
+import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDrawer'
 
 interface Props {
   visible: boolean
@@ -14,39 +15,46 @@ interface Props {
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const currentYear = new Date().getFullYear()
 const YEARS = Array.from({ length: currentYear - 1999 }, (_, i) => currentYear - i)
+const PRIMARY = '#155183'
 
 const DateRangePicker = ({ visible, onClose, onApply, initialFrom, initialTo }: Props) => {
   const today = new Date()
-  const [startDate, setStartDate] = useState<string | null>(initialFrom ?? null)
-  const [endDate, setEndDate] = useState<string | null>(initialTo ?? null)
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth())
-  const [currentYear2, setCurrentYear2] = useState(today.getFullYear())
-  const [showYearPicker, setShowYearPicker] = useState(false)
-  const [showMonthPicker, setShowMonthPicker] = useState(false)
-  const [isAllTime, setIsAllTime] = useState(!initialFrom && !initialTo)
+  const drawerRef = useRef<BottomDrawerRef>(null)
 
-  const calendarKey = `${currentYear2}-${currentMonth}`
+  const [startDate, setStartDate]             = useState<string | null>(initialFrom ?? null)
+  const [endDate, setEndDate]                 = useState<string | null>(initialTo ?? null)
+  const [currentMonth, setCurrentMonth]       = useState(today.getMonth())
+  const [currentYear2, setCurrentYear2]       = useState(today.getFullYear())
+  const [showYearPicker, setShowYearPicker]   = useState(false)
+  const [showMonthPicker, setShowMonthPicker] = useState(false)
+  const [isAllTime, setIsAllTime]             = useState(!initialFrom && !initialTo)
+
+  const calendarKey     = `${currentYear2}-${currentMonth}`
   const currentMonthStr = `${currentYear2}-${String(currentMonth + 1).padStart(2, '0')}`
-  const todayStr = today.toISOString().split('T')[0]
+  const todayStr        = today.toISOString().split('T')[0]
+
+  // open/close in sync with parent visible prop
+  React.useEffect(() => {
+    if (visible) drawerRef.current?.open()
+    else drawerRef.current?.close()
+  }, [visible])
 
   const buildMarked = () => {
     if (!startDate) return {}
     const marked: Record<string, any> = {
-      [startDate]: { startingDay: true, color: '#155183', textColor: '#fff' },
+      [startDate]: { startingDay: true, color: PRIMARY, textColor: '#fff' },
     }
     if (endDate && endDate !== startDate) {
-      const start = new Date(startDate)
-      const end = new Date(endDate)
-      const current = new Date(start)
-      current.setDate(current.getDate() + 1)
-      while (current < end) {
-        const key = current.toISOString().split('T')[0]
-        marked[key] = { color: '#d0e8f7', textColor: '#155183' }
-        current.setDate(current.getDate() + 1)
+      const cur = new Date(startDate)
+      cur.setDate(cur.getDate() + 1)
+      while (cur < new Date(endDate)) {
+        const key = cur.toISOString().split('T')[0]
+        marked[key] = { color: '#d0e8f7', textColor: PRIMARY }
+        cur.setDate(cur.getDate() + 1)
       }
-      marked[endDate] = { endingDay: true, color: '#155183', textColor: '#fff' }
+      marked[endDate] = { endingDay: true, color: PRIMARY, textColor: '#fff' }
     } else if (endDate === startDate) {
-      marked[startDate] = { startingDay: true, endingDay: true, color: '#155183', textColor: '#fff' }
+      marked[startDate] = { startingDay: true, endingDay: true, color: PRIMARY, textColor: '#fff' }
     }
     return marked
   }
@@ -55,211 +63,195 @@ const DateRangePicker = ({ visible, onClose, onApply, initialFrom, initialTo }: 
     setIsAllTime(false)
     const pressed = day.dateString
     if (!startDate || (startDate && endDate)) {
-      setStartDate(pressed)
-      setEndDate(null)
+      setStartDate(pressed); setEndDate(null)
     } else {
-      if (pressed < startDate) {
-        setEndDate(startDate)
-        setStartDate(pressed)
-      } else {
-        setEndDate(pressed)
-      }
+      if (pressed < startDate) { setEndDate(startDate); setStartDate(pressed) }
+      else setEndDate(pressed)
     }
   }
 
-  const handleAllTime = () => {
-    setIsAllTime(true)
-    setStartDate(null)
-    setEndDate(null)
-  }
+  const handleAllTime = () => { setIsAllTime(true); setStartDate(null); setEndDate(null) }
+  const handleClear   = () => { setStartDate(null); setEndDate(null); setIsAllTime(false) }
 
   const handleApply = () => {
-    if (isAllTime) {
-      onApply(null, null)
-      onClose()
-    } else if (startDate && endDate) {
-      onApply(startDate, endDate)
-      onClose()
-    }
-  }
-
-  const handleClear = () => {
-    setStartDate(null)
-    setEndDate(null)
-    setIsAllTime(false)
+    if (isAllTime) { onApply(null, null); onClose() }
+    else if (startDate && endDate) { onApply(startDate, endDate); onClose() }
   }
 
   const canApply = isAllTime || (!!startDate && !!endDate)
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable
-        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}
-        onPress={onClose}
-      >
+    <BottomDrawer ref={drawerRef} onChange={open => { if (!open) onClose() }} type="none" snapPoints={['85%']}>
+      <View style={{ paddingHorizontal: 20, paddingBottom: 36 }}>
+
+        {/* Title */}
+        <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15, color: '#18181b', marginBottom: 14 }}>
+          Filter by Date
+        </Text>
+
+        {/* All time toggle */}
         <Pressable
-          onPress={(e) => e.stopPropagation()}
-          style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 30 }}
+          onPress={handleAllTime}
+          style={{
+            paddingVertical: 11, paddingHorizontal: 14,
+            borderRadius: 12, borderWidth: 1.5,
+            borderColor: isAllTime ? PRIMARY : '#e4e4e7',
+            backgroundColor: isAllTime ? '#eff6ff' : '#fafafa',
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 12,
+          }}
         >
-          {/* Header */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, borderBottomWidth: 1, borderBottomColor: '#f4f4f5' }}>
-            <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 16, color: '#18181b' }}>Select Date Range</Text>
-            <Pressable onPress={onClose}>
-              <X size={20} color="#71717a" />
-            </Pressable>
-          </View>
-
-          {/* All time toggle */}
-          <Pressable
-            onPress={handleAllTime}
-            style={{
-              marginHorizontal: 18, marginTop: 12,
-              paddingVertical: 10, paddingHorizontal: 14,
-              borderRadius: 10, borderWidth: 1.5,
-              borderColor: isAllTime ? '#155183' : '#e4e4e7',
-              backgroundColor: isAllTime ? '#eff6ff' : 'white',
-              flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'
-            }}
-          >
-            <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 13, color: isAllTime ? '#155183' : '#71717a' }}>All time</Text>
-            {isAllTime && (
-              <View style={{ width: 16, height: 16, borderRadius: 99, backgroundColor: '#155183', justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ color: 'white', fontSize: 10 }}>✓</Text>
-              </View>
-            )}
-          </Pressable>
-
-          {/* Selected range display */}
-          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 18 }}>
-            <View style={{ flex: 1, backgroundColor: '#f4f4f5', borderRadius: 10, padding: 10, alignItems: 'center' }}>
-              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#a1a1aa', marginBottom: 2 }}>FROM</Text>
-              <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: startDate ? '#155183' : '#d4d4d8' }}>
-                {isAllTime ? 'All time' : startDate
-                  ? new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                  : 'Pick start'}
-              </Text>
-            </View>
-            <View style={{ justifyContent: 'center' }}>
-              <Text style={{ color: '#d4d4d8', fontSize: 18 }}>→</Text>
-            </View>
-            <View style={{ flex: 1, backgroundColor: '#f4f4f5', borderRadius: 10, padding: 10, alignItems: 'center' }}>
-              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 10, color: '#a1a1aa', marginBottom: 2 }}>TO</Text>
-              <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: endDate ? '#155183' : '#d4d4d8' }}>
-                {isAllTime ? 'All time' : endDate
-                  ? new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                  : 'Pick end'}
-              </Text>
-            </View>
-          </View>
-
-          {/* Month / Year selector row */}
-          {!isAllTime && (
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, paddingHorizontal: 18, marginBottom: 4 }}>
-              {/* Month picker */}
-              <Pressable
-                onPress={() => { setShowMonthPicker(prev => !prev); setShowYearPicker(false) }}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#f4f4f5', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}
-              >
-                <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 13, color: '#18181b' }}>{MONTHS[currentMonth]}</Text>
-                <ChevronDown size={14} color="#71717a" />
-              </Pressable>
-
-              {/* Year picker */}
-              <Pressable
-                onPress={() => { setShowYearPicker(prev => !prev); setShowMonthPicker(false) }}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#f4f4f5', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}
-              >
-                <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 13, color: '#18181b' }}>{currentYear2}</Text>
-                <ChevronDown size={14} color="#71717a" />
-              </Pressable>
+          <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 13, color: isAllTime ? PRIMARY : '#71717a' }}>
+            All time
+          </Text>
+          {isAllTime && (
+            <View style={{ width: 18, height: 18, borderRadius: 99, backgroundColor: PRIMARY, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: '#fff', fontSize: 11 }}>✓</Text>
             </View>
           )}
-
-          {/* Month dropdown */}
-          {showMonthPicker && (
-            <View style={{ marginHorizontal: 18, backgroundColor: 'white', borderRadius: 12, borderWidth: 1, borderColor: '#e4e4e7', maxHeight: 180, zIndex: 99, position: 'absolute', top: 230, left: 18, right: 18 }}>
-              <FlatList
-                data={MONTHS}
-                keyExtractor={(_, i) => i.toString()}
-                renderItem={({ item, index }) => (
-                  <Pressable
-                    onPress={() => { setCurrentMonth(index); setShowMonthPicker(false) }}
-                    style={{ padding: 12, backgroundColor: currentMonth === index ? '#eff6ff' : 'white', borderRadius: 8 }}
-                  >
-                    <Text style={{ fontFamily: currentMonth === index ? 'PoppinsSemiBold' : 'PoppinsRegular', color: currentMonth === index ? '#155183' : '#18181b', fontSize: 13 }}>{item}</Text>
-                  </Pressable>
-                )}
-              />
-            </View>
-          )}
-
-          {/* Year dropdown */}
-          {showYearPicker && (
-            <View style={{ marginHorizontal: 18, backgroundColor: 'white', borderRadius: 12, borderWidth: 1, borderColor: '#e4e4e7', maxHeight: 180, zIndex: 99, position: 'absolute', top: 230, left: 18, right: 18 }}>
-              <FlatList
-                data={YEARS}
-                keyExtractor={(item) => item.toString()}
-                renderItem={({ item }) => (
-                  <Pressable
-                    onPress={() => { setCurrentYear2(item); setShowYearPicker(false) }}
-                    style={{ padding: 12, backgroundColor: currentYear2 === item ? '#eff6ff' : 'white', borderRadius: 8 }}
-                  >
-                    <Text style={{ fontFamily: currentYear2 === item ? 'PoppinsSemiBold' : 'PoppinsRegular', color: currentYear2 === item ? '#155183' : '#18181b', fontSize: 13 }}>{item}</Text>
-                  </Pressable>
-                )}
-              />
-            </View>
-          )}
-
-          {/* Calendar */}
-          {!isAllTime && (
-            <Calendar
-              key={calendarKey}
-              current={`${currentMonthStr}-01`}
-              markingType="period"
-              markedDates={buildMarked()}
-              onDayPress={handleDayPress}
-              maxDate={todayStr}
-              hideArrows={false}
-              onMonthChange={(month) => {
-                setCurrentMonth(month.month - 1)
-                setCurrentYear2(month.year)
-              }}
-              renderHeader={() => <View />}  // hide default header since we have our own
-              theme={{
-                todayTextColor: '#155183',
-                arrowColor: '#155183',
-                selectedDayBackgroundColor: '#155183',
-                dotColor: '#155183',
-                textDayFontFamily: 'PoppinsRegular',
-                textMonthFontFamily: 'PoppinsSemiBold',
-                textDayHeaderFontFamily: 'PoppinsMedium',
-                textDayFontSize: 13,
-                textMonthFontSize: 14,
-                textDayHeaderFontSize: 11,
-              }}
-            />
-          )}
-
-          {/* Footer buttons */}
-          <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 18, paddingTop: 12 }}>
-            <Pressable
-              onPress={handleClear}
-              style={{ flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: '#d4d4d8', alignItems: 'center' }}
-            >
-              <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 14, color: '#71717a' }}>Clear</Text>
-            </Pressable>
-            <Pressable
-              onPress={handleApply}
-              disabled={!canApply}
-              style={{ flex: 2, paddingVertical: 12, borderRadius: 12, alignItems: 'center', backgroundColor: canApply ? '#155183' : '#e4e4e7' }}
-            >
-              <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 14, color: canApply ? '#fff' : '#a1a1aa' }}>Apply</Text>
-            </Pressable>
-          </View>
         </Pressable>
-      </Pressable>
-    </Modal>
+
+        {/* From / To display */}
+        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 14 }}>
+          {['FROM', 'TO'].map((label, i) => {
+            const val = i === 0 ? startDate : endDate
+            return (
+              <View key={label} style={{
+                flex: 1, backgroundColor: '#f7f7f7', borderRadius: 12,
+                paddingVertical: 10, alignItems: 'center',
+                borderWidth: 1, borderColor: '#f0f0f0',
+              }}>
+                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 9, color: '#a1a1aa', letterSpacing: 0.6, marginBottom: 3 }}>
+                  {label}
+                </Text>
+                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 12, color: val ? PRIMARY : '#d4d4d8' }}>
+                  {isAllTime ? 'All time' : val
+                    ? new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    : `Pick ${label === 'FROM' ? 'start' : 'end'}`}
+                </Text>
+              </View>
+            )
+          })}
+        </View>
+
+        {/* Month / Year row */}
+        {!isAllTime && (
+          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 4 }}>
+            <Pressable
+              onPress={() => { setShowMonthPicker(p => !p); setShowYearPicker(false) }}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#f4f4f5', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10 }}
+            >
+              <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 13, color: '#18181b' }}>{MONTHS[currentMonth]}</Text>
+              <ChevronDown size={13} color="#71717a" />
+            </Pressable>
+            <Pressable
+              onPress={() => { setShowYearPicker(p => !p); setShowMonthPicker(false) }}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#f4f4f5', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10 }}
+            >
+              <Text style={{ fontFamily: 'PoppinsMedium', fontSize: 13, color: '#18181b' }}>{currentYear2}</Text>
+              <ChevronDown size={13} color="#71717a" />
+            </Pressable>
+          </View>
+        )}
+
+        {/* Month dropdown */}
+        {showMonthPicker && (
+          <View style={{
+            backgroundColor: '#fff', borderRadius: 12, borderWidth: 1,
+            borderColor: '#e4e4e7', maxHeight: 180,
+            shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 8,
+            marginBottom: 4,
+          }}>
+            <FlatList
+              data={MONTHS}
+              keyExtractor={(_, i) => i.toString()}
+              renderItem={({ item, index }) => (
+                <Pressable
+                  onPress={() => { setCurrentMonth(index); setShowMonthPicker(false) }}
+                  style={{ paddingHorizontal: 14, paddingVertical: 11, backgroundColor: currentMonth === index ? '#eff6ff' : '#fff', borderRadius: 8 }}
+                >
+                  <Text style={{ fontFamily: currentMonth === index ? 'PoppinsSemiBold' : 'PoppinsRegular', color: currentMonth === index ? PRIMARY : '#18181b', fontSize: 13 }}>
+                    {item}
+                  </Text>
+                </Pressable>
+              )}
+            />
+          </View>
+        )}
+
+        {/* Year dropdown */}
+        {showYearPicker && (
+          <View style={{
+            backgroundColor: '#fff', borderRadius: 12, borderWidth: 1,
+            borderColor: '#e4e4e7', maxHeight: 180,
+            shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 8,
+            marginBottom: 4,
+          }}>
+            <FlatList
+              data={YEARS}
+              keyExtractor={item => item.toString()}
+              renderItem={({ item }) => (
+                <Pressable
+                  onPress={() => { setCurrentYear2(item); setShowYearPicker(false) }}
+                  style={{ paddingHorizontal: 14, paddingVertical: 11, backgroundColor: currentYear2 === item ? '#eff6ff' : '#fff', borderRadius: 8 }}
+                >
+                  <Text style={{ fontFamily: currentYear2 === item ? 'PoppinsSemiBold' : 'PoppinsRegular', color: currentYear2 === item ? PRIMARY : '#18181b', fontSize: 13 }}>
+                    {item}
+                  </Text>
+                </Pressable>
+              )}
+            />
+          </View>
+        )}
+
+        {/* Calendar */}
+        {!isAllTime && (
+          <Calendar
+            key={calendarKey}
+            current={`${currentMonthStr}-01`}
+            markingType="period"
+            markedDates={buildMarked()}
+            onDayPress={handleDayPress}
+            maxDate={todayStr}
+            hideArrows={false}
+            onMonthChange={month => { setCurrentMonth(month.month - 1); setCurrentYear2(month.year) }}
+            renderHeader={() => <View />}
+            theme={{
+              todayTextColor: PRIMARY,
+              arrowColor: PRIMARY,
+              selectedDayBackgroundColor: PRIMARY,
+              dotColor: PRIMARY,
+              textDayFontFamily: 'PoppinsRegular',
+              textMonthFontFamily: 'PoppinsSemiBold',
+              textDayHeaderFontFamily: 'PoppinsMedium',
+              textDayFontSize: 13,
+              textMonthFontSize: 14,
+              textDayHeaderFontSize: 11,
+            }}
+          />
+        )}
+
+        {/* Footer */}
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
+          <Pressable
+            onPress={handleClear}
+            style={{ flex: 1, paddingVertical: 13, borderRadius: 14, borderWidth: 1.5, borderColor: '#e4e4e7', alignItems: 'center' }}
+          >
+            <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 14, color: '#71717a' }}>Clear</Text>
+          </Pressable>
+          <Pressable
+            onPress={handleApply}
+            disabled={!canApply}
+            style={{ flex: 2, paddingVertical: 13, borderRadius: 14, alignItems: 'center', backgroundColor: canApply ? PRIMARY : '#f0f0f0' }}
+          >
+            <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 14, color: canApply ? '#fff' : '#a1a1aa' }}>
+              Apply
+            </Text>
+          </Pressable>
+        </View>
+
+      </View>
+    </BottomDrawer>
   )
 }
 

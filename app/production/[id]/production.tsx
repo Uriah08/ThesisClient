@@ -1,5 +1,5 @@
-import { View, Text, ScrollView, ActivityIndicator, Pressable, TextInput } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import { View, Text, ScrollView, ActivityIndicator, Pressable, TextInput, PanResponder } from 'react-native'
+import React, { useState, useEffect, useRef } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useGetProductionQuery, useUpdateProductionMutation } from '@/store/productionApi'
 import { ChevronLeft, MapPin, Package, Calendar, Pencil, Trash2, Check, X, PhilippinePeso } from 'lucide-react-native'
@@ -9,50 +9,118 @@ import DeleteClass from '@/components/containers/dialogs/Delete'
 const EMOJIS = ['😞', '😐', '🙂', '😊', '😁']
 const LABELS = ['Not Satisfied', 'Slightly Satisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e']
+const PRIMARY = '#155183'
+const TRACK_WIDTH = 280
+const STEPS = 5
+const STEP_WIDTH = TRACK_WIDTH / (STEPS - 1)
 
-// ── Read-only satisfaction display ─────────────────────────────────────────
+// ── Read-only ────────────────────────────────────────────────────────────────
 const SatisfactionDisplay = ({ value }: { value: number }) => {
-  const TRACK_WIDTH = 280
-  const STEPS = 5
-  const STEP_WIDTH = TRACK_WIDTH / (STEPS - 1)
   const thumbX = (value - 1) * STEP_WIDTH
-
   return (
-    <View style={{ marginTop: 4 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 }}>
+    <View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
         {EMOJIS.map((emoji, i) => {
           const active = value === i + 1
           return (
-            <View key={i} style={{ flex: 1, alignItems: 'center' }}>
-              <Text style={{ fontSize: active ? 28 : 20, opacity: active ? 1 : 0.3 }}>{emoji}</Text>
+            <View key={i} style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+              <Text style={{ fontSize: active ? 26 : 18, opacity: active ? 1 : 0.25 }}>{emoji}</Text>
               <Text style={{
-                fontSize: 8, textAlign: 'center', marginTop: 3,
-                opacity: active ? 1 : 0.3,
-                color: active ? COLORS[i] : '#71717a',
-                fontFamily: active ? 'PoppinsSemiBold' : 'PoppinsRegular',
-              }}>
-                {LABELS[i]}
-              </Text>
+                fontSize: 7.5, textAlign: 'center', opacity: active ? 1 : 0,
+                color: COLORS[i], fontFamily: 'PoppinsSemiBold', letterSpacing: 0.2,
+              }}>{LABELS[i]}</Text>
             </View>
           )
         })}
       </View>
-      <View style={{ height: 8, width: TRACK_WIDTH, backgroundColor: '#e4e4e7', borderRadius: 4, alignSelf: 'center' }}>
-        <View style={{ height: 8, width: thumbX, backgroundColor: COLORS[value - 1], borderRadius: 4 }} />
+      <View style={{ height: 4, width: TRACK_WIDTH, backgroundColor: '#f0f0f0', borderRadius: 4, alignSelf: 'center' }}>
+        <View style={{ height: 4, width: thumbX, backgroundColor: COLORS[value - 1], borderRadius: 4 }} />
         {Array.from({ length: STEPS }).map((_, i) => (
           <View key={i} style={{
-            position: 'absolute', left: i * STEP_WIDTH - 3, top: 1,
+            position: 'absolute', left: i * STEP_WIDTH - 3, top: -1,
             width: 6, height: 6, borderRadius: 3,
-            backgroundColor: value > i ? COLORS[value - 1] : '#a1a1aa',
+            backgroundColor: value > i ? COLORS[value - 1] : '#d4d4d8',
           }} />
         ))}
         <View style={{
-          position: 'absolute', top: -8,
-          width: 24, height: 24, borderRadius: 12,
+          position: 'absolute', top: -10,
+          width: 22, height: 22, borderRadius: 11,
           backgroundColor: COLORS[value - 1],
           borderWidth: 3, borderColor: '#fff',
-          shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 4, elevation: 3,
-          transform: [{ translateX: thumbX - 12 }],
+          shadowColor: COLORS[value - 1], shadowOpacity: 0.4, shadowRadius: 6, elevation: 4,
+          transform: [{ translateX: thumbX - 11 }],
+        }} />
+      </View>
+    </View>
+  )
+}
+
+// ── Interactive (edit mode) ──────────────────────────────────────────────────
+const SatisfactionSlider = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => {
+  const thumbX = (value - 1) * STEP_WIDTH
+  const startX = useRef(0)
+  const startVal = useRef(value)
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (_, gs) => {
+        startX.current = gs.x0
+        startVal.current = value
+      },
+      onPanResponderMove: (_, gs) => {
+        const newX = (startVal.current - 1) * STEP_WIDTH + gs.dx
+        const clamped = Math.max(0, Math.min(TRACK_WIDTH, newX))
+        const step = Math.round(clamped / STEP_WIDTH) + 1
+        if (step !== value) onChange(step)
+      },
+    })
+  ).current
+
+  return (
+    <View>
+      {/* Emoji row — tappable */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
+        {EMOJIS.map((emoji, i) => {
+          const active = value === i + 1
+          return (
+            <Pressable key={i} onPress={() => onChange(i + 1)} style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+              <Text style={{ fontSize: active ? 30 : 20, opacity: active ? 1 : 0.3 }}>{emoji}</Text>
+              <Text style={{
+                fontSize: 7.5, textAlign: 'center', opacity: active ? 1 : 0,
+                color: COLORS[i], fontFamily: 'PoppinsSemiBold', letterSpacing: 0.2,
+              }}>{LABELS[i]}</Text>
+            </Pressable>
+          )
+        })}
+      </View>
+
+      {/* Track + draggable thumb */}
+      <View
+        style={{ height: 44, width: TRACK_WIDTH, alignSelf: 'center', justifyContent: 'center' }}
+        {...panResponder.panHandlers}
+      >
+        {/* Track bg */}
+        <View style={{ height: 4, backgroundColor: '#f0f0f0', borderRadius: 4 }}>
+          <View style={{ height: 4, width: thumbX, backgroundColor: COLORS[value - 1], borderRadius: 4 }} />
+          {Array.from({ length: STEPS }).map((_, i) => (
+            <View key={i} style={{
+              position: 'absolute', left: i * STEP_WIDTH - 3, top: -1,
+              width: 6, height: 6, borderRadius: 3,
+              backgroundColor: value > i ? COLORS[value - 1] : '#d4d4d8',
+            }} />
+          ))}
+        </View>
+
+        {/* Thumb */}
+        <View style={{
+          position: 'absolute',
+          width: 26, height: 26, borderRadius: 13,
+          backgroundColor: COLORS[value - 1],
+          borderWidth: 3, borderColor: '#fff',
+          shadowColor: COLORS[value - 1], shadowOpacity: 0.45, shadowRadius: 8, elevation: 5,
+          transform: [{ translateX: thumbX - 2 }],
         }} />
       </View>
     </View>
@@ -63,8 +131,8 @@ const EditField = ({ label, value, onChange, multiline = false, keyboardType = '
   label: string; value: string; onChange: (v: string) => void
   multiline?: boolean; keyboardType?: any
 }) => (
-  <View style={{ marginBottom: 16 }}>
-    <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 11, color: '#a1a1aa', marginBottom: 6, letterSpacing: 0.4 }}>
+  <View style={{ marginBottom: 18 }}>
+    <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 10, color: '#a1a1aa', marginBottom: 7, letterSpacing: 0.8 }}>
       {label.toUpperCase()}
     </Text>
     <TextInput
@@ -74,16 +142,24 @@ const EditField = ({ label, value, onChange, multiline = false, keyboardType = '
       keyboardType={keyboardType}
       textAlignVertical={multiline ? 'top' : 'center'}
       style={{
-        borderWidth: 1, borderColor: '#e4e4e7', borderRadius: 8,
-        paddingHorizontal: 12, paddingVertical: 10,
+        borderWidth: 1, borderColor: '#ebebeb', borderRadius: 10,
+        paddingHorizontal: 14, paddingVertical: 11,
         fontFamily: 'PoppinsRegular', fontSize: 14, color: '#18181b',
-        backgroundColor: '#fafafa', height: multiline ? 80 : undefined,
+        backgroundColor: '#fafafa', height: multiline ? 88 : undefined,
       }}
     />
   </View>
 )
 
-const Divider = () => <View style={{ height: 1, backgroundColor: '#f4f4f5', marginVertical: 14 }} />
+const Row = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: '#f5f5f5' }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      {icon}
+      <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#a1a1aa' }}>{label}</Text>
+    </View>
+    <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#18181b' }}>{value}</Text>
+  </View>
+)
 
 const Production = () => {
   const { id } = useLocalSearchParams()
@@ -92,9 +168,8 @@ const Production = () => {
   const { data: production, isLoading: isFetching } = useGetProductionQuery(Number(id))
   const [updateProduction, { isLoading: isUpdating }] = useUpdateProductionMutation()
   const [active, setActive] = useState(false)
-
   const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState({ title: '', notes: '', quantity: '', total: '', landing: '' })
+  const [form, setForm] = useState({ title: '', notes: '', quantity: '', total: '', landing: '', satisfaction: 3 })
 
   useEffect(() => {
     if (production) {
@@ -104,6 +179,7 @@ const Production = () => {
         quantity: String(production.quantity ?? ''),
         total: String(production.total ?? ''),
         landing: production.landing ?? '',
+        satisfaction: production.satisfaction ?? 3,
       })
     }
   }, [production])
@@ -126,173 +202,130 @@ const Production = () => {
       quantity: String(production.quantity ?? ''),
       total: String(production.total ?? ''),
       landing: production.landing ?? '',
+      satisfaction: production.satisfaction ?? 3,
     })
   }
 
-  if (isFetching) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
-        <ActivityIndicator color="#155183" size="large" />
-      </View>
-    )
-  }
+  if (isFetching) return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+      <ActivityIndicator color={PRIMARY} size="large" />
+    </View>
+  )
 
-  if (!production) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
-        <Text style={{ fontSize: 36, marginBottom: 8 }}>📦</Text>
-        <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15, color: '#3f3f46' }}>Record not found</Text>
-      </View>
-    )
-  }
+  if (!production) return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+      <Text style={{ fontSize: 36, marginBottom: 8 }}>📦</Text>
+      <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 15, color: '#3f3f46' }}>Record not found</Text>
+    </View>
+  )
 
   const date = new Date(production.created_at).toLocaleDateString('en-PH', {
     month: 'long', day: 'numeric', year: 'numeric',
   })
-  const satisfactionColor = COLORS[(production.satisfaction ?? 3) - 1]
+  const satIndex = (production.satisfaction ?? 3) - 1
+  const satColor = COLORS[satIndex]
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
-      <DeleteClass visible={active} setVisible={setActive} type='production' productionId={Number(id)}/>
+      <DeleteClass visible={active} setVisible={setActive} type='production' productionId={Number(id)} />
 
-      {/* ── Nav bar ── */}
+      {/* ── Nav ── */}
       <View style={{
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-        paddingTop: 52, paddingBottom: 12, paddingHorizontal: 16,
-        borderBottomWidth: 1, borderBottomColor: '#f4f4f5',
-        backgroundColor: '#fff',
+        paddingTop: 56, paddingBottom: 14, paddingHorizontal: 20, backgroundColor: '#fff',
       }}>
-        <Pressable onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-          <ChevronLeft color="#155183" size={20} />
+        <Pressable onPress={() => router.back()} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: '#f5f5f5' }}>
+          <ChevronLeft color="#18181b" size={18} />
         </Pressable>
-
-        <View style={{ flexDirection: 'row', gap: 6 }}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
           {editing ? (
             <>
-              <Pressable onPress={cancelEdit} style={{ padding: 8, borderRadius: 8, backgroundColor: '#f4f4f5' }}>
+              <Pressable onPress={cancelEdit} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: '#f5f5f5' }}>
                 <X size={16} color="#71717a" />
               </Pressable>
-              <Pressable onPress={handleUpdate} disabled={isUpdating} style={{ padding: 8, borderRadius: 8, backgroundColor: '#155183' }}>
-                {isUpdating ? <ActivityIndicator size={16} color="#fff" /> : <Check size={16} color="#fff" />}
+              <Pressable onPress={handleUpdate} disabled={isUpdating} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: PRIMARY }}>
+                {isUpdating ? <ActivityIndicator size={14} color="#fff" /> : <Check size={16} color="#fff" />}
               </Pressable>
             </>
           ) : (
             <>
-              <Pressable onPress={() => setActive(true)} style={{ padding: 8, borderRadius: 8, backgroundColor: '#fef2f2' }}>
+              <Pressable onPress={() => setActive(true)} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: '#fef2f2' }}>
                 <Trash2 size={16} color="#ef4444" />
               </Pressable>
-              <Pressable onPress={() => setEditing(true)} style={{ padding: 8, borderRadius: 8, backgroundColor: '#f4f4f5' }}>
-                <Pencil size={16} color="#3f3f46" />
+              <Pressable onPress={() => setEditing(true)} style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: '#f5f5f5' }}>
+                <Pencil size={15} color="#3f3f46" />
               </Pressable>
             </>
           )}
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 60 }}>
 
-        {/* ── Title block ── */}
-        <View style={{ marginBottom: 20 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#a1a1aa' }}>#{production.id}</Text>
-            <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: '#d4d4d8' }} />
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Calendar size={11} color="#a1a1aa" />
-              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#a1a1aa' }}>{date}</Text>
-            </View>
+        {/* ── Header ── */}
+        <View style={{ paddingVertical: 24, borderBottomWidth: 1, borderBottomColor: '#f5f5f5' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#c4c4c8' }}>#{production.id}</Text>
+            <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: '#e4e4e7' }} />
+            <Calendar size={11} color="#c4c4c8" />
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#c4c4c8' }}>{date}</Text>
           </View>
-
-          <Text style={{ fontFamily: 'PoppinsBold', fontSize: 22, color: '#18181b', lineHeight: 30 }}>
+          <Text style={{ fontFamily: 'PoppinsBold', fontSize: 24, color: '#18181b', lineHeight: 32, marginBottom: 14 }}>
             {production.title}
           </Text>
-
-          {/* Satisfaction badge */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}>
-            <Text style={{ fontSize: 18 }}>{EMOJIS[(production.satisfaction ?? 3) - 1]}</Text>
-            <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20, backgroundColor: satisfactionColor + '18' }}>
-              <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 11, color: satisfactionColor }}>
-                {LABELS[(production.satisfaction ?? 3) - 1]}
-              </Text>
-            </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: satColor + '12' }}>
+            <Text style={{ fontSize: 15 }}>{EMOJIS[satIndex]}</Text>
+            <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 12, color: satColor }}>{LABELS[satIndex]}</Text>
           </View>
         </View>
 
-        <Divider />
-
-        {editing ? (
-          // ── Edit form ──
-          <View style={{ marginTop: 4 }}>
-            <EditField label="Title" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} />
-            <EditField label="Quantity (kg)" value={form.quantity} onChange={v => setForm(f => ({ ...f, quantity: v }))} keyboardType="numeric" />
-            <EditField label="Landing Site" value={form.landing} onChange={v => setForm(f => ({ ...f, landing: v }))} />
+        {/* ── Edit / View ── */}
+        <View style={{ paddingTop: 20 }}>
+          {editing ? (
+            <View>
+              <EditField label="Title" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} />
+              <EditField label="Quantity (kg)" value={form.quantity} onChange={v => setForm(f => ({ ...f, quantity: v }))} keyboardType="numeric" />
+              <EditField label="Landing Site" value={form.landing} onChange={v => setForm(f => ({ ...f, landing: v }))} />
               <EditField label="Total Sales" value={form.total} onChange={v => setForm(f => ({ ...f, total: v }))} />
-            <EditField label="Notes" value={form.notes} onChange={v => setForm(f => ({ ...f, notes: v }))} multiline />
-          </View>
-        ) : (
-          // ── View mode ──
-          <View style={{ gap: 14 }}>
-            {/* Quantity */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Package size={15} color="#a1a1aa" />
-                <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#71717a' }}>Quantity</Text>
+              <EditField label="Notes" value={form.notes} onChange={v => setForm(f => ({ ...f, notes: v }))} multiline />
+
+              {/* Satisfaction editor */}
+              <View style={{ marginBottom: 18 }}>
+                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 10, color: '#a1a1aa', marginBottom: 16, letterSpacing: 0.8 }}>
+                  SATISFACTION
+                </Text>
+                <SatisfactionSlider
+                  value={form.satisfaction}
+                  onChange={v => setForm(f => ({ ...f, satisfaction: v }))}
+                />
               </View>
-              <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#18181b' }}>
-                {production.quantity} kg
-              </Text>
             </View>
-
-            {/* Landing */}
-            {production.landing && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <MapPin size={15} color="#a1a1aa" />
-                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#71717a' }}>Landing Site</Text>
+          ) : (
+            <View>
+              <Row icon={<Package size={14} color="#c4c4c8" />} label="Quantity" value={`${production.quantity} kg`} />
+              {production.landing && (
+                <Row icon={<MapPin size={14} color="#c4c4c8" />} label="Landing Site" value={production.landing} />
+              )}
+              {production.total && (
+                <Row icon={<PhilippinePeso size={14} color="#c4c4c8" />} label="Total Sale" value={`₱${Number(production.total).toLocaleString('en-PH')}`} />
+              )}
+              {production.notes && (
+                <View style={{ paddingTop: 22 }}>
+                  <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 10, color: '#c4c4c8', letterSpacing: 0.8, marginBottom: 10 }}>NOTES</Text>
+                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 14, color: '#52525b', lineHeight: 24 }}>{production.notes}</Text>
                 </View>
-                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#18181b' }}>
-                  {production.landing}
-                </Text>
-              </View>
-            )}
+              )}
+            </View>
+          )}
+        </View>
 
-            {production.total && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <PhilippinePeso size={15} color="#a1a1aa" />
-                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#71717a' }}>Total Sale</Text>
-                </View>
-                <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#18181b' }}>
-                  ₱{Number(production.total).toLocaleString('en-PH')}
-                </Text>
-              </View>
-            )}
-
-            {/* Notes */}
-            {production.notes && (
-              <>
-                <Divider />
-                <View>
-                  <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 11, color: '#a1a1aa', marginBottom: 6, letterSpacing: 0.4 }}>
-                    NOTES
-                  </Text>
-                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 14, color: '#3f3f46', lineHeight: 22 }}>
-                    {production.notes}
-                  </Text>
-                </View>
-              </>
-            )}
+        {/* ── Satisfaction (view mode only) ── */}
+        {!editing && (
+          <View style={{ marginTop: 32, paddingTop: 24, borderTopWidth: 1, borderTopColor: '#f5f5f5' }}>
+            <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 10, color: '#c4c4c8', letterSpacing: 0.8, marginBottom: 20 }}>SATISFACTION</Text>
+            <SatisfactionDisplay value={production.satisfaction ?? 3} />
           </View>
         )}
-
-        <Divider />
-
-        {/* ── Satisfaction (always visible) ── */}
-        <View style={{ marginTop: 4 }}>
-          <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 11, color: '#a1a1aa', marginBottom: 14, letterSpacing: 0.4 }}>
-            SATISFACTION
-          </Text>
-          <SatisfactionDisplay value={production.satisfaction ?? 3} />
-        </View>
 
       </ScrollView>
     </View>

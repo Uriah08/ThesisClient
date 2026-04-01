@@ -1,160 +1,142 @@
 import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
-import Dialogs from './Dialog';
-import { Dialog } from 'react-native-paper';
-import { MapPlusIcon } from 'lucide-react-native';
-import Toast from 'react-native-toast-message';
-import { useJoinFarmMutation } from '@/store/farmApi';
+import Dialogs from './Dialog'
+import { Dialog } from 'react-native-paper'
+import { MapPlusIcon } from 'lucide-react-native'
+import Toast from 'react-native-toast-message'
+import { useJoinFarmMutation } from '@/store/farmApi'
+
+const PRIMARY = '#155183'
 
 type DialogsProps = {
-  setVisible: (visible: boolean) => void;
-  visible: boolean;
-};
+  setVisible: (visible: boolean) => void
+  visible: boolean
+}
 
-const JoinFarm = ({setVisible, visible}: DialogsProps) => {
+const JoinFarm = ({ setVisible, visible }: DialogsProps) => {
   const [joinFarm, { isLoading }] = useJoinFarmMutation()
-  const [isFocused, setIsFocused] = useState('');
-  const [ID, setID] = useState('')
-  const [password, setPassword] = useState('')
+  const [isFocused, setIsFocused] = useState('')
+  const [ID, setID]               = useState('')
+  const [password, setPassword]   = useState('')
+  const [errors, setErrors]       = useState<{ [key: string]: string }>({})
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const inputStyle = (field: string) => ({
+    borderWidth: isFocused === field ? 1 : 0.5,
+    borderColor: errors[field] ? '#ef4444' : isFocused === field ? PRIMARY : '#e4e4e7',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: 13.5,
+    color: '#18181b',
+    backgroundColor: isFocused === field ? '#f4f8fc' : '#fafafa',
+    fontFamily: 'PoppinsRegular',
+  })
 
   const validate = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!ID.trim()) {
-      newErrors.ID = 'ID is required.';
-    }
-
-    if (!password.trim()) {
-      newErrors.password = 'Password is required.';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    const newErrors: { [key: string]: string } = {}
+    if (!ID.trim())       newErrors.ID       = 'Farm ID is required.'
+    if (!password.trim()) newErrors.password = 'Password is required.'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async () => {
-    if(!validate()) return
+    if (!validate()) return
     try {
-      const response = await joinFarm({
-        farm_id: Number(ID),
-        password
-      }).unwrap()
-      Toast.show({
-          type: 'success',
-          text1: response.detail,
-        });
+      const response = await joinFarm({ farm_id: Number(ID), password }).unwrap()
+      Toast.show({ type: 'success', text1: response.detail })
       setVisible(false)
-      setID('')
-      setPassword('')
+      setID(''); setPassword('')
     } catch (error: any) {
-      console.log(error?.data?.detail);
-      
-      if (error?.data?.detail) {
-        Toast.show({
-          type: 'error',
-          text1: error.data.detail,
-        });
-      }
-          
-      const serverErrors: { [key: string]: string } = {};
+      if (error?.data?.detail) Toast.show({ type: 'error', text1: error.data.detail })
       if (error?.data) {
-        for (const key in error.data) {
-          serverErrors[key] = error.data[key][0];
-        }
-        setErrors((prev) => ({ ...prev, ...serverErrors }));
-      } else {
-        console.log('Unexpected error:', error);
-      }  
+        const serverErrors: { [key: string]: string } = {}
+        for (const key in error.data) serverErrors[key] = error.data[key][0]
+        setErrors((prev) => ({ ...prev, ...serverErrors }))
+      }
     }
   }
-  
+
   return (
-    <Dialogs onVisible={setVisible} visible={visible} title='Join Farm'>
-      <Dialog.Content>
-        <TextInput
-          className={`rounded-md p-3 text-base text-black ${ 
-            isFocused === 'name' ? 'border-[2px] border-black' : 'border border-zinc-300'
-          }`}
-          onFocus={() => setIsFocused('name')}
-          onBlur={() => setIsFocused('')}
-          placeholder="Farm ID"
-          placeholderTextColor="#9ca3af"
-          value={ID}
-          onChangeText={setID}
-          keyboardType="numeric"
-          inputMode="numeric"
-        />
-        {errors.ID && (
-          <Text className="text-error mt-1 ml-1 text-sm">{errors.ID}</Text>
-        )}
-        <TextInput
-          className={`rounded-md p-3 mt-5 pr-10 text-base text-black ${
-            isFocused === 'password'
-              ? 'border-[2px] border-black'
-              : 'border border-zinc-300'
-          }`}
-          onFocus={() => setIsFocused('password')}
-          onBlur={() => setIsFocused('')}
-          placeholder="Password"
-          placeholderTextColor="#9ca3af"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        {errors.password && (
-          <Text className="text-error mt-1 ml-1 text-sm">{errors.password}</Text>
-        )}
-          <View
+    <Dialogs onVisible={setVisible} visible={visible} title="Join Farm" subtitle="Enter credentials">
+      <Dialog.Content style={{ paddingHorizontal: 20, paddingBottom: 20, gap: 14, marginTop: 10 }}>
+
+        {/* Farm ID */}
+        <View style={{ gap: 5 }}>
+          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11.5, color: '#71717a', fontWeight: '500' }}>
+            Farm ID <Text style={{ color: '#ef4444' }}>*</Text>
+          </Text>
+          <TextInput
+            style={inputStyle('ID')}
+            onFocus={() => setIsFocused('ID')}
+            onBlur={() => setIsFocused('')}
+            placeholder="Enter farm ID"
+            placeholderTextColor="#c4c4c8"
+            value={ID}
+            onChangeText={(t) => { setID(t); setErrors((p) => ({ ...p, ID: '' })) }}
+            keyboardType="numeric"
+            inputMode="numeric"
+          />
+          {errors.ID && (
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#ef4444', marginLeft: 1 }}>
+              {errors.ID}
+            </Text>
+          )}
+        </View>
+
+        {/* Password */}
+        <View style={{ gap: 5 }}>
+          <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11.5, color: '#71717a', fontWeight: '500' }}>
+            Password <Text style={{ color: '#ef4444' }}>*</Text>
+          </Text>
+          <TextInput
+            style={inputStyle('password')}
+            onFocus={() => setIsFocused('password')}
+            onBlur={() => setIsFocused('')}
+            placeholder="Enter password"
+            placeholderTextColor="#c4c4c8"
+            value={password}
+            onChangeText={(t) => { setPassword(t); setErrors((p) => ({ ...p, password: '' })) }}
+            secureTextEntry
+          />
+          {errors.password && (
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#ef4444', marginLeft: 1 }}>
+              {errors.password}
+            </Text>
+          )}
+        </View>
+
+        {/* Footer */}
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8, marginTop: 2 }}>
+          <Pressable
+            onPress={() => setVisible(false)}
             style={{
-              display: 'flex',
-              flexDirection: 'row',
-              marginTop: 20,
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              gap: 10,
+              paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8,
+              borderWidth: 0.5, borderColor: '#d4d4d8',
+              backgroundColor:'#fafafa',
             }}
-            >
-              <Pressable onPress={() => setVisible(false)} className='border border-zinc-300 p-2 rounded-lg'
-                style={{
-                  borderWidth: 1,
-                  borderColor: '#d4d4d8',
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  borderRadius: 8,
-                }}>
-                <Text className='text-zinc-500' style={{
-                fontFamily: 'PoppinsRegular'
-              }}>Cancel</Text>
-              </Pressable>
-              <Pressable onPress={() => handleSubmit()}
-              style={{
-                backgroundColor: '#155183',
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                borderRadius: 8,
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-              }}
-              disabled={isLoading}
-              >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <MapPlusIcon color={'#ffffff'} size={15}/>
-              )}
-              <Text
-                  className="text-white"
-                  style={{
-                    fontFamily: 'PoppinsRegular',
-                  }}
-                >
-                  Join
-                </Text>
-            </Pressable>
-            </View>
+          >
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#71717a' }}>Cancel</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={handleSubmit}
+            disabled={isLoading}
+            style={{
+              paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8,
+              backgroundColor: PRIMARY,
+              flexDirection: 'row', alignItems: 'center', gap: 6,
+              opacity: isLoading ? 0.75 : 1,
+            }}
+          >
+            {isLoading
+              ? <ActivityIndicator color="#fff" size={14} />
+              : <MapPlusIcon color="#fff" size={14} />
+            }
+            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#fff' }}>Join Farm</Text>
+          </Pressable>
+        </View>
+
       </Dialog.Content>
     </Dialogs>
   )
