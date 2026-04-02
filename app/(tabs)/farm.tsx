@@ -3,7 +3,7 @@ import {
   TextInput, ActivityIndicator, RefreshControl,
 } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { Filter, MapPlus, Plus, Search, Users } from 'lucide-react-native'
+import { Filter, MapPlus, Plus, Search } from 'lucide-react-native'
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming,
 } from 'react-native-reanimated'
@@ -280,7 +280,7 @@ const Farm = () => {
 
       {/* FAB stack */}
       <View className="absolute bottom-5 right-5 items-end flex gap-3">
-        <Animated.View style={animatedStyle2}>
+        <Animated.View style={[animatedStyle2, { display: active ? 'flex' : 'none' }]}>
           <Pressable onPress={() => setCreateVisible(true)} className="border relative border-zinc-300 px-5 py-3 gap-2 rounded-full flex-row items-center justify-center overflow-hidden">
             <Image
               source={require('@/assets/images/create-farm.png')}
@@ -295,7 +295,7 @@ const Farm = () => {
           </Pressable>
         </Animated.View>
 
-        <Animated.View style={animatedStyle1}>
+        <Animated.View style={[animatedStyle1, { display: active ? 'flex' : 'none' }]}>
           <Pressable onPress={() => setJoinVisible(true)} className="border relative border-zinc-300 px-5 py-3 gap-2 rounded-full flex-row items-center justify-center overflow-hidden">
             <Image
               source={require('@/assets/images/join-farm.png')}
