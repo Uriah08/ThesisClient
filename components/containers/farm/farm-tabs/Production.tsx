@@ -1,10 +1,11 @@
-import { View, Text, Pressable, ScrollView, ActivityIndicator, TextInput } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, Pressable, ScrollView, ActivityIndicator, TextInput, RefreshControl } from 'react-native'
+import React, { useState, useEffect } from 'react'
 import { Plus, MapPin, Package, TrendingUp, FilterIcon, Search, List, LayoutDashboard } from 'lucide-react-native'
 import AddRecord from '../../dialogs/AddRecord'
 import { useGetProductionsQuery } from '@/store/productionApi'
 import { FarmProduction } from '@/utils/types'
 import { router } from 'expo-router'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const PRIMARY = '#155183'
 const PRIMARY_LIGHT = '#E6F1FB'
@@ -180,9 +181,16 @@ const ProductionRow = ({ item, isLast }: { item: FarmProduction; isLast: boolean
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 const Production = ({ owner, farmId }: ProductionProps) => {
+  const PRODUCTION_CACHE_KEY = (farmId: number) => `production_cache_${farmId}`
+
+
+  const { data: freshData, refetch } = useGetProductionsQuery(farmId)
+  const [cachedData, setCachedData] = useState<typeof freshData | null>(null)
+  const data = freshData ?? cachedData
+
+  const [refreshing, setRefreshing] = useState(false)
   const [visible, setVisible] = useState(false)
   const [format, setFormat] = useState(true)
-  const { data, isLoading } = useGetProductionsQuery(farmId)
   const [showFilter, setShowFilter] = useState(false)
   const [sortFilter, setSortFilter] = useState<'newest' | 'latest'>('newest')
   const [search, setSearch] = useState('')
@@ -195,6 +203,24 @@ const Production = ({ owner, farmId }: ProductionProps) => {
     )
 
   const totalKg = data?.reduce((sum: number, p: FarmProduction) => sum + Number(p.quantity), 0) ?? 0
+
+  const onRefresh = async () => {
+    setRefreshing(true)
+    await refetch()
+    setTimeout(() => setRefreshing(false), 1000)
+  }
+
+  useEffect(() => {
+    AsyncStorage.getItem(PRODUCTION_CACHE_KEY(farmId))
+      .then(raw => { if (raw) setCachedData(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [farmId])
+
+  useEffect(() => {
+    if (!freshData) return
+    AsyncStorage.setItem(PRODUCTION_CACHE_KEY(farmId), JSON.stringify(freshData))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshData, farmId])
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -272,7 +298,7 @@ const Production = ({ owner, farmId }: ProductionProps) => {
       )}
 
       {/* Content */}
-      {isLoading ? (
+      {!data ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator color={PRIMARY} />
         </View>
@@ -297,6 +323,9 @@ const Production = ({ owner, farmId }: ProductionProps) => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 15, paddingBottom: 100 }}
+          refreshControl={
+            <RefreshControl colors={[PRIMARY]} refreshing={refreshing} onRefresh={onRefresh} />
+          }
         >
           {/* List view header */}
           {!format && (

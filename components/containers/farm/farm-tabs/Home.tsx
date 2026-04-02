@@ -6,6 +6,7 @@ import FarmDashboardBarChart from '../../charts/FarmDashboardBarChart'
 import FarmProductionChart from '../../charts/FarmProductionChart'
 import { router } from 'expo-router'
 import DateRangePicker from '@/components/ui/DateRangeFilter'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const PRIMARY = '#155183'
 const PRIMARY_LIGHT = '#E6F1FB'
@@ -60,18 +61,27 @@ const StatBox = ({ icon: Icon, label, value, unit, iconBg, iconColor, fullWidth 
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 const Home = ({ farmId }: Props) => {
+  const FARM_DASHBOARD_CACHE_KEY = (farmId: number, from: string | null, to: string | null) => 
+  `farm_dashboard_cache_${farmId}_${from ?? 'null'}_${to ?? 'null'}`
+  const FARM_CACHE_KEY = (farmId: number) => `farm_cache_${farmId}`
+
   const [from, setFrom] = useState<string | null>(null)
   const [to, setTo] = useState<string | null>(null)
   const [chartKey, setChartKey] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
 
-  const { data } = useGetFarmQuery(farmId)
-  const { data: dashboard, isLoading: dashboardLoading, refetch } = useGetFarmDashboardQuery({
+  const { data: freshFarm } = useGetFarmQuery(farmId)
+  const [cachedFarm, setCachedFarm] = useState<typeof freshFarm | null>(null)
+  const data = freshFarm ?? cachedFarm
+  const { data: freshDashboard, refetch } = useGetFarmDashboardQuery({
     id: farmId,
     from: from ?? undefined,
     to: to ?? undefined,
   })
+
+  const [cachedDashboard, setCachedDashboard] = useState<typeof freshDashboard | null>(null)
+  const dashboard = freshDashboard ?? cachedDashboard
 
   const onRefresh = async () => {
     setRefreshing(true)
@@ -82,7 +92,31 @@ const Home = ({ farmId }: Props) => {
 
   useEffect(() => { refetch() }, [refetch])
 
-  if (dashboardLoading) return (
+  useEffect(() => {
+    AsyncStorage.getItem(FARM_DASHBOARD_CACHE_KEY(farmId, from, to))
+      .then(raw => { if (raw) setCachedDashboard(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [farmId, from, to])
+
+  useEffect(() => {
+    if (!freshDashboard) return
+    AsyncStorage.setItem(FARM_DASHBOARD_CACHE_KEY(farmId, from, to), JSON.stringify(freshDashboard))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshDashboard, farmId, from, to])
+
+  useEffect(() => {
+    AsyncStorage.getItem(FARM_CACHE_KEY(farmId))
+      .then(raw => { if (raw) setCachedFarm(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [farmId])
+
+  useEffect(() => {
+    if (!freshFarm) return
+    AsyncStorage.setItem(FARM_CACHE_KEY(farmId), JSON.stringify(freshFarm))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshFarm, farmId])
+
+  if (!dashboard && !data) return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }}>
       <ActivityIndicator size={30} color={PRIMARY} />
     </View>

@@ -1,19 +1,35 @@
-import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, Pressable, ActivityIndicator } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { CircleCheck, Play, ChevronLeft } from 'lucide-react-native'
 import ActivateSession from '@/components/containers/dialogs/ActivateSession'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useGetFarmTrayByIdQuery } from '@/store/farmTrayApi'
 import TimelinePage from '@/components/containers/farm/timeline/Timeline'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const PRIMARY = '#155183'
 
 const Timeline = () => {
+  const TRAY_CACHE_KEY = (id: number) => `tray_cache_${id}`
   const [show, setShow] = useState(false)
   const { id } = useLocalSearchParams()
-  const { data, isLoading } = useGetFarmTrayByIdQuery(Number(id))
+  const { data: freshData } = useGetFarmTrayByIdQuery(Number(id))
+  const [cachedData, setCachedData] = useState<typeof freshData | null>(null)
+  const data = freshData ?? cachedData
 
-  if (isLoading) return (
+  useEffect(() => {
+    AsyncStorage.getItem(TRAY_CACHE_KEY(Number(id)))
+      .then(raw => { if (raw) setCachedData(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [id])
+
+  useEffect(() => {
+    if (!freshData) return
+    AsyncStorage.setItem(TRAY_CACHE_KEY(Number(id)), JSON.stringify(freshData))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshData, id])
+
+  if (!data) return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
       <ActivityIndicator size={30} color={PRIMARY} />
     </View>

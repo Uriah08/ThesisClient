@@ -67,6 +67,7 @@ const AreaChartComponent = ({ title, description, sideLabel, data, data2, chartK
           spacing={width / 8} // Dynamic spacing based on screen width
           hideDataPoints
           thickness={2.5}
+          isAnimated
           
           // Colors for Cloud (Data 1)
           color1="#e4e4e7"

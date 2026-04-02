@@ -1,24 +1,33 @@
 import { View, Text, Pressable, ActivityIndicator } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useGetTrayByIdQuery, useGetTrayProgressQuery } from '@/store/trayApi'
 import AddProgress from '../../dialogs/AddProgress'
 import { ClockPlus } from 'lucide-react-native'
 import ProgressSteps from '../tray/ProgressSteps'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 type Props = {
   trayId: number
 }
 
 const TimelinePage = ({ trayId }: Props) => {
+  const TRAY_CACHE_KEY     = (id: number) => `tray_cache_${id}`
+  const PROGRESS_CACHE_KEY = (id: number) => `tray_progress_cache_${id}`
+
   const [showTimeline, setShowTimeline] = useState(false)
   const [focus, setFocus] = useState<'custom' | string>('')
-  const { data, isLoading } = useGetTrayByIdQuery(trayId)
+  
+  const { data: freshData } = useGetTrayByIdQuery(trayId)
+  const [cachedData, setCachedData] = useState<typeof freshData | null>(null)
+  const data = freshData ?? cachedData
 
   const traySessionId = data?.active_session_tray?.id
 
-  const { data: progress, isLoading: progressLoading, refetch } = useGetTrayProgressQuery(
+  const { data: freshProgress, isLoading: progressLoading, refetch } = useGetTrayProgressQuery(
     traySessionId, { skip: !traySessionId }
   )
+  const [cachedProgress, setCachedProgress] = useState<typeof freshProgress>(undefined)
+  const progress = freshProgress ?? cachedProgress
 
   const [refreshing, setRefreshing] = useState(false)
   const onRefresh = async () => {
@@ -27,7 +36,32 @@ const TimelinePage = ({ trayId }: Props) => {
     setTimeout(() => setRefreshing(false), 1000)
   }
 
-  if (isLoading) return (
+  useEffect(() => {
+    AsyncStorage.getItem(TRAY_CACHE_KEY(trayId))
+      .then(raw => { if (raw) setCachedData(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [trayId])
+
+  useEffect(() => {
+    if (!freshData) return
+    AsyncStorage.setItem(TRAY_CACHE_KEY(trayId), JSON.stringify(freshData))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshData, trayId])
+
+  useEffect(() => {
+    if (!traySessionId) return
+    AsyncStorage.getItem(PROGRESS_CACHE_KEY(traySessionId))
+      .then(raw => { if (raw) setCachedProgress(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [traySessionId])
+
+  useEffect(() => {
+    if (!freshProgress || !traySessionId) return
+    AsyncStorage.setItem(PROGRESS_CACHE_KEY(traySessionId), JSON.stringify(freshProgress))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshProgress, traySessionId])
+
+  if (!data) return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }}>
       <ActivityIndicator size={30} color="#155183" />
     </View>

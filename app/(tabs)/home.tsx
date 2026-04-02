@@ -17,7 +17,12 @@ import useAuthRedirect from '@/components/hooks/useAuthRedirect'
 import AreaChartComponent from '@/components/containers/charts/AreaChart'
 
 const Home = () => {
-  const { data, isLoading, refetch }       = useGetWeatherForecastQuery()
+  const WEATHER_CACHE_KEY = 'weather_cache'
+
+  const { data: freshData, refetch } = useGetWeatherForecastQuery()
+  const [cachedData, setCachedData]   = useState<typeof freshData | null>(null)
+  const [cacheLoaded, setCacheLoaded] = useState(false)
+  const data = freshData ?? cachedData
   const drawerRef                          = useRef<BottomDrawerRef>(null)
   const [isDrawerOpen, setIsDrawerOpen]   = useState(false)
   const [selectedItem, setSelectedItem]   = useState<ForecastItem | null>(null)
@@ -35,6 +40,27 @@ const Home = () => {
 
   const rainData  = data?.future_forecast.map((item: any) => ({ value: item.pop * 100 }))
   const cloudData = data?.future_forecast.map((item: any) => ({ value: Math.min(item.clouds, 100) }))
+
+  useEffect(() => {
+    const loadCache = async () => {
+      try {
+        const raw = await AsyncStorage.getItem(WEATHER_CACHE_KEY)
+        if (raw) setCachedData(JSON.parse(raw))
+      } catch (e) {
+        console.log('Cache load error:', e)
+      } finally {
+        setCacheLoaded(true)
+      }
+    }
+    loadCache()
+  }, [])
+
+  useEffect(() => {
+    if (!freshData) return
+    AsyncStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(freshData)).catch(e =>
+      console.log('Cache save error:', e)
+    )
+  }, [freshData])
 
   useEffect(() => {
     const registerToken = async () => {
@@ -94,7 +120,7 @@ const Home = () => {
   else if (rainPercent < 99)                 { alertLabel = 'Warning';   alertColor = '#ea580c'; message = `Drying fish is not recommended due to ${cd}, and ${rd}.` }
   else                                       { alertLabel = 'Danger';    alertColor = '#dc2626'; message = `Avoid drying fish. Extreme conditions: ${cd}, and ${rd}.` }
 
-  if (isLoading) return (
+  if (!data) return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }}>
       <ActivityIndicator size={28} color="#155183" />
     </View>
