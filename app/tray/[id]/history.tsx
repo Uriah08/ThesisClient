@@ -1,5 +1,5 @@
 import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useLocalSearchParams, router } from 'expo-router'
 import { useGetFarmTrayHistoryQuery, useLazyGetTrayProgressQuery } from '@/store/trayApi'
 import { ChevronLeft, CircleCheck, SlidersHorizontal } from 'lucide-react-native'
@@ -8,12 +8,18 @@ import SkeletonShimmer from '@/components/containers/SkeletonPlaceholder'
 import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDrawer'
 import ProgressSteps from '@/components/containers/farm/tray/ProgressSteps'
 import { Tray } from '@/utils/types'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const PRIMARY = '#155183'
 
 const History = () => {
   const { id } = useLocalSearchParams()
-  const { data, isLoading } = useGetFarmTrayHistoryQuery(Number(id))
+
+  const HISTORY_CACHE_KEY = (id: number) => `tray_history_cache_${id}`
+
+  const { data: freshData } = useGetFarmTrayHistoryQuery(Number(id))
+  const [cachedData, setCachedData] = useState<typeof freshData | null>(null)
+  const data = freshData ?? cachedData
   const [trigger, { data: progress, isFetching: progressLoading }] = useLazyGetTrayProgressQuery()
 
   const [selectedItem, setSelectedItem]   = useState<Tray | null>(null)
@@ -47,6 +53,18 @@ const History = () => {
       month: 'short', day: 'numeric', year: 'numeric',
       hour: 'numeric', minute: '2-digit', hour12: true,
     })
+
+    useEffect(() => {
+      AsyncStorage.getItem(HISTORY_CACHE_KEY(Number(id)))
+        .then(raw => { if (raw) setCachedData(JSON.parse(raw)) })
+        .catch(e => console.log('Cache load error:', e))
+    }, [id])
+
+    useEffect(() => {
+      if (!freshData) return
+      AsyncStorage.setItem(HISTORY_CACHE_KEY(Number(id)), JSON.stringify(freshData))
+        .catch(e => console.log('Cache save error:', e))
+    }, [freshData, id])
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -140,7 +158,7 @@ const History = () => {
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40, gap: 10 }}
       >
-        {isLoading ? (
+        {!data ? (
           <>
             <SkeletonShimmer style={{ height: 90, borderRadius: 16 }} />
             <SkeletonShimmer style={{ height: 90, borderRadius: 16 }} />

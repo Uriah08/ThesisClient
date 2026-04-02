@@ -103,7 +103,7 @@ const AppLayout = () => {
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
-          marginBottom: 40,
+          marginBottom: 35,
         },
         tabBarLabelStyle: {
           fontFamily: 'PoppinsRegular',

@@ -63,6 +63,11 @@ const StatBox = ({ icon: Icon, label, value, unit, iconBg, iconColor, fullWidth 
 // ── Main ─────────────────────────────────────────────────────────────────────
 const Dashboard = () => {
   const { id } = useLocalSearchParams()
+
+  const TRAY_CACHE_KEY        = (id: number) => `tray_cache_${id}`
+  const SESSION_CACHE_KEY     = (id: number) => `session_tray_cache_${id}`
+  const DASHBOARD_CACHE_KEY   = (id: number, from: string | null, to: string | null) => 
+    `tray_dashboard_cache_${id}_${from ?? 'null'}_${to ?? 'null'}`
   const [show, setShow]               = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
   const [refreshing, setRefreshing]   = useState(false)
@@ -70,13 +75,58 @@ const Dashboard = () => {
   const [from, setFrom]               = useState<string | null>(null)
   const [to, setTo]                   = useState<string | null>(null)
 
-  const { data, isLoading }                             = useGetFarmTrayByIdQuery(Number(id))
-  const { data: sessionTray, isLoading: sessionTrayLoading } = useGetTrayByIdQuery(data?.id, { skip: !data?.id })
-  const { data: dashboard, isLoading: dashboardLoading, refetch } = useTrayDashboardQuery({
+  const { data: freshData }                                          = useGetFarmTrayByIdQuery(Number(id))
+  const { data: freshSessionTray }                                   = useGetTrayByIdQuery(freshData?.id, { skip: !freshData?.id })
+  const { data: freshDashboard, refetch }                            = useTrayDashboardQuery({
     id: Number(id),
     from: from ?? undefined,
     to: to ?? undefined,
   })
+
+  const [cachedData, setCachedData]               = useState<typeof freshData | null>(null)
+  const [cachedSessionTray, setCachedSessionTray] = useState<typeof freshSessionTray | null>(null)
+  const [cachedDashboard, setCachedDashboard]     = useState<typeof freshDashboard | null>(null)
+
+  const data        = freshData        ?? cachedData
+  const sessionTray = freshSessionTray ?? cachedSessionTray
+  const dashboard   = freshDashboard   ?? cachedDashboard
+
+  useEffect(() => {
+    AsyncStorage.getItem(TRAY_CACHE_KEY(Number(id)))
+      .then(raw => { if (raw) setCachedData(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [id])
+
+  useEffect(() => {
+    if (!freshData) return
+    AsyncStorage.setItem(TRAY_CACHE_KEY(Number(id)), JSON.stringify(freshData))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshData, id])
+
+  useEffect(() => {
+    if (!freshData?.id) return
+    AsyncStorage.getItem(SESSION_CACHE_KEY(freshData.id))
+      .then(raw => { if (raw) setCachedSessionTray(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [freshData?.id])
+
+  useEffect(() => {
+    if (!freshSessionTray || !freshData?.id) return
+    AsyncStorage.setItem(SESSION_CACHE_KEY(freshData.id), JSON.stringify(freshSessionTray))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshSessionTray, freshData?.id])
+
+  useEffect(() => {
+    AsyncStorage.getItem(DASHBOARD_CACHE_KEY(Number(id), from, to))
+      .then(raw => { if (raw) setCachedDashboard(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [id, from, to])
+
+  useEffect(() => {
+    if (!freshDashboard) return
+    AsyncStorage.setItem(DASHBOARD_CACHE_KEY(Number(id), from, to), JSON.stringify(freshDashboard))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshDashboard, id, from, to])
 
   useEffect(() => {
     const store = async () => {
@@ -99,7 +149,7 @@ const Dashboard = () => {
   const rejectRate    = summary?.reject_rate ?? 0
   const isHighReject  = rejectRate > 15
 
-  if (isLoading || sessionTrayLoading || dashboardLoading) return (
+  if (!data || !dashboard) return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
       <ActivityIndicator size={30} color={PRIMARY} />
     </View>

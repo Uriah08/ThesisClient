@@ -1,11 +1,12 @@
 import { View, Text, Pressable, TextInput, ScrollView, RefreshControl } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { CircleCheck, FilterIcon, PanelsLeftRightIcon, Play, Plus, Search } from 'lucide-react-native'
 import CreateTray from '../../dialogs/CreateTray'
 import { useGetFarmTraysQuery } from '@/store/farmTrayApi'
 import SkeletonShimmer from '../../SkeletonPlaceholder'
 import { router } from 'expo-router'
 import ActivateSession from '../../dialogs/ActivateSession'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const PRIMARY = '#155183'
 const PRIMARY_LIGHT = '#E6F1FB'
@@ -214,7 +215,12 @@ const TrayCard = ({ tray, onActivate }: TrayCardProps) => {
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 const Trays = ({ farmId, owner }: Props) => {
-  const { data, isLoading, refetch } = useGetFarmTraysQuery(farmId)
+  const TRAYS_CACHE_KEY = (farmId: number) => `trays_cache_${farmId}`
+
+  const { data: freshData, refetch } = useGetFarmTraysQuery(farmId)
+  const [cachedData, setCachedData] = useState<typeof freshData | null>(null)
+  const data = freshData ?? cachedData
+
   const [visible, setVisible] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [showFilter, setShowFilter] = useState(false)
@@ -247,6 +253,18 @@ const Trays = ({ farmId, owner }: Props) => {
 
   const activeCount = (data ?? []).filter(t => t.status === 'active').length
   const totalCount = data?.length ?? 0
+
+  useEffect(() => {
+    AsyncStorage.getItem(TRAYS_CACHE_KEY(farmId))
+      .then(raw => { if (raw) setCachedData(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [farmId])
+
+  useEffect(() => {
+    if (!freshData) return
+    AsyncStorage.setItem(TRAYS_CACHE_KEY(farmId), JSON.stringify(freshData))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshData, farmId])
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -328,7 +346,7 @@ const Trays = ({ farmId, owner }: Props) => {
           <RefreshControl colors={[PRIMARY]} refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {isLoading ? (
+        {!data ? (
           <>
             <SkeletonShimmer style={{ height: 72, borderRadius: 16 }} />
             <SkeletonShimmer style={{ height: 72, borderRadius: 16 }} />

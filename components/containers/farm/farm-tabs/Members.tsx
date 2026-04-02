@@ -1,8 +1,9 @@
 import { View, Text, ScrollView, Image, TextInput, RefreshControl } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useGetMembersQuery } from '@/store/farmApi'
 import SkeletonShimmer from '../../SkeletonPlaceholder'
 import { Search, ShieldCheck, Users } from 'lucide-react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const PRIMARY = '#155183'
 const PRIMARY_LIGHT = '#E6F1FB'
@@ -80,7 +81,12 @@ const MemberRowSkeleton = () => (
 )
 
 const Members = ({ farmId, ownerId }: Props) => {
-  const { data, isLoading, refetch } = useGetMembersQuery(farmId)
+  const MEMBERS_CACHE_KEY = (farmId: number) => `members_cache_${farmId}`
+
+  const { data: freshData, refetch } = useGetMembersQuery(farmId)
+  const [cachedData, setCachedData] = useState<typeof freshData | null>(null)
+  const data = freshData ?? cachedData
+
   const [refreshing, setRefreshing] = useState(false)
   const [search, setSearch] = useState('')
 
@@ -103,6 +109,18 @@ const Members = ({ farmId, ownerId }: Props) => {
     admin?.email?.toLowerCase().includes(search.toLowerCase())
 
   const totalCount = data?.length ?? 0
+
+  useEffect(() => {
+    AsyncStorage.getItem(MEMBERS_CACHE_KEY(farmId))
+      .then(raw => { if (raw) setCachedData(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [farmId])
+
+  useEffect(() => {
+    if (!freshData) return
+    AsyncStorage.setItem(MEMBERS_CACHE_KEY(farmId), JSON.stringify(freshData))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshData, farmId]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -175,7 +193,7 @@ const Members = ({ farmId, ownerId }: Props) => {
               borderColor: '#f4f4f5', overflow: 'hidden',
               backgroundColor: '#fafafa',
             }}>
-              {isLoading
+              {!data
                 ? <MemberRowSkeleton />
                 : <MemberRow
                     username={admin?.username}
@@ -189,7 +207,7 @@ const Members = ({ farmId, ownerId }: Props) => {
         )}
 
         {/* Members section */}
-        {(isLoading || (members?.length ?? 0) > 0) && (
+        {(!data || (members?.length ?? 0) > 0) && (
           <View style={{ gap: 8 }}>
             <Text style={{
               fontSize: 11, fontFamily: 'PoppinsMedium',
@@ -202,7 +220,7 @@ const Members = ({ farmId, ownerId }: Props) => {
               borderColor: '#f4f4f5', overflow: 'hidden',
               backgroundColor: '#fafafa',
             }}>
-              {isLoading ? (
+              {!data ? (
                 <>
                   <MemberRowSkeleton />
                   <View style={{ height: 0.5, backgroundColor: '#f4f4f5', marginHorizontal: 16 }} />
@@ -227,7 +245,7 @@ const Members = ({ farmId, ownerId }: Props) => {
         )}
 
         {/* Empty state */}
-        {!isLoading && members?.length === 0 && search && (
+        {!data && members?.length === 0 && search && (
           <View style={{ alignItems: 'center', paddingVertical: 32, gap: 8 }}>
             <View style={{
               width: 44, height: 44, borderRadius: 12,

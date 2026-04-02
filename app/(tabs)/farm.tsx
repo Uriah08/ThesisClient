@@ -43,8 +43,11 @@ const FilterOption = ({ label, active, onPress }: FilterOptionProps) => (
 
 // ─── main screen ───────────────────────────────────────────────────────────────
 const Farm = () => {
+  const FARMS_CACHE_KEY = 'farms_cache'
   const { user } = useAuthRedirect()
-  const { data, refetch, isLoading, isFetching } = useGetFarmsQuery()
+  const { data: freshData, refetch, isFetching } = useGetFarmsQuery()
+  const [cachedData, setCachedData] = useState<typeof freshData | null>(null)
+  const data = freshData ?? cachedData
   const farms = data ?? []
 
   const [active, setActive]                   = useState(false)
@@ -133,6 +136,18 @@ const Farm = () => {
       if (filterActive === 'latest') return new Date(a.create_at).getTime() - new Date(b.create_at).getTime()
       return 0
     })
+
+  useEffect(() => {
+    AsyncStorage.getItem(FARMS_CACHE_KEY)
+      .then(raw => { if (raw) setCachedData(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [])
+
+  useEffect(() => {
+    if (!freshData) return
+    AsyncStorage.setItem(FARMS_CACHE_KEY, JSON.stringify(freshData))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshData])
 
   if (loading) return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }}>
@@ -252,7 +267,7 @@ const Farm = () => {
         <Lesson />
         <GetFarm
           data={filteredFarms}
-          isLoading={isLoading}
+          isLoading={!data}
           onSelect={(farm) => setSelectedFarm(farm)}
           isFetching={isFetching}
         />
@@ -264,62 +279,41 @@ const Farm = () => {
       <JoinFarm visible={joinVisible} setVisible={setJoinVisible} />
 
       {/* FAB stack */}
-      <View style={{
-        position: 'absolute', bottom: 24, right: 24,
-        alignItems: 'flex-end', gap: 10,
-      }}>
-        {/* Create Area */}
+      <View className="absolute bottom-5 right-5 items-end flex gap-3">
         <Animated.View style={animatedStyle2}>
-          <Pressable
-            onPress={() => { setCreateVisible(true); toggleButtons() }}
-            style={{
-              flexDirection: 'row', alignItems: 'center', gap: 8,
-              backgroundColor: '#155183',
-              paddingHorizontal: 18, paddingVertical: 12,
-              borderRadius: 999,
-              shadowColor: '#155183', shadowOpacity: 0.3,
-              shadowOffset: { width: 0, height: 4 }, shadowRadius: 10,
-              elevation: 6,
-            }}>
-            <MapPlus size={16} color="#ffffff" />
-            <Text style={{ fontSize: 13, fontFamily: 'PoppinsMedium', color: '#ffffff' }}>
+          <Pressable onPress={() => setCreateVisible(true)} className="border relative border-zinc-300 px-5 py-3 gap-2 rounded-full flex-row items-center justify-center overflow-hidden">
+            <Image
+              source={require('@/assets/images/create-farm.png')}
+              style={{ height: 100, width: '130%', opacity: 0.7 }}
+              resizeMode="cover"
+              className="absolute inset-0 rounded-xl"
+            />
+            <MapPlus color={'#ffffff'} />
+            <Text className="text-xl" style={{ fontFamily: 'PoppinsSemiBold', color: '#ffffff' }}>
               Create Area
             </Text>
           </Pressable>
         </Animated.View>
 
-        {/* Join Area */}
         <Animated.View style={animatedStyle1}>
-          <Pressable
-            onPress={() => { setJoinVisible(true); toggleButtons() }}
-            style={{
-              flexDirection: 'row', alignItems: 'center', gap: 8,
-              backgroundColor: '#ffffff',
-              borderWidth: 0.5, borderColor: '#e4e4e7',
-              paddingHorizontal: 18, paddingVertical: 12,
-              borderRadius: 999,
-              shadowColor: '#000', shadowOpacity: 0.06,
-              shadowOffset: { width: 0, height: 4 }, shadowRadius: 10,
-              elevation: 4,
-            }}>
-            <Users size={16} color="#155183" />
-            <Text style={{ fontSize: 13, fontFamily: 'PoppinsMedium', color: '#155183' }}>
+          <Pressable onPress={() => setJoinVisible(true)} className="border relative border-zinc-300 px-5 py-3 gap-2 rounded-full flex-row items-center justify-center overflow-hidden">
+            <Image
+              source={require('@/assets/images/join-farm.png')}
+              style={{ height: 50, width: '130%', opacity: 0.7 }}
+              resizeMode="cover"
+              className="absolute inset-0 rounded-xl"
+            />
+            <MapPlus color={'#ffffff'} />
+            <Text className="text-xl" style={{ fontFamily: 'PoppinsSemiBold', color: '#ffffff' }}>
               Join Area
             </Text>
           </Pressable>
         </Animated.View>
 
-        {/* FAB trigger */}
         <Pressable
           onPress={toggleButtons}
-          style={{
-            width: 48, height: 48, borderRadius: 24,
-            backgroundColor: '#155183',
-            alignItems: 'center', justifyContent: 'center',
-            shadowColor: '#155183', shadowOpacity: 0.35,
-            shadowOffset: { width: 0, height: 4 }, shadowRadius: 10,
-            elevation: 6,
-          }}>
+          className="h-[50px] w-[50px] bg-primary rounded-full flex items-center justify-center"
+        >
           <Animated.View style={animatedIconStyle}>
             <Plus size={20} color="#ffffff" />
           </Animated.View>
