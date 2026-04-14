@@ -182,5 +182,12 @@ export const lesson3Content = [
   },
 ];
 
-
+export const barangays = [
+  'Bagong Kalsada', 'Balsahan', 'Bancaan', 'Bucana Malaki', 'Bucana Sasahan',
+  'Calubcob', 'Capt. C. Nazareno (Poblacion)', 'Gombalza (Poblacion)', 'Halang',
+  'Humbac', 'Ibayo Estacion', 'Ibayo Silangan', 'Kanluran Rizal', 'Latoria',
+  'Labac', 'Mabolo', 'Malainen Bago', 'Malainen Luma', 'Makina', 'Molino',
+  'Munting Mapino', 'Muzon', 'Palangue 1', 'Palangue 2 & 3', 'Palangue Central',
+  'Sabang', 'San Roque', 'Santulan', 'Sapa', 'Timalan Balsahan', 'Timalan Concepcion',
+]
 

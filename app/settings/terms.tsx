@@ -12,7 +12,7 @@ const sections: Section[] = [
   },
   {
     title: '2. User Registration',
-    body: 'You must register with accurate personal information. You must be a tuyo farmer or authorized representative from Labac, Naic, Cavite.',
+    body: 'You must register with accurate personal information. You must be a tuyo farmer from Naic, Cavite.',
   },
   {
     title: '3. Data Collection',
@@ -109,7 +109,7 @@ const Terms = () => {
             Summary
           </Text>
           <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#52525b', lineHeight: 20 }}>
-            This app assists tuyo farmers in Labac, Naic, Cavite with image processing and quality assessment
+            This app assists tuyo farmers in Naic, Cavite with image processing and quality assessment
             of sun-dried fish. By using this app, you agree to provide accurate information and use the service
             for its intended agricultural purposes.
           </Text>
