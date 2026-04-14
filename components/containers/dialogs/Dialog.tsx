@@ -16,7 +16,7 @@ const Dialogs = ({ onVisible, visible, title, subtitle, children }: DialogsProps
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -30}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -40}
       >
         <Dialog
           visible={visible}
