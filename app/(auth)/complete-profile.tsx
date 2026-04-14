@@ -5,7 +5,7 @@ import {
 import { useState, useCallback } from 'react'
 import { router, useFocusEffect } from 'expo-router'
 import { useCompleteProfileMutation } from '@/store/userApi'
-import { Pencil, Calendar } from 'lucide-react-native'
+import { Pencil, Calendar, ChevronDown, Check, Search } from 'lucide-react-native'
 import * as ImagePicker from 'expo-image-picker'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import dayjs from 'dayjs'
@@ -15,6 +15,7 @@ import useAuthRedirect from '@/components/hooks/useAuthRedirect'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { uploadImageToSupabase } from '@/utils/lib/supabase'
 import CountryPicker, { Country, CountryCode } from 'react-native-country-picker-modal'
+import { barangays } from '@/constants/Colors'
 
 // ─── field wrapper ─────────────────────────────────────────────────────────────
 const Field = ({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) => (
@@ -44,7 +45,9 @@ const CompleteProfile = () => {
   const [firstName, setFirstName]   = useState('')
   const [lastName, setLastName]     = useState('')
   const [mobileNumber, setMobileNumber] = useState('')
-  const [address]                   = useState('Labac')
+  const [address, setAddress] = useState('')
+  const [barangaySearch, setBarangaySearch] = useState('')
+  const [barangayDropdownOpen, setBarangayDropdownOpen] = useState(false)
   const [date, setDate]             = useState<Date | null>(null)
   const [image, setImage]           = useState<string | null>(null)
   const [errors, setErrors]         = useState<{ [key: string]: string }>({})
@@ -70,6 +73,10 @@ const CompleteProfile = () => {
       const handler = BackHandler.addEventListener('hardwareBackPress', () => true)
       return () => handler.remove()
     }, [])
+  )
+
+  const filteredBarangays = barangays.filter(b =>
+    b.toLowerCase().includes(barangaySearch.toLowerCase())
   )
 
   const pickImage = async () => {
@@ -279,13 +286,264 @@ const CompleteProfile = () => {
           </View>
         </Field>
 
-        {/* Barangay (read-only) */}
-        <Field label="Barangay" error={errors.address}>
-          <TextInput
-            style={[inputStyle('address'), { width: '100%' as const, color: '#a1a1aa' }]}
-            editable={false}
-            value={address}
+        <Field label="Baranggay" error={errors.address}>
+        <Pressable
+          onPress={() => setBarangayDropdownOpen(!barangayDropdownOpen)}
+          style={{
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            borderRadius: 10,
+            borderWidth: barangayDropdownOpen ? 1.5 : errors.address ? 1.5 : 0.5,
+            borderColor: barangayDropdownOpen ? '#155183' : errors.address ? '#ef444480' : '#e4e4e7',
+            backgroundColor: '#fafafa',
+            paddingHorizontal: 14, paddingVertical: 12,
+          }}
+        >
+          <Text style={{
+            fontSize: 13, fontFamily: 'PoppinsRegular',
+            color: address ? '#18181b' : '#d4d4d8',
+            flex: 1,
+          }}>
+            {address || 'Select your barangay'}
+          </Text>
+          <ChevronDown
+            size={14}
+            color={barangayDropdownOpen ? '#155183' : '#a1a1aa'}
+            style={{ transform: [{ rotate: barangayDropdownOpen ? '180deg' : '0deg' }] }}
           />
+        </Pressable>
+
+        {/* Panel */}
+        {barangayDropdownOpen && (
+          <View style={{
+            marginTop: 6,
+            borderWidth: 1,
+            borderColor: '#e4e4e7',
+            borderRadius: 12,
+            backgroundColor: '#ffffff',
+            shadowColor: '#155183',
+            shadowOpacity: 0.08,
+            shadowOffset: { width: 0, height: 4 },
+            shadowRadius: 12,
+            elevation: 4,
+            overflow: 'hidden',
+          }}>
+
+            {/* Search bar */}
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              borderBottomWidth: 0.5,
+              borderBottomColor: '#f0f0f0',
+              backgroundColor: '#fafafa',
+            }}>
+              <Search size={14} color="#c4c4c8" />
+              <TextInput
+                value={barangaySearch}
+                onChangeText={setBarangaySearch}
+                placeholder="Search barangay..."
+                placeholderTextColor="#c4c4c8"
+                style={{
+                  flex: 1,
+                  fontSize: 13,
+                  fontFamily: 'PoppinsRegular',
+                  color: '#18181b',
+                  paddingVertical: 0,
+                }}
+              />
+              {barangaySearch.length > 0 && (
+                <Pressable
+                  onPress={() => setBarangaySearch('')}
+                  hitSlop={10}
+                  style={{
+                    width: 20, height: 20,
+                    borderRadius: 10,
+                    backgroundColor: '#e4e4e7',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <Text style={{ fontSize: 10, color: '#71717a', lineHeight: 14 }}>✕</Text>
+                </Pressable>
+              )}
+            </View>
+
+            {/* Result count */}
+            {barangaySearch.length > 0 && (
+              <View style={{
+                paddingHorizontal: 14,
+                paddingVertical: 5,
+                borderBottomWidth: 0.5,
+                borderBottomColor: '#f4f4f5',
+                backgroundColor: '#fafafa',
+              }}>
+                <Text style={{
+                  fontSize: 10,
+                  fontFamily: 'PoppinsMedium',
+                  color: '#a1a1aa',
+                  letterSpacing: 0.3,
+                  textTransform: 'uppercase',
+                }}>
+                  {filteredBarangays.length} result{filteredBarangays.length !== 1 ? 's' : ''}
+                </Text>
+              </View>
+            )}
+
+            {/* List */}
+            <ScrollView
+              style={{ maxHeight: 216 }}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+            >
+              {filteredBarangays.length === 0 ? (
+                <View style={{ paddingVertical: 28, alignItems: 'center', gap: 8 }}>
+                  <View style={{
+                    width: 36, height: 36,
+                    borderRadius: 10,
+                    backgroundColor: '#f4f4f5',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Search size={16} color="#a1a1aa" />
+                  </View>
+                  <Text style={{
+                    fontFamily: 'PoppinsRegular',
+                    fontSize: 12,
+                    color: '#a1a1aa',
+                  }}>
+                    No barangay found
+                  </Text>
+                </View>
+              ) : (
+                filteredBarangays.map((b, index) => {
+                  const isSelected = address === b
+                  const isLast = index === filteredBarangays.length - 1
+                  return (
+                    <Pressable
+                      key={index}
+                      onPress={() => {
+                        setAddress(b)
+                        setBarangayDropdownOpen(false)
+                        setBarangaySearch('')
+                      }}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingHorizontal: 14,
+                        paddingVertical: 12,
+                        gap: 12,
+                        borderBottomWidth: isLast ? 0 : 0.5,
+                        borderBottomColor: '#f4f4f5',
+                      }}
+                    >
+                      {/* Icon badge */}
+                      <View style={{
+                        width: 32, height: 32,
+                        borderRadius: 8,
+                        backgroundColor: isSelected ? '#155183' : '#f1f5f9',
+                        alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Text style={{
+                          fontSize: 12,
+                          fontFamily: 'PoppinsMedium',
+                          color: isSelected ? '#ffffff' : '#94a3b8',
+                        }}>
+                          {b.charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+
+                      {/* Label + subtitle */}
+                      <View style={{ flex: 1 }}>
+                        <Text style={{
+                          fontFamily: isSelected ? 'PoppinsMedium' : 'PoppinsRegular',
+                          fontSize: 13,
+                          color: isSelected ? '#155183' : '#1e293b',
+                          lineHeight: 18,
+                        }}>
+                          {b}
+                        </Text>
+                        <Text style={{
+                          fontFamily: 'PoppinsRegular',
+                          fontSize: 10,
+                          color: '#94a3b8',
+                          marginTop: 1,
+                        }}>
+                          Naic, Cavite
+                        </Text>
+                      </View>
+
+                      {/* Checkmark */}
+                      {isSelected ? (
+                        <View style={{
+                          width: 22, height: 22,
+                          borderRadius: 11,
+                          backgroundColor: '#155183',
+                          alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <Check size={11} color="#ffffff" strokeWidth={3} />
+                        </View>
+                      ) : (
+                        <View style={{
+                          width: 22, height: 22,
+                          borderRadius: 11,
+                          borderWidth: 1.5,
+                          borderColor: '#e2e8f0',
+                        }} />
+                      )}
+                    </Pressable>
+                  )
+                })
+              )}
+            </ScrollView>
+
+            {/* Footer — shows selected value with a clear action */}
+            {address !== '' && (
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                borderTopWidth: 0.5,
+                borderTopColor: '#f0f0f0',
+                backgroundColor: '#f4f8ff',
+              }}>
+                <View style={{
+                  width: 6, height: 6,
+                  borderRadius: 3,
+                  backgroundColor: '#155183',
+                }} />
+                <Text style={{
+                  flex: 1,
+                  fontSize: 11,
+                  fontFamily: 'PoppinsMedium',
+                  color: '#155183',
+                }}
+                  numberOfLines={1}
+                >
+                  {address}
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    setAddress('')
+                    setBarangaySearch('')
+                  }}
+                  hitSlop={8}
+                >
+                  <Text style={{
+                    fontSize: 11,
+                    fontFamily: 'PoppinsRegular',
+                    color: '#a1a1aa',
+                  }}>
+                    Clear
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+
+          </View>
+        )}
         </Field>
 
         {/* Terms */}
