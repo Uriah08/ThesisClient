@@ -49,8 +49,12 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
   const [dry, setDry] = useState(0)
   const [undried, setUndried] = useState(0)
 
-  const modelOptions = ['MODEL6', 'MODEL7', 'MODEL8']
-  const [selectedModel, setSelectedModel] = useState('MODEL8')
+  const modelOptions = [
+    { label: 'Lynx 5.3', value: 'MODEL8' },
+    { label: 'Lynx 5.2', value: 'MODEL7' },
+    { label: 'Lynx 5.1', value: 'MODEL6' },
+  ]
+  const [selectedModel, setSelectedModel] = useState(modelOptions[0])
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false)
   
   const imageUri = annotatedPhoto || image?.uri || photo?.uri;
@@ -113,7 +117,7 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
     try {
       const formData = new FormData();
       formData.append('image', { uri: sourceUri, name: 'scan.jpg', type: 'image/jpeg' } as any);
-      formData.append('model', selectedModel);
+      formData.append('model', selectedModel.value);
       const result = await scan(formData).unwrap();
       if (result.image_url) {
         setAnnotatedPhoto(result.image_url);
@@ -366,48 +370,97 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
                 <View style={{ position: 'relative' }}>
                 <TouchableOpacity
                   onPress={() => setModelDropdownOpen(!modelDropdownOpen)}
+                  activeOpacity={0.8}
                   style={{
                     flexDirection: 'row', alignItems: 'center', gap: 6,
-                    borderWidth: 1, borderColor: '#e4e4e7',
-                    borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6,
-                    backgroundColor: '#fff',
+                    borderWidth: 1.5,
+                    borderColor: modelDropdownOpen ? PRIMARY : '#c7ddf5',
+                    borderRadius: 20,
+                    paddingHorizontal: 12, paddingVertical: 6,
+                    backgroundColor: modelDropdownOpen ? '#eef5ff' : '#f4f8ff',
                   }}
                 >
-                  <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11, color: '#18181b' }}>
-                    {selectedModel}
+                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: PRIMARY }} />
+                  <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 11, color: PRIMARY }}>
+                    {selectedModel.label}
                   </Text>
-                  <ChevronDown color="#71717a" size={14} />
+                  <ChevronDown
+                    color={PRIMARY}
+                    size={13}
+                    style={{ transform: [{ rotate: modelDropdownOpen ? '180deg' : '0deg' }] }}
+                  />
                 </TouchableOpacity>
 
                 {modelDropdownOpen && (
                   <View style={{
-                    position: 'absolute', right: 0, top: -130,
+                    position: 'absolute', right: 0, top: -210,
                     backgroundColor: '#fff',
-                    borderWidth: 1, borderColor: '#e4e4e7',
-                    borderRadius: 8, zIndex: 999,
-                    shadowColor: '#000', shadowOpacity: 0.08,
-                    shadowRadius: 8, elevation: 4,
-                    minWidth: 140,
+                    borderWidth: 1.5, borderColor: '#e0eaf6',
+                    borderRadius: 14,
+                    shadowColor: '#155183',
+                    shadowOpacity: 0.10,
+                    shadowRadius: 12,
+                    elevation: 6,
+                    minWidth: 150,
+                    overflow: 'hidden',
                   }}>
-                    {modelOptions.map((model, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() => { setSelectedModel(model); setModelDropdownOpen(false); }}
-                        style={{
-                          paddingHorizontal: 14, paddingVertical: 10,
-                          borderBottomWidth: index < modelOptions.length - 1 ? 1 : 0,
-                          borderBottomColor: '#f1f1f1',
-                          backgroundColor: selectedModel === model ? '#f4f8ff' : '#fff',
-                        }}
-                      >
-                        <Text style={{
-                          fontFamily: 'PoppinsRegular', fontSize: 12,
-                          color: selectedModel === model ? PRIMARY : '#18181b',
-                        }}>
-                          {model}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                    {/* Panel header */}
+                    <View style={{
+                      paddingHorizontal: 14, paddingVertical: 8,
+                      backgroundColor: '#f4f8ff',
+                      borderBottomWidth: 1, borderBottomColor: '#e0eaf6',
+                    }}>
+                      <Text style={{
+                        fontFamily: 'PoppinsRegular', fontSize: 9,
+                        color: '#94a3b8', letterSpacing: 1.2, textTransform: 'uppercase',
+                      }}>
+                        Model
+                      </Text>
+                    </View>
+
+                    {modelOptions.map((model, index) => {
+                      const isSelected = selectedModel.value === model.value
+                      return (
+                        <TouchableOpacity
+                          key={index}
+                          onPress={() => { setSelectedModel(model); setModelDropdownOpen(false); }}
+                          activeOpacity={0.7}
+                          style={{
+                            flexDirection: 'row', alignItems: 'center', gap: 10,
+                            paddingHorizontal: 14, paddingVertical: 10,
+                            borderBottomWidth: index < modelOptions.length - 1 ? 1 : 0,
+                            borderBottomColor: '#f0f6ff',
+                            backgroundColor: isSelected ? '#eef5ff' : '#fff',
+                          }}
+                        >
+                          {/* Radio dot */}
+                          <View style={{
+                            width: 16, height: 16, borderRadius: 8,
+                            borderWidth: 1.5,
+                            borderColor: isSelected ? PRIMARY : '#cbd5e1',
+                            backgroundColor: isSelected ? PRIMARY : 'transparent',
+                            alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            {isSelected && (
+                              <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: '#fff' }} />
+                            )}
+                          </View>
+
+                          <View>
+                            <Text style={{
+                              fontFamily: isSelected ? 'PoppinsSemiBold' : 'PoppinsRegular',
+                              fontSize: 12,
+                              color: isSelected ? PRIMARY : '#334155',
+                            }}>
+                              {model.label}
+                            </Text>
+                            <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 9, color: '#94a3b8' }}>
+                              {model.value}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      )
+                    })}
                   </View>
                 )}
               </View>
