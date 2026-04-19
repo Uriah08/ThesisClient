@@ -1,10 +1,11 @@
-import { View, Text, TextInput, Pressable, ActivityIndicator, Animated, PanResponder } from 'react-native'
+import { View, Text, TextInput, Pressable, ActivityIndicator, Animated, PanResponder, ScrollView } from 'react-native'
 import React, { useRef, useState } from 'react'
 import Dialogs from './Dialog'
 import { Dialog } from 'react-native-paper'
-import { PlusCircleIcon } from 'lucide-react-native'
+import { PlusCircleIcon, ChevronDown, StoreIcon, Check } from 'lucide-react-native'
 import Toast from 'react-native-toast-message'
 import { useCreateProductionMutation } from '@/store/productionApi'
+import { useGetRetailsQuery } from '@/store/retailsApi'
 
 const PRIMARY = '#155183'
 
@@ -84,6 +85,152 @@ const Input = ({
   )
 }
 
+// ── Retail Dropdown ──────────────────────────────────────────────────────────
+type RetailDropdownProps = {
+  selectedId: number | null
+  onSelect: (id: number | null) => void
+  retails: { id: number; store_name: string; location: string }[]
+  isLoading: boolean
+}
+
+const RetailDropdown = ({ selectedId, onSelect, retails, isLoading }: RetailDropdownProps) => {
+  const [open, setOpen] = useState(false)
+  const selected = retails.find(r => r.id === selectedId)
+
+  return (
+    <View style={{ gap: 5 }}>
+      <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 11.5, color: '#71717a', fontWeight: '500' }}>
+        Retail Shop{' '}
+        <Text style={{ color: '#a1a1aa', fontSize: 11, fontWeight: '400' }}>(optional)</Text>
+      </Text>
+
+      {/* Trigger */}
+      <Pressable
+        onPress={() => setOpen(prev => !prev)}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderWidth: open ? 1 : 0.5,
+          borderColor: open ? PRIMARY : '#e4e4e7',
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          backgroundColor: open ? '#f4f8fc' : '#fafafa',
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+          <StoreIcon size={13} color={selected ? PRIMARY : '#c4c4c8'} />
+          <Text style={{
+            fontFamily: 'PoppinsRegular',
+            fontSize: 13.5,
+            color: selected ? '#18181b' : '#c4c4c8',
+            flex: 1,
+          }} numberOfLines={1}>
+            {isLoading ? 'Loading shops…' : selected ? selected.store_name : 'Select a retail shop'}
+          </Text>
+        </View>
+        <ChevronDown
+          size={14}
+          color="#a1a1aa"
+          style={{ transform: [{ rotate: open ? '180deg' : '0deg' }] }}
+        />
+      </Pressable>
+
+      {/* Dropdown list */}
+      {open && (
+        <View style={{
+          borderWidth: 0.5,
+          borderColor: '#e4e4e7',
+          borderRadius: 8,
+          backgroundColor: '#ffffff',
+          overflow: 'hidden',
+          elevation: 4,
+          shadowColor: '#000',
+          shadowOpacity: 0.06,
+          shadowOffset: { width: 0, height: 4 },
+          shadowRadius: 10,
+        }}>
+          {/* None option */}
+          <Pressable
+            onPress={() => { onSelect(null); setOpen(false) }}
+            android_ripple={{ color: '#f4f4f5' }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 12,
+              paddingVertical: 11,
+              borderBottomWidth: retails.length > 0 ? 0.5 : 0,
+              borderBottomColor: '#f4f4f5',
+              backgroundColor: selectedId === null ? '#f4f8fc' : '#ffffff',
+            }}
+          >
+            <Text style={{
+              fontFamily: selectedId === null ? 'PoppinsMedium' : 'PoppinsRegular',
+              fontSize: 13,
+              color: selectedId === null ? PRIMARY : '#71717a',
+            }}>
+              None
+            </Text>
+            {selectedId === null && <Check size={13} color={PRIMARY} />}
+          </Pressable>
+
+          {/* Retail items */}
+          {retails.length === 0 ? (
+            <View style={{ paddingHorizontal: 12, paddingVertical: 14, alignItems: 'center' }}>
+              <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 12, color: '#a1a1aa' }}>
+                No retail shops added yet
+              </Text>
+            </View>
+          ) : (
+            retails.map((retail, i) => {
+              const isSelected = selectedId === retail.id
+              const isLast = i === retails.length - 1
+              return (
+                <Pressable
+                  key={retail.id}
+                  onPress={() => { onSelect(retail.id); setOpen(false) }}
+                  android_ripple={{ color: '#f4f4f5' }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingHorizontal: 12,
+                    paddingVertical: 11,
+                    borderBottomWidth: isLast ? 0 : 0.5,
+                    borderBottomColor: '#f4f4f5',
+                    backgroundColor: isSelected ? '#f4f8fc' : '#ffffff',
+                  }}
+                >
+                  <View style={{ flex: 1, gap: 1 }}>
+                    <Text style={{
+                      fontFamily: isSelected ? 'PoppinsMedium' : 'PoppinsRegular',
+                      fontSize: 13,
+                      color: isSelected ? PRIMARY : '#18181b',
+                    }} numberOfLines={1}>
+                      {retail.store_name}
+                    </Text>
+                    <Text style={{
+                      fontFamily: 'PoppinsRegular',
+                      fontSize: 11,
+                      color: '#a1a1aa',
+                    }} numberOfLines={1}>
+                      {retail.location}
+                    </Text>
+                  </View>
+                  {isSelected && <Check size={13} color={PRIMARY} />}
+                </Pressable>
+              )
+            })
+          )}
+        </View>
+      )}
+    </View>
+  )
+}
+
+// ── Satisfaction slider ──────────────────────────────────────────────────────
 const DraggableSatisfaction = ({
   value,
   setValue,
@@ -136,7 +283,6 @@ const DraggableSatisfaction = ({
         Satisfaction <Text style={{ color: '#ef4444' }}>*</Text>
       </Text>
 
-      {/* Emoji row */}
       <View style={{
         backgroundColor: '#f4f8fc',
         borderWidth: 0.5,
@@ -168,7 +314,6 @@ const DraggableSatisfaction = ({
           })}
         </View>
 
-        {/* Track */}
         <View style={{
           height: 6,
           width: TRACK_WIDTH,
@@ -176,7 +321,6 @@ const DraggableSatisfaction = ({
           borderRadius: 3,
           alignSelf: 'center',
         }}>
-          {/* Step dots */}
           {Array.from({ length: STEPS }).map((_, i) => (
             <View key={i} style={{
               position: 'absolute',
@@ -189,7 +333,6 @@ const DraggableSatisfaction = ({
             }} />
           ))}
 
-          {/* Fill */}
           <Animated.View style={{
             height: 6,
             width: thumbX.interpolate({
@@ -201,7 +344,6 @@ const DraggableSatisfaction = ({
             borderRadius: 3,
           }} />
 
-          {/* Thumb */}
           <Animated.View
             {...panResponder.panHandlers}
             style={{
@@ -232,6 +374,7 @@ const DraggableSatisfaction = ({
   )
 }
 
+// ── Main dialog ──────────────────────────────────────────────────────────────
 const AddRecord = ({ setVisible, visible, farmId }: DialogsProps) => {
   const [isFocused, setIsFocused] = useState('')
   const [saleTitle, setSaleTitle] = useState('')
@@ -239,17 +382,17 @@ const AddRecord = ({ setVisible, visible, farmId }: DialogsProps) => {
   const [quantitySold, setQuantitySold] = useState('')
   const [totalSales, setTotalSales] = useState('')
   const [satisfaction, setSatisfaction] = useState<number>(3)
-  const [salesLocation, setSalesLocation] = useState('')
+  const [selectedRetailId, setSelectedRetailId] = useState<number | null>(null)
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
   const [createProduction, { isLoading }] = useCreateProductionMutation()
+  const { data: retails = [], isLoading: retailLoading } = useGetRetailsQuery(Number(farmId))
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {}
-    if (!saleTitle.trim())      newErrors.saleTitle      = 'Sale title is required.'
-    if (!quantitySold.trim())   newErrors.quantitySold   = 'Quantity sold is required.'
-    if (!totalSales.trim())     newErrors.totalSales     = 'Total sales is required.'
-    if (!salesLocation.trim())  newErrors.salesLocation  = 'Sales location is required.'
+    if (!saleTitle.trim())    newErrors.saleTitle    = 'Sale title is required.'
+    if (!quantitySold.trim()) newErrors.quantitySold = 'Quantity sold is required.'
+    if (!totalSales.trim())   newErrors.totalSales   = 'Total sales is required.'
     if (!satisfaction || satisfaction < 1 || satisfaction > 5)
       newErrors.satisfaction = 'Satisfaction rating is required.'
     setErrors(newErrors)
@@ -265,13 +408,14 @@ const AddRecord = ({ setVisible, visible, farmId }: DialogsProps) => {
         quantity: quantitySold,
         total: totalSales,
         satisfaction,
-        landing: salesLocation,
+        landing: '',
+        retail: selectedRetailId,
         farm: farmId,
       })
       Toast.show({ type: 'success', text1: 'Record created successfully.' })
       setVisible(false)
       setSaleTitle(''); setNotes(''); setQuantitySold('')
-      setTotalSales(''); setSatisfaction(3); setSalesLocation('')
+      setTotalSales(''); setSatisfaction(3); setSelectedRetailId(null)
     } catch (error: any) {
       try {
         const data = error?.data
@@ -320,10 +464,12 @@ const AddRecord = ({ setVisible, visible, farmId }: DialogsProps) => {
           {...sharedInputProps}
         />
 
-        <Input
-          label="Sales Location" value={salesLocation} setValue={setSalesLocation}
-          placeholder="Where was it sold?" field="salesLocation"
-          {...sharedInputProps}
+        {/* Retail dropdown — replaces salesLocation */}
+        <RetailDropdown
+          selectedId={selectedRetailId}
+          onSelect={setSelectedRetailId}
+          retails={retails}
+          isLoading={retailLoading}
         />
 
         <DraggableSatisfaction value={satisfaction} setValue={setSatisfaction} />
@@ -350,7 +496,7 @@ const AddRecord = ({ setVisible, visible, farmId }: DialogsProps) => {
               borderRadius: 8,
               borderWidth: 0.5,
               borderColor: '#d4d4d8',
-              backgroundColor:'#fafafa',
+              backgroundColor: '#fafafa',
             }}
           >
             <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 13, color: '#71717a' }}>Cancel</Text>

@@ -80,7 +80,7 @@ export const farmMenu = [
 ]
 
 // export const apiUrl = 'http://3.106.134.49:8000' // AWS
-export const apiUrl = 'http://192.168.1.41:8000' // ITD WIFI
+export const apiUrl = 'http://192.168.1.22:8000' // ITD WIFI
 // export const apiUrl = 'https://thesis-backend-zprj.onrender.com' // MY WIFI
 
 export const lesson1Content = [

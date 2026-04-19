@@ -11,15 +11,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useDeleteFarmTrayMutation } from '@/store/farmTrayApi'
 import { useDeleteAnnouncementMutation } from '@/store/farmApi'
 import { useDeleteProductionMutation } from '@/store/productionApi'
+import { useDeleteRetailMutation } from '@/store/retailsApi'
 
 type DialogsProps = {
   setVisible: (visible: boolean) => void
   visible: boolean
-  type: 'tray' | 'session' | 'farm-tray' | 'announcement' | 'production'
+  type: 'tray' | 'session' | 'farm-tray' | 'announcement' | 'production' | 'retail'
   trayId?: number
   sessionId?: number
   announcementId?: number
   productionId?: number
+  retailId?: number
   onBack?: () => void
 }
 
@@ -27,6 +29,7 @@ const typeLabel = (type: DialogsProps['type']) => {
   if (type === 'tray' || type === 'farm-tray') return 'tray'
   if (type === 'announcement') return 'announcement'
   if (type === 'production') return 'record'
+  if (type === 'retail') return 'retail'
   return 'session'
 }
 
@@ -39,15 +42,17 @@ const DeleteClass = ({
   onBack,
   announcementId,
   productionId,
+  retailId
 }: DialogsProps) => {
   const [deleteTray, { isLoading: trayLoading }]               = useDeleteTrayMutation()
   const [deleteSession, { isLoading: sessionLoading }]         = useDeleteSessionMutation()
   const [deleteFarmTray, { isLoading: farmTrayLoading }]       = useDeleteFarmTrayMutation()
   const [deleteAnnouncement, { isLoading: announcementLoading }] = useDeleteAnnouncementMutation()
   const [deleteProduction, { isLoading: productionLoading }]   = useDeleteProductionMutation()
+  const [deleteRetail, { isLoading: retailLoading }]   = useDeleteRetailMutation()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const isBusy = trayLoading || sessionLoading || farmTrayLoading || announcementLoading || productionLoading
+  const isBusy = trayLoading || sessionLoading || farmTrayLoading || announcementLoading || productionLoading || retailLoading
   const label  = typeLabel(type)
   const title  = `Delete ${label.charAt(0).toUpperCase() + label.slice(1)}`
 
@@ -69,6 +74,9 @@ const DeleteClass = ({
         router.push('/(tabs)/farm')
       } else if (type === 'announcement') {
         await deleteAnnouncement(announcementId).unwrap()
+        setVisible(false)
+      } else if (type === 'retail') {
+        await deleteRetail(retailId)
         setVisible(false)
       } else if (type === 'production') {
         try {

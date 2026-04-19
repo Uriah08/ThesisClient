@@ -23,6 +23,7 @@ export default function RootLayout() {
             <Stack.Screen name="farm-settings/edit/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="farm-settings/change/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="farm-settings/block/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="farm-settings/retail-outlets/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="farm-settings/announcement" options={{ headerShown: false }} />
             <Stack.Screen name="production/[id]" options={{ headerShown: false }} />
           </Stack>

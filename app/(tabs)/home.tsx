@@ -28,8 +28,8 @@ const Home = () => {
   const [selectedItem, setSelectedItem]   = useState<ForecastItem | null>(null)
   const [chartKey, setChartKey]           = useState(0)
   const [registerDeviceToken]             = useRegisterDeviceTokenMutation()
-  const [refreshing, setRefreshing]       = useState(false)
   const { user }                          = useAuthRedirect()
+  const [refreshing, setRefreshing]       = useState(false)
 
   const onRefresh = async () => {
     setRefreshing(true)
