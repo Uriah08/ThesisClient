@@ -81,8 +81,8 @@ const EditProfile = () => {
   const [errors, setErrors]       = useState<{ [key: string]: string }>({})
   const [image, setImage]         = useState<string | null>(null)
 
-  const [username, setUsername]           = useState(user?.username || '')
-  const [email, setEmail]                 = useState(user?.email || '')
+  const [firstName, setFirstName]         = useState(user?.first_name || '')  // ← changed
+  const [lastName, setLastName]           = useState(user?.last_name || '')   // ← changed
   const [mobileNumber, setMobileNumber]   = useState(
     user?.mobile_number ? user.mobile_number.replace(/^\+\d{1,3}/, '') : ''
   )
@@ -92,16 +92,16 @@ const EditProfile = () => {
 
   useEffect(() => {
     if (user) {
-      setUsername(user.username || '')
-      setEmail(user.email || '')
+      setFirstName(user.first_name || '')   // ← changed
+      setLastName(user.last_name || '')     // ← changed
       setMobileNumber(user.mobile_number ? user.mobile_number.replace(/^\+\d{1,3}/, '') : '')
     }
   }, [user])
 
   const validate = async () => {
     const e: { [key: string]: string } = {}
-    if (!username.trim())     e.username     = 'Username is required.'
-    if (!email.trim())        e.email        = 'Email is required.'
+    if (!firstName.trim()) e.firstName = 'First name is required.'   // ← changed
+    if (!lastName.trim())  e.lastName  = 'Last name is required.'    // ← changed
     if (!mobileNumber.trim()) e.mobileNumber = 'Mobile number is required.'
     if (image) {
       const ext = image.split('.').pop()?.toLowerCase()
@@ -123,7 +123,8 @@ const EditProfile = () => {
         if (url) imageURL = url
       }
       const response = await updateProfile({
-        username, email,
+        first_name: firstName,   // ← changed
+        last_name: lastName,     // ← changed
         mobile_number: callingCode + mobileNumber,
         ...(imageURL && { profile_picture: imageURL }),
       }).unwrap()
@@ -221,7 +222,6 @@ const EditProfile = () => {
           borderWidth: 0.5, borderColor: '#f4f4f5',
           marginBottom: 16,
         }}>
-          {/* avatar + pencil */}
           <View style={{ position: 'relative' }}>
             <View style={{
               padding: 3, borderRadius: 999,
@@ -272,21 +272,20 @@ const EditProfile = () => {
             Account Details
           </Text>
 
+          {/* ← changed: First Name + Last Name fields */}
           <Field
-            label="Username" fieldKey="username"
-            value={username} onChange={setUsername}
-            error={errors.username} isFocused={isFocused}
-            onFocus={() => setIsFocused('username')} onBlur={() => setIsFocused('')}
-            placeholder="Username"
+            label="First Name" fieldKey="firstName"
+            value={firstName} onChange={setFirstName}
+            error={errors.firstName} isFocused={isFocused}
+            onFocus={() => setIsFocused('firstName')} onBlur={() => setIsFocused('')}
+            placeholder="Juan"
           />
           <Field
-            label="Email" fieldKey="email"
-            value={email} onChange={setEmail}
-            error={errors.email} isFocused={isFocused}
-            onFocus={() => setIsFocused('email')} onBlur={() => setIsFocused('')}
-            placeholder="you@example.com"
-            textContentType="emailAddress"
-            keyboardType="email-address"
+            label="Last Name" fieldKey="lastName"
+            value={lastName} onChange={setLastName}
+            error={errors.lastName} isFocused={isFocused}
+            onFocus={() => setIsFocused('lastName')} onBlur={() => setIsFocused('')}
+            placeholder="Dela Cruz"
           />
 
           {/* mobile number */}

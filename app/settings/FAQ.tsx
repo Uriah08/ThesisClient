@@ -15,34 +15,87 @@ type FAQ = { category: string; question: string; answers: string[]; iconBg: stri
 
 const faqs: FAQ[] = [
   {
-    category: 'Account',
-    question: 'How do I reset my password?',
+    category: 'Technical & Scanning',
+    question: 'What is the ideal lighting and distance for a scan?',
     answers: [
-      "Go to the login screen and tap 'Forgot Password'.",
-      'Enter your registered email address.',
-      'Follow the reset link sent to your email.',
+      'Use natural daylight or bright, even artificial lighting.',
+      'Hold the camera 30–50 cm away from the drying rack.',
+      'Avoid shadows or direct glare on the fish surface.',
     ],
     iconBg: '#E6F1FB', iconColor: '#185FA5', icon: CircleUserIcon,
   },
   {
-    category: 'Profile',
-    question: 'How can I update my profile information?',
+    category: 'Technical & Scanning',
+    question: 'Does the system work without an internet connection?',
     answers: [
-      'Open the Profile section.',
-      'Tap on Edit Profile.',
-      'Update your details and save the changes.',
+      'An active internet connection is required to use the app.',
+      'Scanning, species recognition, and data sync all rely on internet access.',
+      'Please ensure you are connected before starting a session.',
+    ],
+    iconBg: '#E6F1FB', iconColor: '#185FA5', icon: CircleUserIcon,
+  },
+  {
+    category: 'Quality & Monitoring',
+    question: 'What parameters determine "Harvest Readiness"?',
+    answers: [
+      'Color, and texture are the primary indicators.',
+      'The app cross-references these with species-specific drying standards.',
+      'A readiness score is calculated after each scan.',
     ],
     iconBg: '#E1F5EE', iconColor: '#0F6E56', icon: UserIcon,
   },
   {
-    category: 'Security',
-    question: 'Is my personal data safe?',
+    category: 'Quality & Monitoring',
+    question: 'Why did the quality assessment change between scans?',
     answers: [
-      'Yes, we use industry-standard encryption.',
-      'Your data is stored securely.',
-      'Access is limited to authorized systems only.',
+      'Environmental changes like humidity can affect drying progress.',
+      'Scan angle and lighting differences may influence results.',
+      'Multiple scans over time provide a more accurate trend.',
+    ],
+    iconBg: '#E1F5EE', iconColor: '#0F6E56', icon: UserIcon,
+  },
+  {
+    category: 'Quality & Monitoring',
+    question: 'Which specific fish species are currently supported?',
+    answers: [
+      'The app currently supports one species: Sardinella fimbriata, locally known as Law-law or Tuyo.',
+      'Support for additional species may be added in future updates.',
+    ],
+    iconBg: '#E1F5EE', iconColor: '#0F6E56', icon: UserIcon,
+  },
+  {
+    category: 'Environmental Factors',
+    question: 'Does the app account for nighttime or low-light conditions?',
+    answers: [
+      'Scanning is recommended during daylight hours for accuracy.'
+    ],
+    iconBg: '#FEF3E6', iconColor: '#B45309', icon: ShieldIcon,
+  },
+  {
+    category: 'Data & History',
+    question: 'How long is my harvest history stored in the app?',
+    answers: [
+      'Harvest records are stored indefinitely while your account is active.',
+      'Local cache is retained on your device for offline access.',
+      'Deleting the app will remove local data; cloud data remains intact.',
     ],
     iconBg: '#EEEDFE', iconColor: '#534AB7', icon: ShieldIcon,
+  },
+  {
+    category: 'Account & Support',
+    question: 'How do I reset my password?',
+    answers: [
+      "Go to the settings screen and tap 'Change Password'."
+    ],
+    iconBg: '#E6F1FB', iconColor: '#185FA5', icon: CircleUserIcon,
+  },
+  {
+    category: 'Account & Support',
+    question: 'Is there a community forum for local fish processors?',
+    answers: [
+      'There\'s no dedicated forum within the app yet.',
+    ],
+    iconBg: '#E6F1FB', iconColor: '#185FA5', icon: CircleUserIcon,
   },
 ]
 

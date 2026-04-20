@@ -1,5 +1,5 @@
 import { View, Text, Pressable, ScrollView, RefreshControl } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ChevronLeft, StoreIcon, MapPin, Phone, Trash2, Plus, Pencil } from 'lucide-react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import AddRetail from '@/components/containers/dialogs/AddRetail'
@@ -7,6 +7,7 @@ import { useGetRetailsQuery } from '@/store/retailsApi'
 import DeleteClass from '@/components/containers/dialogs/Delete'
 import EditRetail from '@/components/containers/dialogs/EditRetail'
 import SkeletonShimmer from '@/components/containers/SkeletonPlaceholder'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const PRIMARY = '#155183'
 
@@ -16,8 +17,24 @@ const RetailPage = () => {
   const [showDelete, setShowDelete] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const [selectedId, setSelectedId] = useState<number | undefined>(undefined)
-  const { data: retails, isLoading, refetch } = useGetRetailsQuery(Number(id))
+  const { data: freshData, isLoading, refetch } = useGetRetailsQuery(Number(id))
+  const [cachedData, setCachedData] = useState<typeof freshData | null>(null)
+  const data = freshData ?? cachedData
   const [refreshing, setRefreshing] = useState(false)
+  
+  const RETAIL_CACHE_KEY = (farmId: number | string) => `retail_cache_${farmId}`
+
+  useEffect(() => {
+    AsyncStorage.getItem(RETAIL_CACHE_KEY(id as string))
+      .then(raw => { if (raw) setCachedData(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [id])
+
+  useEffect(() => {
+    if (!freshData) return
+    AsyncStorage.setItem(RETAIL_CACHE_KEY(id as string), JSON.stringify(freshData))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshData, id])
 
   const onRefresh = async () => {
     setRefreshing(true)
@@ -77,7 +94,7 @@ const RetailPage = () => {
               <SkeletonShimmer key={i} height={110} borderRadius={16} />
             ))}
           </>
-        ) : retails?.length === 0 ? (
+        ) : data?.length === 0 ? (
           <View style={{ alignItems: 'center', paddingTop: 80, gap: 10 }}>
             <View style={{
               width: 52, height: 52, borderRadius: 16,
@@ -94,7 +111,7 @@ const RetailPage = () => {
             </Text>
           </View>
         ) : (
-          retails?.map((item, i) => (
+          data?.map((item, i) => (
             <View key={i} style={{
               borderRadius: 16, borderWidth: 0.5,
               borderColor: '#f4f4f5', backgroundColor: '#fafafa',
@@ -187,9 +204,9 @@ const RetailPage = () => {
           visible={showEdit}
           setVisible={setShowEdit}
           retailId={selectedId}
-          defaultStoreName={retails?.find((item) => item.id === selectedId)?.store_name}
-          defaultLocation={retails?.find((item) => item.id === selectedId)?.location}
-          defaultContact={retails?.find((item) => item.id === selectedId)?.contact}
+          defaultStoreName={data?.find((item) => item.id === selectedId)?.store_name}
+          defaultLocation={data?.find((item) => item.id === selectedId)?.location}
+          defaultContact={data?.find((item) => item.id === selectedId)?.contact}
         />
       )}
 

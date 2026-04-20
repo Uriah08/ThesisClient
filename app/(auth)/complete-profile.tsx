@@ -2,7 +2,7 @@ import {
   View, Text, ActivityIndicator, BackHandler,
   Image, Pressable, TextInput, Platform, ScrollView
 } from 'react-native'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { router, useFocusEffect } from 'expo-router'
 import { useCompleteProfileMutation } from '@/store/userApi'
 import { Pencil, Calendar, ChevronDown, Check, Search } from 'lucide-react-native'
@@ -16,6 +16,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { uploadImageToSupabase } from '@/utils/lib/supabase'
 import CountryPicker, { Country, CountryCode } from 'react-native-country-picker-modal'
 import { barangays } from '@/constants/Colors'
+
+const DRAFT_KEY = 'complete_profile_draft'
 
 // ─── field wrapper ─────────────────────────────────────────────────────────────
 const Field = ({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) => (
@@ -75,9 +77,34 @@ const CompleteProfile = () => {
     }, [])
   )
 
+  useEffect(() => {
+    AsyncStorage.getItem(DRAFT_KEY).then(raw => {
+      if (!raw) return
+      try {
+        const d = JSON.parse(raw)
+        if (d.firstName)    setFirstName(d.firstName)
+        if (d.lastName)     setLastName(d.lastName)
+        if (d.mobileNumber) setMobileNumber(d.mobileNumber)
+        if (d.address)      setAddress(d.address)
+        if (d.date)         setDate(new Date(d.date))
+        if (d.callingCode)  setCallingCode(d.callingCode)
+        if (d.countryCode)  setCountryCode(d.countryCode)
+        if (d.image)        setImage(d.image)
+      } catch {}
+    })
+  }, [])
+
   const filteredBarangays = barangays.filter(b =>
     b.toLowerCase().includes(barangaySearch.toLowerCase())
   )
+
+  useEffect(() => {
+    AsyncStorage.setItem(DRAFT_KEY, JSON.stringify({
+      firstName, lastName, mobileNumber, address,
+      date: date ? date.toISOString() : null,
+      callingCode, countryCode, image,
+    }))
+  }, [firstName, lastName, mobileNumber, address, date, callingCode, countryCode, image])
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -131,6 +158,7 @@ const CompleteProfile = () => {
         address: response.address || '', is_complete: response.is_complete || false,
         profile_picture: response.profile_picture || '', mobile_number: response.mobile_number || '',
       }))
+      await AsyncStorage.removeItem(DRAFT_KEY)
       router.replace('/(tabs)/home')
     } catch (error: any) {
       if (error?.data?.detail) Toast.show({ type: 'error', text1: error.data.detail })

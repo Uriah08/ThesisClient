@@ -185,7 +185,6 @@ const Production = ({ owner, farmId }: ProductionProps) => {
 
 
   const { data: freshData, refetch } = useGetProductionsQuery(farmId)
-  console.log(freshData)
   const [cachedData, setCachedData] = useState<typeof freshData | null>(null)
   const data = freshData ?? cachedData
 
