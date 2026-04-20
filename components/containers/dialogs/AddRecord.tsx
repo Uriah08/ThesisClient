@@ -1,11 +1,12 @@
-import { View, Text, TextInput, Pressable, ActivityIndicator, Animated, PanResponder, ScrollView } from 'react-native'
-import React, { useRef, useState } from 'react'
+import { View, Text, TextInput, Pressable, ActivityIndicator, Animated, PanResponder } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
 import Dialogs from './Dialog'
 import { Dialog } from 'react-native-paper'
 import { PlusCircleIcon, ChevronDown, StoreIcon, Check } from 'lucide-react-native'
 import Toast from 'react-native-toast-message'
 import { useCreateProductionMutation } from '@/store/productionApi'
 import { useGetRetailsQuery } from '@/store/retailsApi'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const PRIMARY = '#155183'
 
@@ -386,7 +387,21 @@ const AddRecord = ({ setVisible, visible, farmId }: DialogsProps) => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
   const [createProduction, { isLoading }] = useCreateProductionMutation()
-  const { data: retails = [], isLoading: retailLoading } = useGetRetailsQuery(Number(farmId))
+  const { data: freshRetails = [], isLoading: retailLoading } = useGetRetailsQuery(Number(farmId))
+  const [cachedRetails, setCachedRetails] = useState<typeof freshRetails>([])
+  const retails = freshRetails.length > 0 ? freshRetails : cachedRetails
+
+  useEffect(() => {
+    AsyncStorage.getItem(`retail_cache_${farmId}`)
+      .then(raw => { if (raw) setCachedRetails(JSON.parse(raw)) })
+      .catch(e => console.log('Cache load error:', e))
+  }, [farmId])
+
+  useEffect(() => {
+    if (!freshRetails.length) return
+    AsyncStorage.setItem(`retail_cache_${farmId}`, JSON.stringify(freshRetails))
+      .catch(e => console.log('Cache save error:', e))
+  }, [freshRetails, farmId])
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {}

@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react'
-import { View, Text, Pressable, FlatList } from 'react-native'
+import { View, Text, Pressable } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'  // ← CHANGED
 import { Calendar, DateData } from 'react-native-calendars'
 import { ChevronDown } from 'lucide-react-native'
 import BottomDrawer, { BottomDrawerRef } from '@/components/containers/BottomDrawer'
@@ -33,7 +34,6 @@ const DateRangePicker = ({ visible, onClose, onApply, initialFrom, initialTo }: 
   const currentMonthStr = `${currentYear2}-${String(currentMonth + 1).padStart(2, '0')}`
   const todayStr        = today.toISOString().split('T')[0]
 
-  // open/close in sync with parent visible prop
   React.useEffect(() => {
     if (visible) drawerRef.current?.open()
     else drawerRef.current?.close()
@@ -162,20 +162,30 @@ const DateRangePicker = ({ visible, onClose, onApply, initialFrom, initialTo }: 
             shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 8,
             marginBottom: 4,
           }}>
-            <FlatList
-              data={MONTHS}
-              keyExtractor={(_, i) => i.toString()}
-              renderItem={({ item, index }) => (
+            <ScrollView  // ← now from react-native-gesture-handler
+              nestedScrollEnabled
+              showsVerticalScrollIndicator={false}
+            >
+              {MONTHS.map((item, index) => (
                 <Pressable
+                  key={index}
                   onPress={() => { setCurrentMonth(index); setShowMonthPicker(false) }}
-                  style={{ paddingHorizontal: 14, paddingVertical: 11, backgroundColor: currentMonth === index ? '#eff6ff' : '#fff', borderRadius: 8 }}
+                  style={{
+                    paddingHorizontal: 14, paddingVertical: 11,
+                    backgroundColor: currentMonth === index ? '#eff6ff' : '#fff',
+                    borderRadius: 8,
+                  }}
                 >
-                  <Text style={{ fontFamily: currentMonth === index ? 'PoppinsSemiBold' : 'PoppinsRegular', color: currentMonth === index ? PRIMARY : '#18181b', fontSize: 13 }}>
+                  <Text style={{
+                    fontFamily: currentMonth === index ? 'PoppinsSemiBold' : 'PoppinsRegular',
+                    color: currentMonth === index ? PRIMARY : '#18181b',
+                    fontSize: 13,
+                  }}>
                     {item}
                   </Text>
                 </Pressable>
-              )}
-            />
+              ))}
+            </ScrollView>
           </View>
         )}
 
@@ -187,20 +197,30 @@ const DateRangePicker = ({ visible, onClose, onApply, initialFrom, initialTo }: 
             shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 8,
             marginBottom: 4,
           }}>
-            <FlatList
-              data={YEARS}
-              keyExtractor={item => item.toString()}
-              renderItem={({ item }) => (
+            <ScrollView  // ← now from react-native-gesture-handler
+              nestedScrollEnabled
+              showsVerticalScrollIndicator={false}
+            >
+              {YEARS.map((item) => (
                 <Pressable
+                  key={item}
                   onPress={() => { setCurrentYear2(item); setShowYearPicker(false) }}
-                  style={{ paddingHorizontal: 14, paddingVertical: 11, backgroundColor: currentYear2 === item ? '#eff6ff' : '#fff', borderRadius: 8 }}
+                  style={{
+                    paddingHorizontal: 14, paddingVertical: 11,
+                    backgroundColor: currentYear2 === item ? '#eff6ff' : '#fff',
+                    borderRadius: 8,
+                  }}
                 >
-                  <Text style={{ fontFamily: currentYear2 === item ? 'PoppinsSemiBold' : 'PoppinsRegular', color: currentYear2 === item ? PRIMARY : '#18181b', fontSize: 13 }}>
+                  <Text style={{
+                    fontFamily: currentYear2 === item ? 'PoppinsSemiBold' : 'PoppinsRegular',
+                    color: currentYear2 === item ? PRIMARY : '#18181b',
+                    fontSize: 13,
+                  }}>
                     {item}
                   </Text>
                 </Pressable>
-              )}
-            />
+              ))}
+            </ScrollView>
           </View>
         )}
 
