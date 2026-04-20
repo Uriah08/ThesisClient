@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Pressable } from 'react-native'
 import React, { useState } from 'react'
-import { ChevronRight, Megaphone, Pen, RotateCcwKey, Smartphone, Trash } from 'lucide-react-native'
+import { ChevronRight, Megaphone, Pen, RotateCcwKey, Smartphone, StoreIcon, Trash } from 'lucide-react-native'
 import { router } from 'expo-router'
 import DeleteFarm from '../../dialogs/DeleteFarm'
 import { Farm } from '@/utils/types'
@@ -8,7 +8,13 @@ import { Farm } from '@/utils/types'
 type Menu = {
   icon: any
   label: string
-  route?: '/farm-settings/edit/[id]' | '/farm-settings/announcement/[id]' | '/farm-settings/change/[id]' | '/farm-settings/block/[id]'
+  // Added the retail-outlets route here
+  route?: 
+    | '/farm-settings/edit/[id]' 
+    | '/farm-settings/announcement/[id]' 
+    | '/farm-settings/change/[id]' 
+    | '/farm-settings/block/[id]' 
+    | '/farm-settings/retail-outlets/[id]'
   iconBg: string
   iconColor: string
 }
@@ -116,6 +122,13 @@ const Settings = ({ farmId, owner, setSelectedFarm, onBack }: Props) => {
             route: '/farm-settings/change/[id]' as const,
             iconBg: '#E1F5EE',
             iconColor: '#0F6E56',
+          },
+          {
+            icon: StoreIcon,
+            label: 'Retail Outlets',
+            route: '/farm-settings/retail-outlets/[id]' as const,
+            iconBg: '#F0E7FF',
+            iconColor: '#5B21B6',
           },
         ]
       : []),

@@ -254,5 +254,16 @@ export type FarmProduction = {
   location?: string | null
   quantity: number
   landing?: string | null
+  retail?: number | null
+  retail_detail: Retail | null
+  created_at: string
+}
+
+export type Retail = {
+  id: number
+  farm: number
+  store_name: string
+  location: string
+  contact: string
   created_at: string
 }

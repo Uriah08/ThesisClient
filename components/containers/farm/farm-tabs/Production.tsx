@@ -105,7 +105,7 @@ const ProductionCard = ({ item }: { item: FarmProduction }) => {
             {item.quantity} kg
           </Text>
         </View>
-        {item.landing && (
+        {item.retail && (
           <View style={{
             flexDirection: 'row', alignItems: 'center', gap: 5,
             backgroundColor: '#f4f4f5', paddingHorizontal: 10,
@@ -116,7 +116,7 @@ const ProductionCard = ({ item }: { item: FarmProduction }) => {
               fontFamily: 'PoppinsRegular', fontSize: 11,
               color: '#3f3f46', maxWidth: 120,
             }}>
-              {item.landing}
+              {item.retail_detail?.store_name}
             </Text>
           </View>
         )}
@@ -185,6 +185,7 @@ const Production = ({ owner, farmId }: ProductionProps) => {
 
 
   const { data: freshData, refetch } = useGetProductionsQuery(farmId)
+  console.log(freshData)
   const [cachedData, setCachedData] = useState<typeof freshData | null>(null)
   const data = freshData ?? cachedData
 
