@@ -7,6 +7,8 @@ import { useState } from "react"
 import DeleteNotifications from "@/components/containers/dialogs/DeleteNotifications"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
+import { WeatherNotificationBody } from "@/components/containers/notifications/WeatherNotification"
+import { PeopleNotificationBody } from "@/components/containers/notifications/PeopleNotification"
 
 dayjs.extend(relativeTime)
 
@@ -14,6 +16,8 @@ const Notification = () => {
   const { id } = useLocalSearchParams()
   const { data, isLoading } = useGetNotificationQuery(Number(id))
   const [showDelete, setShowDelete] = useState(false)
+
+  console.log(data)
 
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
@@ -74,14 +78,6 @@ const Notification = () => {
           }}>
             <NotificationIcon iconCode={data?.notification.type} size={64} />
             <View style={{ alignItems: "center", gap: 4 }}>
-              <View style={{
-                backgroundColor: "#E6F1FB", borderRadius: 20,
-                paddingHorizontal: 12, paddingVertical: 3,
-              }}>
-                <Text style={{ fontFamily: "PoppinsMedium", fontSize: 11, color: "#185FA5" }}>
-                  {data?.notification.type}
-                </Text>
-              </View>
               <Text style={{ fontFamily: "PoppinsRegular", fontSize: 12, color: "#71717a" }}>
                 {dayjs(data?.notification.created_at).fromNow()}
               </Text>
@@ -97,9 +93,15 @@ const Notification = () => {
           <View style={{ height: 0.5, backgroundColor: "#e4e4e7" }} />
 
           {/* Body */}
-          <Text style={{ fontFamily: "PoppinsRegular", fontSize: 13, color: "#52525b", lineHeight: 22 }}>
-            {data?.notification.body}
-          </Text>
+          {data?.notification.type === "weather" ? (
+            <WeatherNotificationBody notification={data.notification} />
+          ) : data?.notification.type === "people" ? (
+            <PeopleNotificationBody notification={data.notification} />
+          ) : (
+            <Text style={{ fontFamily: "PoppinsRegular", fontSize: 13, color: "#52525b", lineHeight: 22 }}>
+              {data?.notification.body}
+            </Text>
+          )}
 
         </ScrollView>
       )}

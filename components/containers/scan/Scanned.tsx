@@ -252,6 +252,8 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
         defaultDescription={drynessDescription}
         rejects={rejectCount} detected={fishCount}
         activetrayId={activeTrayId!}
+        dry={dry}
+        undried={undried}
       />
 
       {/* ── Header ── */}
