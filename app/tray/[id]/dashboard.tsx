@@ -239,6 +239,80 @@ const Dashboard = () => {
         refreshControl={<RefreshControl colors={[PRIMARY]} refreshing={refreshing} onRefresh={onRefresh} />}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100, gap: 10, paddingTop: 16 }}
       >
+        {/* Dry / Undried Progress Card */}
+        {(dashboard?.dry !== undefined && dashboard?.undried !== undefined) && (() => {
+          const dry     = dashboard.dry ?? 0
+          const undried = dashboard.undried ?? 0
+          const total   = dry + undried
+          const dryPct  = total > 0 ? Math.round((dry / total) * 100) : 0
+          const undriedPct = total > 0 ? 100 - dryPct : 0
+
+          return (
+            <View style={{
+              width: '100%',
+              padding: 14,
+              backgroundColor: '#fafafa',
+              borderRadius: 14, borderWidth: 0.5, borderColor: '#f4f4f5',
+              gap: 12,
+            }}>
+              {/* Header row */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{
+                  width: 30, height: 30, borderRadius: 8,
+                  backgroundColor: '#E6F1FB',
+                  alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Fish size={15} color={PRIMARY} />
+                </View>
+                <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+                  Current Batch Quality
+                </Text>
+              </View>
+
+              {/* Two values */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View style={{ gap: 2 }}>
+                  <Text style={{ fontSize: 22, fontFamily: 'PoppinsBold', color: '#18181b' }}>
+                    {dry}
+                    <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}> dry</Text>
+                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 99, backgroundColor: PRIMARY }} />
+                    <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+                      {dryPct}% of batch
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ alignItems: 'flex-end', gap: 2 }}>
+                  <Text style={{ fontSize: 22, fontFamily: 'PoppinsBold', color: '#18181b' }}>
+                    {undried}
+                    <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}> undried</Text>
+                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 99, backgroundColor: '#d4d4d8' }} />
+                    <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
+                      {undriedPct}% of batch
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Split progress bar */}
+              <View style={{ height: 8, borderRadius: 99, backgroundColor: '#f4f4f5', flexDirection: 'row', overflow: 'hidden' }}>
+                {dryPct > 0 && (
+                  <View style={{ width: `${dryPct}%`, backgroundColor: PRIMARY, borderRadius: 99 }} />
+                )}
+              </View>
+
+              {/* Total */}
+              {total > 0 && (
+                <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa', textAlign: 'center' }}>
+                  {total} fish total detected in the latest timeline
+                </Text>
+              )}
+            </View>
+          )
+        })()}
 
         {/* Row 1 — Harvested + Reject rate */}
         <View style={{ flexDirection: 'row', gap: 10 }}>

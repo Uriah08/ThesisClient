@@ -20,11 +20,13 @@ type DialogsProps = {
   rejects?: number
   detected?: number
   activetrayId: number
+  dry?: number
+  undried?: number
 }
 
 const AddCameraProgress = ({
   setVisible, visible, trayId, image,
-  defaultDescription, rejects, detected, activetrayId,
+  defaultDescription, rejects, detected, activetrayId, dry, undried,
 }: DialogsProps) => {
   const [isFocused, setIsFocused]             = useState('')
   const [title, setTitle]                     = useState('Tray Status')
@@ -79,7 +81,7 @@ const AddCameraProgress = ({
         setSupabaseLoading(false)
       }
 
-      await createTrayProgress({ title, description, image: imageURL, tray: activetrayId, rejects, detected }).unwrap()
+      await createTrayProgress({ title, description, image: imageURL, tray: activetrayId, rejects, detected, dry, undried }).unwrap()
       setVisible(false)
       setIsFocused('')
       router.push({ pathname: '/tray/[id]/timeline', params: { id: trayId.toString() } })

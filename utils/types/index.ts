@@ -232,6 +232,8 @@ export interface Detected {
 export interface TrayDashboard {
   id: number;
   name: string;
+  dry: number;
+  undried: number;
   status: string;
   created_at: string;
   session_tray_count: SessionTrayCountByDay[];
