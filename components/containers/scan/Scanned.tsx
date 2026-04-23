@@ -105,7 +105,7 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
       await MediaLibrary.createAlbumAsync('Download', asset, false);
       Toast.show({ type: 'success', text1: 'Image saved successfully!' });
       setSaving(false); setSaved(true);
-    } catch {
+    } catch (error) {
       Toast.show({ type: 'error', text1: 'Failed to save image.' });
       setSaving(false);
     }
@@ -141,58 +141,7 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
     }
   }, [photo, scanAnim]);
 
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    if (isLoading) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 0.2, duration: 600, useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1,   duration: 600, useNativeDriver: true }),
-        ])
-      ).start();
-    } else {
-      pulseAnim.setValue(1);
-    }
-  }, [isLoading, pulseAnim]);
-
-  // Match to your image height (380px)
-  const scanTranslateY = scanAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 375],
-  });
-
-  const blinkAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    if (isLoading) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(blinkAnim, { toValue: 0, duration: 500, useNativeDriver: true }),
-          Animated.timing(blinkAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
-        ])
-      ).start();
-    } else {
-      blinkAnim.setValue(1);
-    }
-  }, [isLoading, blinkAnim]);
-
-  const pingScaleAnim = useRef(new Animated.Value(1)).current;
-  const pingOpacityAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    if (isLoading) {
-      Animated.loop(
-        Animated.parallel([
-          Animated.timing(pingScaleAnim, { toValue: 2.5, duration: 1000, useNativeDriver: true }),
-          Animated.timing(pingOpacityAnim, { toValue: 0, duration: 1000, useNativeDriver: true }),
-        ])
-      ).start();
-    } else {
-      pingScaleAnim.setValue(1);
-      pingOpacityAnim.setValue(1);
-    }
-  }, [isLoading, pingOpacityAnim, pingScaleAnim]);
+  const scanTranslateY = scanAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 400] });
 
   const totalCount = labelCounts
     ? Object.values(labelCounts).reduce((sum, val) => sum + val, 0)
@@ -252,8 +201,6 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
         defaultDescription={drynessDescription}
         rejects={rejectCount} detected={fishCount}
         activetrayId={activeTrayId!}
-        dry={dry}
-        undried={undried}
       />
 
       {/* ── Header ── */}
@@ -388,112 +335,18 @@ const Scanned = ({ photo, setPhoto, type }: Props) => {
                 resizeMode="cover"
               />
               {isLoading && (
-                <View style={{
-                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                  backgroundColor: 'rgba(0,0,0,0.35)',
-                  overflow: 'hidden',
-                }}>
-
-                  {/* Grid horizontal lines */}
-                  {Array.from({ length: 12 }).map((_, i) => (
-                    <View key={`gh${i}`} style={{
-                      position: 'absolute', left: 0, right: 0,
-                      top: (i + 1) * 24, height: 1,
-                      backgroundColor: 'rgba(0,255,136,0.10)',
-                    }} />
-                  ))}
-
-                  {/* Grid vertical lines */}
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <View key={`gv${i}`} style={{
-                      position: 'absolute', top: 0, bottom: 0,
-                      left: (i + 1) * 24, width: 1,
-                      backgroundColor: 'rgba(0,255,136,0.10)',
-                    }} />
-                  ))}
-
-                  {/* Scan trail - centered on the scan line */}
-                  <Animated.View style={{
-                    position: 'absolute', left: 0, right: 0,
-                    height: 60,
-                    backgroundColor: 'rgba(0,255,136,0.10)',
-                    transform: [{ translateY: Animated.subtract(scanTranslateY, 30) }],  // offset up by half trail height
-                  }} />
-
-                  {/* Main scan line */}
-                  <Animated.View style={{
-                    position: 'absolute', left: 0, right: 0, height: 3,
-                    backgroundColor: '#00ff88',
-                    shadowColor: '#00ff88',
-                    shadowOpacity: 1,
-                    shadowRadius: 10,
-                    elevation: 8,
+                <Animated.View
+                  style={{
+                    position: 'absolute', top: 0, left: 0, right: 0,
+                    height: 3,
+                    backgroundColor: PRIMARY,
                     transform: [{ translateY: scanTranslateY }],
-                  }} />
-
-                  {/* Corner brackets */}
-                  <View style={{ position: 'absolute', top: 8, left: 8, width: 22, height: 22, borderTopWidth: 2.5, borderLeftWidth: 2.5, borderColor: '#00ff88' }} />
-                  <View style={{ position: 'absolute', top: 8, right: 8, width: 22, height: 22, borderTopWidth: 2.5, borderRightWidth: 2.5, borderColor: '#00ff88' }} />
-                  <View style={{ position: 'absolute', bottom: 8, left: 8, width: 22, height: 22, borderBottomWidth: 2.5, borderLeftWidth: 2.5, borderColor: '#00ff88' }} />
-                  <View style={{ position: 'absolute', bottom: 8, right: 8, width: 22, height: 22, borderBottomWidth: 2.5, borderRightWidth: 2.5, borderColor: '#00ff88' }} />
-
-                  {/* Right-side tick marks */}
-                  <View style={{ position: 'absolute', right: 0, top: 20, bottom: 20, width: 6, flexDirection: 'column', justifyContent: 'space-evenly', alignItems: 'flex-end' }}>
-                    {[true,false,true,false,true,false,true,false,true,false,true,false].map((active, i) => (
-                      <View key={i} style={{
-                        height: 1,
-                        width: active ? 5 : 3,
-                        backgroundColor: active ? 'rgba(0,255,136,0.6)' : 'rgba(0,255,136,0.25)',
-                      }} />
-                    ))}
-                  </View>
-
-                  {/* SCANNING label top-left */}
-                  {/* SCANNING_ label top-left */}
-                  <View style={{ position: 'absolute', top: 13, left: 12, flexDirection: 'row' }}>
-                    <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 8, color: '#00ff88', letterSpacing: 1.5 }}>
-                      SCANNING
-                    </Text>
-                    <Animated.Text style={{ fontFamily: 'PoppinsRegular', fontSize: 8, color: '#00ff88', opacity: blinkAnim }}>
-                      _
-                    </Animated.Text>
-                  </View>
-
-                  {/* Ping dot top-right */}
-                  <View style={{ position: 'absolute', top: 13, right: 12, width: 6, height: 6, alignItems: 'center', justifyContent: 'center' }}>
-                    {/* Ripple ring */}
-                    <Animated.View style={{
-                      position: 'absolute',
-                      width: 6, height: 6, borderRadius: 3,
-                      borderWidth: 1, borderColor: '#00ff88',
-                      opacity: pingOpacityAnim,
-                      transform: [{ scale: pingScaleAnim }],
-                    }} />
-                    {/* Solid dot */}
-                    <Animated.View style={{
-                      width: 6, height: 6, borderRadius: 3,
-                      backgroundColor: '#00ff88',
-                      opacity: pulseAnim,
-                    }} />
-                  </View>
-
-                  {/* HUD bottom */}
-                  <View style={{ position: 'absolute', bottom: 13, left: 12, right: 12 }}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 }}>
-                      <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 9, color: '#00ff88' }}>MODEL</Text>
-                      <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 9, color: '#00ff88' }}>{selectedModel.label.toUpperCase()}</Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 }}>
-                      <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 9, color: '#00ff88' }}>CONF</Text>
-                      <Animated.Text style={{ fontFamily: 'PoppinsRegular', fontSize: 9, color: '#00ff88', opacity: blinkAnim }}>-- %</Animated.Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 9, color: '#00ff88' }}>STATUS</Text>
-                      <Text style={{ fontFamily: 'PoppinsRegular', fontSize: 9, color: '#ffcc00' }}>PROCESSING</Text>
-                    </View>
-                  </View>
-
-                </View>
+                    shadowColor: PRIMARY,
+                    shadowOpacity: 0.9,
+                    shadowRadius: 10,
+                    elevation: 5,
+                  }}
+                />
               )}
             </Pressable>
 

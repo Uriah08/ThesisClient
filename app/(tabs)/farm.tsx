@@ -16,6 +16,7 @@ import { Farm as FarmType } from '@/utils/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import ChosenFarm from '@/components/containers/farm/ChosenFarm'
 import Lesson from '@/components/containers/lessons/Lesson'
+import { useTranslation } from 'react-i18next'
 
 // ─── filter option ─────────────────────────────────────────────────────────────
 type FilterOptionProps = {
@@ -43,6 +44,7 @@ const FilterOption = ({ label, active, onPress }: FilterOptionProps) => (
 
 // ─── main screen ───────────────────────────────────────────────────────────────
 const Farm = () => {
+  const { t } = useTranslation()
   const FARMS_CACHE_KEY = 'farms_cache'
   const { user } = useAuthRedirect()
   const { data: freshData, refetch, isFetching } = useGetFarmsQuery()
@@ -171,7 +173,7 @@ const Farm = () => {
         paddingTop: 56, paddingHorizontal: 15, paddingBottom: 12, gap: 14,
       }}>
         <Text style={{ fontSize: 26, fontFamily: 'PoppinsBold', color: '#18181b' }}>
-          Drying Areas
+          {t('drying_title')}
         </Text>
 
         {/* search + filter row */}

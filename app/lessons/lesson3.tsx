@@ -3,9 +3,13 @@ import React from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ChevronLeft, CheckCircle2 } from 'lucide-react-native'
 import { router } from 'expo-router'
-import { lesson3Content } from '@/constants/Colors'
+import { useLessonContent } from '@/components/hooks/useLessonContent'
+import { useTranslation } from 'react-i18next'
 
 const Lesson3 = () => {
+  const { lesson3Content } = useLessonContent()
+  const { t } = useTranslation()
+
   return (
     <ScrollView showsVerticalScrollIndicator={false} className="flex-1 bg-white">
       
@@ -123,10 +127,10 @@ const Lesson3 = () => {
       {/* ── Final "Done" Section ─────────────────────────────────────────────── */}
       <View style={{ backgroundColor: '#fafafa', borderTopWidth: 1, borderTopColor: '#f4f4f5', padding: 24, paddingBottom: 40 }}>
         <Text style={{ fontSize: 12, fontFamily: 'PoppinsMedium', color: '#a1a1aa', letterSpacing: 1, marginBottom: 16 }}>
-          COMPLETION
+          {t('lesson_completion_label')}
         </Text>
-        
-        <Pressable 
+
+        <Pressable
           onPress={() => router.push('/farm')}
           style={({ pressed }) => ({
             flexDirection: 'row',
@@ -137,33 +141,30 @@ const Lesson3 = () => {
             borderWidth: 1,
             borderColor: '#f4f4f5',
             opacity: pressed ? 0.8 : 1,
-            shadowColor: "#10b981", // Green shadow for completion
+            shadowColor: '#10b981',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.1,
             shadowRadius: 12,
             elevation: 3,
           })}
         >
-          {/* Leading Image (Farm related) */}
           <Image
-            source={require("@/assets/images/create-farm.png")}
+            source={require('@/assets/images/create-farm.png')}
             style={{ width: 60, height: 60, borderRadius: 12 }}
             resizeMode="cover"
           />
 
-          {/* Center Text Wrapper with "Done" logic */}
           <View className='flex-1 flex-row justify-between items-center mt-3'>
             <View className='flex-1'>
               <Text style={{ fontSize: 18, fontFamily: 'PoppinsBold', color: '#18181b' }}>
-                Finish Module
+                {t('lesson_finish_module')}
               </Text>
               <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#10b981' }}>
-                All lessons completed
+                {t('lesson_all_completed')}
               </Text>
             </View>
-            
-            {/* Trailing Check Icon */}
-            <CheckCircle2 color={"#10b981"} size={24} strokeWidth={2.5} />
+
+            <CheckCircle2 color={'#10b981'} size={24} strokeWidth={2.5} />
           </View>
         </Pressable>
       </View>

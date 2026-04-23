@@ -1,6 +1,7 @@
 import { View, Text, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { X } from 'lucide-react-native'
+import { useTranslation } from 'react-i18next'
 
 type WeatherData = {
   rain?: number
@@ -16,34 +17,37 @@ type AlertConfig = {
   message: string
 }
 
-const getAlertConfig = (rainPercent: number, cloud: number): AlertConfig => {
-  const getRainDesc  = (r: number) =>
-    r === 0 ? 'no expected rain'
-    : r < 50 ? `a moderate ${r}% chance of rain`
-    : r < 90 ? `a high ${r}% chance of rain`
-    : `a very high ${r}% chance of rain`
-
-  const getCloudDesc = (c: number) =>
-    c < 30  ? 'mostly clear skies'
-    : c < 50  ? 'partly cloudy skies'
-    : c < 100 ? 'noticeable cloud cover'
-    : 'overcast skies'
-
-  const rd = getRainDesc(rainPercent)
-  const cd = getCloudDesc(cloud)
-
-  if (rainPercent === 0 && cloud < 50)  return { label: 'Excellent', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', message: `Ideal conditions for drying fish: ${cd}, and ${rd}.` }
-  if (rainPercent === 0)                return { label: 'Good',      color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', message: `Good weather for drying fish with ${cd}, and ${rd}.` }
-  if (rainPercent <= 80)                return { label: 'Caution',   color: '#ca8a04', bg: '#fefce8', border: '#fef08a', message: `Be cautious: ${cd}, and ${rd}. Drying may be slow or risky.` }
-  if (rainPercent < 99)                 return { label: 'Warning',   color: '#ea580c', bg: '#fff7ed', border: '#fed7aa', message: `Drying fish is not recommended due to ${cd}, and ${rd}.` }
-  return                                       { label: 'Danger',    color: '#dc2626', bg: '#fef2f2', border: '#fecaca', message: `Avoid drying fish. Extreme conditions: ${cd}, and ${rd}.` }
-}
-
 const WeatherAlert = ({ rain = 0, cloud = 0 }: WeatherData) => {
   const [visible, setVisible] = useState(true)
+  const { t } = useTranslation()
+
   if (!visible) return null
 
   const rainPercent = Math.round(rain * 100)
+
+  const getRainDesc = (r: number) =>
+    r === 0   ? t('alert_rain_none')
+    : r < 50  ? t('alert_rain_moderate',  { percent: r })
+    : r < 90  ? t('alert_rain_high',      { percent: r })
+    :           t('alert_rain_very_high', { percent: r })
+
+  const getCloudDesc = (c: number) =>
+    c < 30  ? t('alert_cloud_clear')
+    : c < 50  ? t('alert_cloud_partly')
+    : c < 100 ? t('alert_cloud_noticeable')
+    :           t('alert_cloud_overcast')
+
+  const getAlertConfig = (r: number, c: number): AlertConfig => {
+    const rd = getRainDesc(r)
+    const cd = getCloudDesc(c)
+
+    if (r === 0 && c < 50) return { label: t('alert_label_excellent'), color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', message: t('alert_msg_excellent', { cloud: cd, rain: rd }) }
+    if (r === 0)           return { label: t('alert_label_good'),      color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', message: t('alert_msg_good',      { cloud: cd, rain: rd }) }
+    if (r <= 80)           return { label: t('alert_label_caution'),   color: '#ca8a04', bg: '#fefce8', border: '#fef08a', message: t('alert_msg_caution',   { cloud: cd, rain: rd }) }
+    if (r < 99)            return { label: t('alert_label_warning'),   color: '#ea580c', bg: '#fff7ed', border: '#fed7aa', message: t('alert_msg_warning',   { cloud: cd, rain: rd }) }
+    return                        { label: t('alert_label_danger'),    color: '#dc2626', bg: '#fef2f2', border: '#fecaca', message: t('alert_msg_danger',    { cloud: cd, rain: rd }) }
+  }
+
   const { label, color, bg, border, message } = getAlertConfig(rainPercent, cloud)
 
   return (
@@ -54,19 +58,16 @@ const WeatherAlert = ({ rain = 0, cloud = 0 }: WeatherData) => {
         padding: 14,
       }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          {/* label pill */}
           <View style={{
             paddingHorizontal: 10, paddingVertical: 3,
             backgroundColor: color + '18',
-            borderRadius: 999,
-            alignSelf: 'flex-start',
+            borderRadius: 999, alignSelf: 'flex-start',
           }}>
             <Text style={{ fontSize: 11, fontFamily: 'PoppinsSemiBold', color, letterSpacing: 0.4 }}>
               {label}
             </Text>
           </View>
 
-          {/* close */}
           <Pressable
             onPress={() => setVisible(false)}
             hitSlop={8}

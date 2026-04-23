@@ -3,9 +3,10 @@ import React from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ChevronLeft, ArrowRight } from 'lucide-react-native'
 import { router } from 'expo-router'
-import { lesson1Content } from '@/constants/Colors' // Assuming this contains your content array
+import { useLessonContent } from '@/components/hooks/useLessonContent'
 
 const Lesson1 = () => {
+  const { lesson1Content } = useLessonContent()
   return (
     <ScrollView showsVerticalScrollIndicator={false} className='flex-1 bg-white'>
       

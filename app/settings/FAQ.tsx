@@ -6,101 +6,80 @@ import React, { useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, UserIcon, ShieldIcon, CircleUserIcon } from 'lucide-react-native'
 import { router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useTranslation } from 'react-i18next'
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true)
 }
 
-type FAQ = { category: string; question: string; answers: string[]; iconBg: string; iconColor: string; icon: any }
+type FAQType = {
+  categoryKey: string
+  questionKey: string
+  answerKeys: string[]
+  iconBg: string
+  iconColor: string
+  icon: any
+}
 
-const faqs: FAQ[] = [
+const faqs: FAQType[] = [
   {
-    category: 'Technical & Scanning',
-    question: 'What is the ideal lighting and distance for a scan?',
-    answers: [
-      'Use natural daylight or bright, even artificial lighting.',
-      'Hold the camera 30–50 cm away from the drying rack.',
-      'Avoid shadows or direct glare on the fish surface.',
-    ],
+    categoryKey: 'faq_category_technical',
+    questionKey: 'faq_q_lighting',
+    answerKeys: ['faq_a_lighting_1', 'faq_a_lighting_2', 'faq_a_lighting_3'],
     iconBg: '#E6F1FB', iconColor: '#185FA5', icon: CircleUserIcon,
   },
   {
-    category: 'Technical & Scanning',
-    question: 'Does the system work without an internet connection?',
-    answers: [
-      'An active internet connection is required to use the app.',
-      'Scanning, species recognition, and data sync all rely on internet access.',
-      'Please ensure you are connected before starting a session.',
-    ],
+    categoryKey: 'faq_category_technical',
+    questionKey: 'faq_q_offline',
+    answerKeys: ['faq_a_offline_1', 'faq_a_offline_2', 'faq_a_offline_3'],
     iconBg: '#E6F1FB', iconColor: '#185FA5', icon: CircleUserIcon,
   },
   {
-    category: 'Quality & Monitoring',
-    question: 'What parameters determine "Harvest Readiness"?',
-    answers: [
-      'Color, and texture are the primary indicators.',
-      'The app cross-references these with species-specific drying standards.',
-      'A readiness score is calculated after each scan.',
-    ],
+    categoryKey: 'faq_category_quality',
+    questionKey: 'faq_q_harvest_readiness',
+    answerKeys: ['faq_a_harvest_readiness_1', 'faq_a_harvest_readiness_2', 'faq_a_harvest_readiness_3'],
     iconBg: '#E1F5EE', iconColor: '#0F6E56', icon: UserIcon,
   },
   {
-    category: 'Quality & Monitoring',
-    question: 'Why did the quality assessment change between scans?',
-    answers: [
-      'Environmental changes like humidity can affect drying progress.',
-      'Scan angle and lighting differences may influence results.',
-      'Multiple scans over time provide a more accurate trend.',
-    ],
+    categoryKey: 'faq_category_quality',
+    questionKey: 'faq_q_quality_change',
+    answerKeys: ['faq_a_quality_change_1', 'faq_a_quality_change_2', 'faq_a_quality_change_3'],
     iconBg: '#E1F5EE', iconColor: '#0F6E56', icon: UserIcon,
   },
   {
-    category: 'Quality & Monitoring',
-    question: 'Which specific fish species are currently supported?',
-    answers: [
-      'The app currently supports one species: Sardinella fimbriata, locally known as Law-law or Tuyo.',
-      'Support for additional species may be added in future updates.',
-    ],
+    categoryKey: 'faq_category_quality',
+    questionKey: 'faq_q_species',
+    answerKeys: ['faq_a_species_1', 'faq_a_species_2'],
     iconBg: '#E1F5EE', iconColor: '#0F6E56', icon: UserIcon,
   },
   {
-    category: 'Environmental Factors',
-    question: 'Does the app account for nighttime or low-light conditions?',
-    answers: [
-      'Scanning is recommended during daylight hours for accuracy.'
-    ],
+    categoryKey: 'faq_category_environmental',
+    questionKey: 'faq_q_nighttime',
+    answerKeys: ['faq_a_nighttime_1'],
     iconBg: '#FEF3E6', iconColor: '#B45309', icon: ShieldIcon,
   },
   {
-    category: 'Data & History',
-    question: 'How long is my harvest history stored in the app?',
-    answers: [
-      'Harvest records are stored indefinitely while your account is active.',
-      'Local cache is retained on your device for offline access.',
-      'Deleting the app will remove local data; cloud data remains intact.',
-    ],
+    categoryKey: 'faq_category_data',
+    questionKey: 'faq_q_history',
+    answerKeys: ['faq_a_history_1', 'faq_a_history_2', 'faq_a_history_3'],
     iconBg: '#EEEDFE', iconColor: '#534AB7', icon: ShieldIcon,
   },
   {
-    category: 'Account & Support',
-    question: 'How do I reset my password?',
-    answers: [
-      "Go to the settings screen and tap 'Change Password'."
-    ],
+    categoryKey: 'faq_category_account',
+    questionKey: 'faq_q_password',
+    answerKeys: ['faq_a_password_1'],
     iconBg: '#E6F1FB', iconColor: '#185FA5', icon: CircleUserIcon,
   },
   {
-    category: 'Account & Support',
-    question: 'Is there a community forum for local fish processors?',
-    answers: [
-      'There\'s no dedicated forum within the app yet.',
-    ],
+    categoryKey: 'faq_category_account',
+    questionKey: 'faq_q_forum',
+    answerKeys: ['faq_a_forum_1'],
     iconBg: '#E6F1FB', iconColor: '#185FA5', icon: CircleUserIcon,
   },
 ]
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
 const FAQ = () => {
+  const { t } = useTranslation()
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const rotations = useRef(faqs.map(() => new Animated.Value(0))).current
 
@@ -151,22 +130,15 @@ const FAQ = () => {
           }}>
           <ChevronLeft size={18} color="#18181b" />
         </Pressable>
-        <Text onPress={handleRemoveUser} style={{ fontSize: 17, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>FAQ</Text>
+        <Text
+          onPress={handleRemoveUser}
+          style={{ fontSize: 17, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
+          {t('faq_title')}
+        </Text>
       </View>
 
-      {/* Title — easter egg on "questions." tap */}
-      {/* <View style={{ paddingHorizontal: 24, paddingBottom: 16 }}>
-        <Text style={{ fontSize: 22, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
-          Frequently asked{' '}
-          <Text
-            style={{ color: '#155183' }}
-            onPress={handleRemoveUser}>
-            questions.
-          </Text>
-        </Text>
-      </View> */}
-
-      <ScrollView showsVerticalScrollIndicator={false}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 60, gap: 10 }}>
 
         {faqs.map((faq, index) => {
@@ -200,10 +172,10 @@ const FAQ = () => {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa', marginBottom: 2 }}>
-                      {faq.category}
+                      {t(faq.categoryKey)}
                     </Text>
                     <Text style={{ fontSize: 13, fontFamily: 'PoppinsMedium', color: '#18181b' }}>
-                      {faq.question}
+                      {t(faq.questionKey)}
                     </Text>
                   </View>
                 </View>
@@ -218,7 +190,7 @@ const FAQ = () => {
                   borderTopWidth: 0.5, borderTopColor: '#f4f4f5',
                   gap: 8, paddingTop: 12,
                 }}>
-                  {faq.answers.map((answer, i) => (
+                  {faq.answerKeys.map((key, i) => (
                     <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
                       <View style={{
                         width: 18, height: 18, borderRadius: 9,
@@ -234,7 +206,7 @@ const FAQ = () => {
                         fontSize: 12, fontFamily: 'PoppinsRegular',
                         color: '#52525b', lineHeight: 20, flex: 1,
                       }}>
-                        {answer}
+                        {t(key)}
                       </Text>
                     </View>
                   ))}

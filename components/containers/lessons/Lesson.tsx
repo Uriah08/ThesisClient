@@ -4,10 +4,12 @@ import Carousel from 'react-native-reanimated-carousel'
 import { modules } from '@/constants/Colors'
 import { ArrowRight } from 'lucide-react-native'
 import { router } from 'expo-router'
+import { useTranslation } from 'react-i18next'
 
 const { width } = Dimensions.get('window')
 
 const Lesson = () => {
+  const { t } = useTranslation()
   const [currentIndex, setCurrentIndex] = useState(0)
 
   return (
@@ -19,7 +21,7 @@ const Lesson = () => {
         justifyContent: 'space-between', marginBottom: 10,
       }}>
         <Text style={{ fontFamily: 'PoppinsSemiBold', fontSize: 13, color: '#18181b' }}>
-          How to dry fish?
+          {t('drying_how_to')}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
           {modules.map((_, i) => (
@@ -74,7 +76,7 @@ const Lesson = () => {
                       borderRadius: 999,
                     }}>
                     <Text style={{ color: '#ffffff', fontFamily: 'PoppinsMedium', fontSize: 12 }}>
-                      Read More
+                      {t('drying_read_more')}
                     </Text>
                     <ArrowRight color="#ffffff" size={12} />
                   </Pressable>

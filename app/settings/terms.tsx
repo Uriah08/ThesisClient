@@ -2,57 +2,24 @@ import { View, Text, ScrollView, Pressable } from 'react-native'
 import React from 'react'
 import { ChevronLeft, FileTextIcon } from 'lucide-react-native'
 import { router } from 'expo-router'
-
-type Section = { title: string; body: string }
-
-const sections: Section[] = [
-  {
-    title: '1. Acceptance of Terms',
-    body: 'By creating an account, you agree to comply with these Terms. If you do not agree, please do not use the application.',
-  },
-  {
-    title: '2. User Registration',
-    body: 'You must register with accurate personal information. You must be a tuyo farmer from Naic, Cavite.',
-  },
-  {
-    title: '3. Data Collection',
-    body: 'We collect basic account information used solely to provide our services. Your data will not be shared with third parties without consent, except as required by law.',
-  },
-  {
-    title: '4. Image Processing',
-    body: 'Results from image analysis are guides only. We do not guarantee 100% accuracy and recommend using results alongside traditional assessment methods.',
-  },
-  {
-    title: '5. User Responsibilities',
-    body: 'Use this app only for lawful purposes. Provide clear, accurate images. Misuse may result in account suspension.',
-  },
-  {
-    title: '6. Research & Academic Use',
-    body: 'This app is part of a thesis project. Anonymized data may be used for academic research. Personal information will remain confidential.',
-  },
-  {
-    title: '7. Limitation of Liability',
-    body: 'This app is provided "as is" for educational purposes. We are not liable for losses arising from use or reliance on its results.',
-  },
-  {
-    title: '8. Modifications',
-    body: 'We may modify or discontinue the service at any time. Continued use after changes constitutes acceptance of new terms.',
-  },
-  {
-    title: '9. Account Termination',
-    body: 'You may terminate your account anytime. We may suspend accounts that violate these terms. Some data may be retained for record-keeping.',
-  },
-  {
-    title: '10. Contact',
-    body: 'For questions or support, contact us through the Help Center within the application.',
-  },
-  {
-    title: '11. Governing Law',
-    body: 'These terms are governed by the laws of the Republic of the Philippines.',
-  },
-]
+import { useTranslation } from 'react-i18next'
 
 const Terms = () => {
+  const { t } = useTranslation()
+
+  const sections = [
+    { title: t('terms_1_title'),  body: t('terms_1_body') },
+    { title: t('terms_2_title'),  body: t('terms_2_body') },
+    { title: t('terms_3_title'),  body: t('terms_3_body') },
+    { title: t('terms_4_title'),  body: t('terms_4_body') },
+    { title: t('terms_5_title'),  body: t('terms_5_body') },
+    { title: t('terms_6_title'),  body: t('terms_6_body') },
+    { title: t('terms_7_title'),  body: t('terms_7_body') },
+    { title: t('terms_8_title'),  body: t('terms_8_body') },
+    { title: t('terms_9_title'),  body: t('terms_9_body') },
+    { title: t('terms_10_title'), body: t('terms_10_body') },
+    { title: t('terms_11_title'), body: t('terms_11_body') },
+  ]
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
 
@@ -71,7 +38,7 @@ const Terms = () => {
           <ChevronLeft size={18} color="#18181b" />
         </Pressable>
         <Text style={{ fontSize: 17, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
-          Terms of Service
+          {t('terms_title')}
         </Text>
       </View>
 
@@ -88,7 +55,7 @@ const Terms = () => {
           <FileTextIcon size={13} color="#534AB7" />
         </View>
         <Text style={{ fontSize: 11, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
-          Last updated — April 01, 2026
+          {t('terms_last_updated')}
         </Text>
       </View>
 
@@ -106,12 +73,10 @@ const Terms = () => {
             color: '#a1a1aa', letterSpacing: 0.8,
             textTransform: 'uppercase', marginBottom: 6,
           }}>
-            Summary
+            {t('terms_summary_label')}
           </Text>
           <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#52525b', lineHeight: 20 }}>
-            This app assists tuyo farmers in Naic, Cavite with image processing and quality assessment
-            of sun-dried fish. By using this app, you agree to provide accurate information and use the service
-            for its intended agricultural purposes.
+            {t('terms_summary_body')}
           </Text>
         </View>
 
