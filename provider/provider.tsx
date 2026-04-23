@@ -12,6 +12,8 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import Network from "./network";
 import { Provider as PaperProvider } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { I18nextProvider } from 'react-i18next'
+import i18n from '@/utils/lib/i18n'
 
 import {
   persistStore,
@@ -83,7 +85,9 @@ export default function StoreProvider({
           <GestureHandlerRootView style={{ flex: 1 }}>
             <PaperProvider>
               <Network>
-                {children}
+                <I18nextProvider i18n={i18n}>
+                  {children}
+                </I18nextProvider>
               </Network>
             </PaperProvider>
           </GestureHandlerRootView>

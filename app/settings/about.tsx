@@ -2,43 +2,38 @@ import { View, Text, ScrollView, Pressable } from 'react-native'
 import React from 'react'
 import { ChevronLeft, BellIcon, GridIcon, SearchIcon, SunIcon } from 'lucide-react-native'
 import { router } from 'expo-router'
-
-type Feature = {
-  icon: any
-  label: string
-  description: string
-  iconBg: string
-  iconColor: string
-}
-
-const features: Feature[] = [
-  {
-    icon: SunIcon,
-    label: 'Weather Alerts',
-    description: 'Real-time drying recommendations based on forecast data',
-    iconBg: '#FAEEDA', iconColor: '#854F0B',
-  },
-  {
-    icon: GridIcon,
-    label: 'Tray Management',
-    description: 'Drying area and tray tracking with role-based access',
-    iconBg: '#E1F5EE', iconColor: '#0F6E56',
-  },
-  {
-    icon: SearchIcon,
-    label: 'Image Scanning',
-    description: 'Quality assessment of dried fish via image analysis',
-    iconBg: '#EEEDFE', iconColor: '#534AB7',
-  },
-  {
-    icon: BellIcon,
-    label: 'Notifications',
-    description: 'Alerts for drying activities and announcements',
-    iconBg: '#E6F1FB', iconColor: '#185FA5',
-  },
-]
+import { useTranslation } from 'react-i18next'
 
 const About = () => {
+  const { t } = useTranslation()
+
+  const features = [
+    {
+      icon: SunIcon,
+      label: t('about_feature_weather_label'),
+      description: t('about_feature_weather_desc'),
+      iconBg: '#FAEEDA', iconColor: '#854F0B',
+    },
+    {
+      icon: GridIcon,
+      label: t('about_feature_tray_label'),
+      description: t('about_feature_tray_desc'),
+      iconBg: '#E1F5EE', iconColor: '#0F6E56',
+    },
+    {
+      icon: SearchIcon,
+      label: t('about_feature_scan_label'),
+      description: t('about_feature_scan_desc'),
+      iconBg: '#EEEDFE', iconColor: '#534AB7',
+    },
+    {
+      icon: BellIcon,
+      label: t('about_feature_notif_label'),
+      description: t('about_feature_notif_desc'),
+      iconBg: '#E6F1FB', iconColor: '#185FA5',
+    },
+  ]
+
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
 
@@ -57,7 +52,7 @@ const About = () => {
           <ChevronLeft size={18} color="#18181b" />
         </Pressable>
         <Text style={{ fontSize: 17, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
-          About
+          {t('about_title')}
         </Text>
       </View>
 
@@ -79,23 +74,21 @@ const About = () => {
           </View>
           <View style={{ alignItems: 'center', gap: 2 }}>
             <Text style={{ fontSize: 16, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>FiScan</Text>
-            <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>Version 1.0.0</Text>
+            <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>{t('about_version')}</Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <View style={{ backgroundColor: '#E6F1FB', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 3 }}>
-              <Text style={{ fontSize: 11, fontFamily: 'PoppinsMedium', color: '#185FA5' }}>Tuyo Management</Text>
+              <Text style={{ fontSize: 11, fontFamily: 'PoppinsMedium', color: '#185FA5' }}>{t('about_tag_tuyo')}</Text>
             </View>
             <View style={{ backgroundColor: '#E1F5EE', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 3 }}>
-              <Text style={{ fontSize: 11, fontFamily: 'PoppinsMedium', color: '#0F6E56' }}>Fish Drying</Text>
+              <Text style={{ fontSize: 11, fontFamily: 'PoppinsMedium', color: '#0F6E56' }}>{t('about_tag_drying')}</Text>
             </View>
           </View>
         </View>
 
         {/* Description */}
         <Text style={{ fontSize: 13, fontFamily: 'PoppinsRegular', color: '#52525b', lineHeight: 22 }}>
-          Designed to assist tuyo producers in monitoring, managing, and improving the sun-drying process through
-          data-driven tools and intelligent analysis. Integrates weather forecasting, drying area management,
-          and image-based scanning to help users make informed decisions.
+          {t('about_description')}
         </Text>
 
         <View style={{ height: 0.5, backgroundColor: '#f4f4f5' }} />
@@ -107,7 +100,7 @@ const About = () => {
             color: '#a1a1aa', letterSpacing: 0.8,
             textTransform: 'uppercase', marginBottom: 4,
           }}>
-            Key Features
+            {t('about_features_title')}
           </Text>
           {features.map((f, i) => (
             <View key={i} style={{
@@ -143,10 +136,10 @@ const About = () => {
             fontSize: 11, fontFamily: 'PoppinsMedium',
             color: '#a1a1aa', letterSpacing: 0.8, textTransform: 'uppercase',
           }}>
-            Contact
+            {t('about_contact_title')}
           </Text>
           <Text style={{ fontSize: 13, fontFamily: 'PoppinsRegular', color: '#52525b', lineHeight: 22 }}>
-            For issues not covered in the Help Center or feedback about the app, contact the developer through the official project channels.
+            {t('about_contact_body')}
           </Text>
         </View>
 

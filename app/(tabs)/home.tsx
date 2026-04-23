@@ -15,8 +15,10 @@ import { ForecastItem } from '@/utils/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAuthRedirect from '@/components/hooks/useAuthRedirect'
 import AreaChartComponent from '@/components/containers/charts/AreaChart'
+import { useTranslation } from 'react-i18next'
 
 const Home = () => {
+  const { t } = useTranslation()
   const WEATHER_CACHE_KEY = 'weather_cache'
 
   const { data: freshData, refetch } = useGetWeatherForecastQuery()
@@ -98,27 +100,27 @@ const Home = () => {
   const rainPercent = (selectedItem?.pop ?? 0) * 100
   const cloud       = selectedItem?.clouds ?? 0
 
-  const getRainDesc  = (r: number) =>
-    r === 0 ? 'no expected rain'
-    : r < 50 ? `a moderate ${r}% chance of rain`
-    : r < 90 ? `a high ${r}% chance of rain`
-    : `a very high ${r}% chance of rain`
+  const getRainDesc = (r: number) =>
+    r === 0   ? t('alert_rain_none')
+    : r < 50  ? t('alert_rain_moderate',  { percent: r })
+    : r < 90  ? t('alert_rain_high',      { percent: r })
+    :           t('alert_rain_very_high', { percent: r })
 
   const getCloudDesc = (c: number) =>
-    c < 30  ? 'mostly clear skies'
-    : c < 50  ? 'partly cloudy skies'
-    : c < 100 ? 'noticeable cloud cover'
-    : 'overcast skies'
+    c < 30  ? t('alert_cloud_clear')
+    : c < 50  ? t('alert_cloud_partly')
+    : c < 100 ? t('alert_cloud_noticeable')
+    :           t('alert_cloud_overcast')
 
   const rd = getRainDesc(rainPercent)
   const cd = getCloudDesc(cloud)
 
   let alertLabel = 'Excellent', alertColor = '#16a34a', message = ''
-  if      (rainPercent === 0 && cloud < 50)  { alertLabel = 'Excellent'; alertColor = '#16a34a'; message = `Ideal conditions for drying fish: ${cd}, and ${rd}.` }
-  else if (rainPercent === 0)                { alertLabel = 'Good';      alertColor = '#2563eb'; message = `Good weather for drying fish with ${cd}, and ${rd}.` }
-  else if (rainPercent <= 80)                { alertLabel = 'Caution';   alertColor = '#ca8a04'; message = `Be cautious: ${cd}, and ${rd}. Drying may be slow or risky.` }
-  else if (rainPercent < 99)                 { alertLabel = 'Warning';   alertColor = '#ea580c'; message = `Drying fish is not recommended due to ${cd}, and ${rd}.` }
-  else                                       { alertLabel = 'Danger';    alertColor = '#dc2626'; message = `Avoid drying fish. Extreme conditions: ${cd}, and ${rd}.` }
+  if      (rainPercent === 0 && cloud < 50)  { alertLabel = t('alert_label_excellent'); alertColor = '#16a34a'; message = t('alert_msg_excellent', { cloud: cd, rain: rd }) }
+  else if (rainPercent === 0)                { alertLabel = t('alert_label_good');      alertColor = '#2563eb'; message = t('alert_msg_good', { cloud: cd, rain: rd }) }
+  else if (rainPercent <= 80)                { alertLabel = t('alert_label_caution');   alertColor = '#ca8a04'; message = t('alert_msg_caution', { cloud: cd, rain: rd }) }
+  else if (rainPercent < 99)                 { alertLabel = t('alert_label_warning');   alertColor = '#ea580c'; message = t('alert_msg_warning', { cloud: cd, rain: rd }) }
+  else                                       { alertLabel = t('alert_label_danger');    alertColor = '#dc2626'; message = t('alert_msg_danger', { cloud: cd, rain: rd }) }
 
   if (!data) return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }}>
@@ -168,7 +170,7 @@ const Home = () => {
         {/* ── greeting ────────────────────────────────────────────────────────── */}
         <View style={{ paddingHorizontal: 15, paddingTop: 20, gap: 2 }}>
           <Text style={{ fontSize: 22, fontFamily: 'PoppinsSemiBold', color: '#18181b' }}>
-            Hello{' '}
+            {t('dash_greeting')}{' '}
             <Text style={{ color: '#155183' }}>
               {user?.username
                 ? user.username[0].toUpperCase() + user.username.slice(1)
@@ -176,7 +178,7 @@ const Home = () => {
             </Text>
           </Text>
           <Text style={{ fontSize: 12, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}>
-            Let&apos;s make your SunDried Fish Farm thrive!
+            {t('dash_subtitle')}
           </Text>
         </View>
 
