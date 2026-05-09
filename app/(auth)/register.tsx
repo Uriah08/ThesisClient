@@ -5,6 +5,7 @@ import { useRegisterMutation } from '@/store/authApi'
 import Toast from 'react-native-toast-message'
 import useAuthRedirect from '@/components/hooks/useAuthRedirect'
 import { ChevronLeft } from 'lucide-react-native'
+import { useTranslation } from 'react-i18next'
 
 // ─── must be outside component — defining inside causes remount on every keystroke ──
 const Field = ({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) => (
@@ -41,15 +42,16 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [errors, setErrors]                   = useState<{ [key: string]: string }>({})
   const [register, { isLoading }]             = useRegisterMutation()
+  const { t } = useTranslation()
 
   const validate = async () => {
     const e: { [key: string]: string } = {}
-    if (!username.trim())  e.username = 'Username is required.'
-    if (!email.trim())     e.email    = 'Email is required.'
-    if (!password)         e.password = 'Password is required.'
-    else if (password.length < 8) e.password = 'Must be at least 8 characters.'
-    if (!confirmPassword)  e.confirmPassword = 'Confirm your password.'
-    else if (confirmPassword !== password) e.confirmPassword = 'Passwords do not match.'
+    if (!username.trim())  e.username = t('register_err_username')
+    if (!email.trim())     e.email    = t('register_err_email')
+    if (!password)         e.password = t('register_err_password')
+    else if (password.length < 8) e.password = t('register_err_password_length')
+    if (!confirmPassword)  e.confirmPassword = t('register_err_confirm')
+    else if (confirmPassword !== password) e.confirmPassword = t('register_err_confirm_match')
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -62,7 +64,7 @@ const Register = () => {
         email: email.trim().toLowerCase(),
         password, confirm_password: confirmPassword,
       }).unwrap()
-      Toast.show({ type: 'success', text1: 'User Registered Successfully!' })
+      Toast.show({ type: 'success', text1: t('register_success') })
       setUsername(''); setEmail(''); setPassword(''); setConfirmPassword('')
       router.push('/(auth)/login')
     } catch (error: any) {
@@ -89,10 +91,10 @@ const Register = () => {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={{ marginTop: 20, fontSize: 28, fontFamily: 'PoppinsBold', color: '#18181b' }}>
-          Create account.
+          { t('register_title') }
         </Text>
         <Text style={{ fontSize: 14, fontFamily: 'PoppinsRegular', color: '#a1a1aa', marginTop: 4, marginBottom: 40 }}>
-          Register to get started
+          { t('register_subtitle') }
         </Text>
 
         <Field label="Username" error={errors.username}>
@@ -162,7 +164,7 @@ const Register = () => {
           }}>
           {isLoading
             ? <ActivityIndicator color="#ffffff" />
-            : <Text style={{ fontSize: 13, fontFamily: 'PoppinsMedium', color: '#ffffff' }}>Register</Text>
+            : <Text style={{ fontSize: 13, fontFamily: 'PoppinsMedium', color: '#ffffff' }}>{ t('register_btn') }</Text>
           }
         </Pressable>
 
@@ -170,8 +172,8 @@ const Register = () => {
           style={{ textAlign: 'center', marginTop: 16, fontSize: 13, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}
           onPress={() => router.push('/(auth)/login')}
         >
-          Already have an account?{' '}
-          <Text style={{ color: '#155183', fontFamily: 'PoppinsMedium' }}>Sign in</Text>
+          { t('register_have_account') } {" "}
+          <Text style={{ color: '#155183', fontFamily: 'PoppinsMedium' }}>{ t('register_signin') }</Text>
         </Text>
 
       </ScrollView>

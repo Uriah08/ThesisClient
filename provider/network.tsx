@@ -9,6 +9,7 @@ import NetInfo from '@react-native-community/netinfo';
 import Toast, { ToastConfig } from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CheckCircle, XCircle } from 'lucide-react-native';
+import i18n from '@/utils/lib/i18n';
 
 const PRIMARY = '#155183';
 const PRIMARY_LIGHT = '#E6F1FB';
@@ -132,6 +133,12 @@ const Network = ({ children }: { children: React.ReactNode }) => {
   const [showSecondSplash, setShowSecondSplash] = useState(!hasShownSplash);
   const [isConnected, setIsConnected] = useState(true);
   const slideAnim = useRef(new Animated.Value(-100)).current;
+
+  useEffect(() => {
+      AsyncStorage.getItem('locale').then(saved => {
+        if (saved) i18n.changeLanguage(saved)
+      })
+    }, [])
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {

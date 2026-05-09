@@ -6,6 +6,10 @@ import { weatheralert_en } from './locales/en/home'
 import { weatheralert_fil } from './locales/fil/home'
 import { drying_en, lessons_en } from './locales/en/drying'
 import { drying_fil, lessons_fil } from './locales/fil/drying'
+import { landingalert_en } from './locales/en/landing'
+import { landingalert_fil } from './locales/fil/landing'
+import { auth_fil } from './locales/fil/auth'
+import { auth_en } from './locales/en/auth'
 
 const i18n = createInstance()
 
@@ -33,7 +37,9 @@ i18n.use(initReactI18next).init({
         ...settings_en,
         ...weatheralert_en,
         ...drying_en,
-        ...lessons_en
+        ...lessons_en,
+        ...landingalert_en,
+        ...auth_en
       },
     },
     fil: {
@@ -55,7 +61,9 @@ i18n.use(initReactI18next).init({
         ...settings_fil,
         ...weatheralert_fil,
         ...drying_fil,
-        ...lessons_fil
+        ...lessons_fil,
+        ...landingalert_fil,
+        ...auth_fil
       },
     },
   },

@@ -122,6 +122,17 @@ const Home = () => {
   else if (rainPercent < 99)                 { alertLabel = t('alert_label_warning');   alertColor = '#ea580c'; message = t('alert_msg_warning', { cloud: cd, rain: rd }) }
   else                                       { alertLabel = t('alert_label_danger');    alertColor = '#dc2626'; message = t('alert_msg_danger', { cloud: cd, rain: rd }) }
 
+  const forecastLabels = [
+    data?.first_item,
+    ...(data?.future_forecast ?? [])
+  ].map((item, i) => {
+    if (!item || i === 0) return 'Now'
+    const now = new Date(data!.first_item.datetime)
+    const future = new Date(item.datetime)
+    const diffHours = Math.round((future.getTime() - now.getTime()) / (1000 * 60 * 60))
+    return `+${diffHours}h`
+  })
+  
   if (!data) return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' }}>
       <ActivityIndicator size={28} color="#155183" />
@@ -203,11 +214,12 @@ const Home = () => {
         <View style={{ paddingTop: 20, paddingBottom: 10, paddingHorizontal: 20 }}>
           <AreaChartComponent
             chartKey={chartKey}
-            title="Rain Forecast"
-            description="Next 48 Hours"
+            title="Rain & Cloud Cover"
+            description="Daytime Forecast"
             sideLabel
             data={rainData}
             data2={cloudData}
+            labels={forecastLabels}
           />
         </View>
 

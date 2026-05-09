@@ -9,7 +9,7 @@ const useAuthRedirect = () => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const publicPaths = ['/', '/login', '/register', '/test', '/complete-profile'];
+    const publicPaths = ['/', '/login', '/register', '/test', '/help', '/complete-profile'];
     const checkUser = async () => {
       try {
         const userData = await AsyncStorage.getItem('user');
