@@ -9,11 +9,23 @@ type ChartProps = {
   data?: { value: number }[]
   data2?: { value: number }[]
   chartKey: number
+  labels?: string[]
 }
 
-const AreaChartComponent = ({ title, description, sideLabel, data, data2, chartKey }: ChartProps) => {
-  const lineData = data || [{ value: 0 }]
-  const lineData2 = data2 || [{ value: 0 }]
+const AreaChartComponent = ({ title, description, sideLabel, data, data2, chartKey, labels }: ChartProps) => {
+  const lineData = (data || [{ value: 0 }]).map((d, i) => ({
+    ...d,
+    label: labels?.[i] ?? '',
+    labelTextStyle: {
+      color: '#a1a1aa',
+      fontSize: 8,
+      fontFamily: 'PoppinsMedium',
+      width: 28,
+      textAlign: 'center' as const,
+    },
+  }))
+
+  const lineData2 = (data2 || [{ value: 0 }]).map(d => ({ ...d }))
 
   const { width } = useWindowDimensions()
   // Adjusted to match the Home.tsx padding (24px horizontal)
@@ -50,40 +62,36 @@ const AreaChartComponent = ({ title, description, sideLabel, data, data2, chartK
         backgroundColor: '#fafafa', 
         borderRadius: 18, 
         paddingTop: 20, 
-        paddingBottom: 10,
         borderWidth: 0.5,
         borderColor: '#f4f4f5',
-        overflow: 'hidden' 
+        overflow: 'hidden'
       }}>
         <LineChart
           key={chartKey}
           areaChart
           curved
-          data={lineData2} // Cloud (Background)
-          data2={lineData} // Rain (Foreground)
+          data={lineData}   // 👈 Rain (foreground, has labels)
+          data2={lineData2} // 👈 Cloud (background)
           height={120}
           width={width - HORIZONTAL_PADDING - 40}
           initialSpacing={10}
-          spacing={width / 8} // Dynamic spacing based on screen width
+          spacing={width / 8}
           hideDataPoints
           thickness={2.5}
           isAnimated
-          
-          // Colors for Cloud (Data 1)
-          color1="#e4e4e7"
-          startFillColor1="#f4f4f5"
-          endFillColor1="#ffffff"
-          startOpacity={0.9}
-          endOpacity={0.2}
 
-          // Colors for Rain (Data 2)
-          color2="#155183"
-          startFillColor2="#155183"
-          endFillColor2="#155183"
-          startOpacity2={0.15}
-          endOpacity2={0.01}
+          color1="#155183"
+          startFillColor1="#155183"
+          endFillColor1="#155183"
+          startOpacity={0.15}
+          endOpacity={0.01}
 
-          // Axes & Grid
+          color2="#e4e4e7"
+          startFillColor2="#f4f4f5"
+          endFillColor2="#ffffff"
+          startOpacity2={0.9}
+          endOpacity2={0.2}
+
           rulesType="solid"
           rulesColor="#f4f4f5"
           yAxisColor="transparent"
@@ -91,14 +99,12 @@ const AreaChartComponent = ({ title, description, sideLabel, data, data2, chartK
           hideRules={false}
           noOfSections={2}
           maxValue={100}
-          
-          yAxisTextStyle={{
-            color: '#a1a1aa',
-            fontSize: 9,
-            fontFamily: 'PoppinsMedium',
-          }}
+
+          yAxisTextStyle={{ color: '#a1a1aa', fontSize: 9, fontFamily: 'PoppinsMedium' }}
           yAxisLabelTexts={['0', '50', '100%']}
           yAxisLabelWidth={30}
+          xAxisLabelsHeight={20}
+          xAxisLabelTextStyle={{ color: '#a1a1aa', fontSize: 8, fontFamily: 'PoppinsMedium' }}
         />
 
         {/* Subtle Fade-in Gradients for edges */}

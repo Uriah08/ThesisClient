@@ -8,8 +8,8 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <BottomSheetModalProvider>
         <StoreProvider>
+          <BottomSheetModalProvider>
           <StatusBar style="dark" />
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -28,8 +28,8 @@ export default function RootLayout() {
             <Stack.Screen name="farm-settings/announcement" options={{ headerShown: false }} />
             <Stack.Screen name="production/[id]" options={{ headerShown: false }} />
           </Stack>
+          </BottomSheetModalProvider>
         </StoreProvider>
-      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }
