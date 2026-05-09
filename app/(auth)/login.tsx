@@ -6,6 +6,7 @@ import Toast from 'react-native-toast-message'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAuthRedirect from '@/components/hooks/useAuthRedirect'
 import { ChevronLeft } from 'lucide-react-native'
+import { useTranslation } from 'react-i18next'
 
 const Login = () => {
   const { checking } = useAuthRedirect()
@@ -14,6 +15,7 @@ const Login = () => {
   const [password, setPassword]   = useState('')
   const [errors, setErrors]       = useState<{ [key: string]: string }>({})
   const [login, { isLoading }]    = useLoginMutation()
+  const { t } = useTranslation()
 
   useFocusEffect(
     useCallback(() => {
@@ -34,9 +36,9 @@ const Login = () => {
 
   const validate = () => {
     const e: { [key: string]: string } = {}
-    if (!username.trim())  e.username = 'Username is required.'
-    if (!password)         e.password = 'Password is required.'
-    else if (password.length < 8) e.password = 'Must be at least 8 characters.'
+    if (!username.trim())        e.username = t('login_err_username')
+    if (!password)               e.password = t('login_err_password')
+    else if (password.length < 8) e.password = t('login_err_password_length')
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -55,7 +57,7 @@ const Login = () => {
         profile_picture: response.profile_picture || '', mobile_number: response.mobile_number || '',
       }))
       await AsyncStorage.setItem('authToken', response.token)
-      Toast.show({ type: 'success', text1: 'User Login Successfully!' })
+      Toast.show({ type: 'success', text1: t('login_success') })
       setUsername(''); setPassword('')
       router.replace(response.is_complete ? '/(tabs)/home' : '/(auth)/complete-profile')
     } catch (error: any) {
@@ -86,10 +88,10 @@ const Login = () => {
         <Text style={{
           marginTop: 96, fontSize: 28, fontFamily: 'PoppinsBold', color: '#18181b',
         }}>
-          Welcome back.
+          {t('login_title')}
         </Text>
         <Text style={{ fontSize: 14, fontFamily: 'PoppinsRegular', color: '#a1a1aa', marginTop: 4, marginBottom: 40 }}>
-          Sign in to continue
+          <Text>{t('login_subtitle')}</Text>
         </Text>
 
         {/* Username */}
@@ -145,7 +147,7 @@ const Login = () => {
           }}>
           {isLoading
             ? <ActivityIndicator color="#ffffff" />
-            : <Text style={{ fontSize: 13, fontFamily: 'PoppinsMedium', color: '#ffffff' }}>Login</Text>
+            : <Text style={{ fontSize: 13, fontFamily: 'PoppinsMedium', color: '#ffffff' }}>{t('login_btn')}</Text>
           }
         </Pressable>
 
@@ -154,8 +156,8 @@ const Login = () => {
           style={{ textAlign: 'center', marginTop: 16, fontSize: 13, fontFamily: 'PoppinsRegular', color: '#a1a1aa' }}
           onPress={() => router.push('/(auth)/register')}
         >
-          Don&apos;t have an account?{' '}
-          <Text style={{ color: '#155183', fontFamily: 'PoppinsMedium' }}>Sign up</Text>
+          {t('login_no_account')}{' '}
+          <Text style={{ color: '#155183', fontFamily: 'PoppinsMedium' }}>{t('login_signup')}</Text>
         </Text>
 
       </ScrollView>

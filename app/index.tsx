@@ -1,13 +1,29 @@
 import { View, Image, Text, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import useAuthRedirect from '@/components/hooks/useAuthRedirect';
-import { TestTubeDiagonal } from 'lucide-react-native';
+import { TestTubeDiagonal, BookMarked, Languages } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect } from 'react';
 
 const PRIMARY = '#155183';
 const PRIMARY_LIGHT = '#e8f0f8';
 
 export default function Index() {
   const { checking } = useAuthRedirect();
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+      AsyncStorage.getItem('locale').then(saved => {
+        if (saved) i18n.changeLanguage(saved)
+      })
+    }, [i18n])
+
+  const toggleLanguage = () => {
+    const next = i18n.language === 'en' ? 'fil' : 'en';
+    i18n.changeLanguage(next);
+    AsyncStorage.setItem('locale', next);
+  };
 
   if (checking) return (
     <View className="flex-1 items-center justify-center bg-white">
@@ -18,14 +34,40 @@ export default function Index() {
   return (
     <View className="flex-1 bg-white px-7 pt-[60px] pb-8 items-center">
 
-      {/* Test button */}
-      <Pressable
-        onPress={() => router.push('/test')}
-        className="absolute top-14 right-6 p-2 rounded-xl"
-        style={{ backgroundColor: PRIMARY_LIGHT }}
-      >
-        <TestTubeDiagonal size={16} color={PRIMARY} />
-      </Pressable>
+      {/* Top-right buttons */}
+      <View className="flex flex-row absolute top-14 right-6 gap-2">
+        <Pressable
+          onPress={() => router.push('/test')}
+          className="p-2 rounded-xl"
+          style={{ backgroundColor: PRIMARY_LIGHT }}
+        >
+          <TestTubeDiagonal size={16} color={PRIMARY} />
+        </Pressable>
+        <Pressable
+          onPress={() => router.push('/help')}
+          className="p-2 rounded-xl"
+          style={{ backgroundColor: PRIMARY_LIGHT }}
+        >
+          <BookMarked size={16} color={PRIMARY} />
+        </Pressable>
+
+        {/* Language toggle */}
+        <Pressable
+          onPress={toggleLanguage}
+          className="flex-row items-center gap-1.5 px-3 rounded-xl"
+          style={{ backgroundColor: PRIMARY_LIGHT, paddingVertical: 6 }}
+        >
+          <Languages size={14} color={PRIMARY} />
+          <Text style={{
+            fontFamily: 'PoppinsSemiBold',
+            fontSize: 11,
+            color: PRIMARY,
+            letterSpacing: 0.4,
+          }}>
+            {i18n.language === 'en' ? 'EN' : 'FIL'}
+          </Text>
+        </Pressable>
+      </View>
 
       {/* Hero image with soft halo */}
       <View className="mt-10 items-center justify-center">
@@ -46,7 +88,7 @@ export default function Index() {
           className="text-[11px] tracking-wide"
           style={{ fontFamily: 'PoppinsSemiBold', color: PRIMARY }}
         >
-          AI-Powered Sun-Dried Fish Quality Check
+          {t('landing_badge')}
         </Text>
       </View>
 
@@ -55,7 +97,7 @@ export default function Index() {
         className="text-[26px] text-[#111] mt-5 leading-[34px]"
         style={{ fontFamily: 'PoppinsRegular' }}
       >
-        Welcome to
+        {t('landing_welcome')}
       </Text>
       <Text
         className="text-[32px] text-[#111] leading-[40px]"
@@ -69,7 +111,7 @@ export default function Index() {
         className="text-center text-[13px] text-[#888] mt-2.5 leading-[21px] px-2"
         style={{ fontFamily: 'PoppinsRegular' }}
       >
-        Smart detection for sun-dried fish — know exactly when they&apos;re ready to harvest.
+        {t('landing_tagline')}
       </Text>
 
       {/* Thin decorative divider */}
@@ -95,7 +137,7 @@ export default function Index() {
             className="text-white text-[15px] tracking-wide"
             style={{ fontFamily: 'PoppinsSemiBold' }}
           >
-            Login
+            {t('landing_login')}
           </Text>
         </Pressable>
 
@@ -110,17 +152,17 @@ export default function Index() {
             className="text-[#333] text-[15px] tracking-wide"
             style={{ fontFamily: 'PoppinsRegular' }}
           >
-            Create an account
+            {t('landing_register')}
           </Text>
         </Pressable>
       </View>
 
       {/* Footer */}
       <Text
-        className="mt-auto text-[11px] text-[#bbb] tracking-widest"
+        className="mt-10 text-[11px] text-[#bbb] tracking-widest"
         style={{ fontFamily: 'PoppinsRegular' }}
       >
-        Powered by AI · Built for fishers
+        {t('landing_footer')}
       </Text>
     </View>
   );

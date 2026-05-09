@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { uploadImageToSupabase } from '@/utils/lib/supabase'
 import CountryPicker, { Country, CountryCode } from 'react-native-country-picker-modal'
 import { barangays } from '@/constants/Colors'
+import { useTranslation } from 'react-i18next'
 
 const DRAFT_KEY = 'complete_profile_draft'
 
@@ -37,6 +38,7 @@ const Field = ({ label, error, children }: { label: string; error?: string; chil
 // ─── main screen ───────────────────────────────────────────────────────────────
 const CompleteProfile = () => {
   const { checking, user } = useAuthRedirect()
+  const { t } = useTranslation()
 
   const [isFocused, setIsFocused]   = useState('')
   const [showPicker, setShowPicker] = useState(false)
@@ -121,17 +123,17 @@ const CompleteProfile = () => {
   const validate = () => {
     const e: { [key: string]: string } = {}
     const nameRegex = /^[A-Za-z\s'-]+$/
-    if (!firstName.trim())            e.firstName = 'First name is required.'
-    else if (!nameRegex.test(firstName)) e.firstName = 'No numbers or special characters.'
-    if (!lastName.trim())             e.lastName  = 'Last name is required.'
-    else if (!nameRegex.test(lastName))  e.lastName  = 'No numbers or special characters.'
-    if (!mobileNumber.trim())         e.mobileNumber = 'Mobile number is required.'
-    if (!date)                        e.birthday  = 'Birthday is required.'
-    if (!address.trim())              e.address   = 'Address is required.'
-    if (!isChecked)                   e.agreement = 'You must agree to the terms.'
+    if (!firstName.trim())               e.firstName    = t('complete_err_firstname')
+    else if (!nameRegex.test(firstName)) e.firstName    = t('complete_err_firstname_invalid')
+    if (!lastName.trim())                e.lastName     = t('complete_err_lastname')
+    else if (!nameRegex.test(lastName))  e.lastName     = t('complete_err_lastname_invalid')
+    if (!mobileNumber.trim())            e.mobileNumber = t('complete_err_mobile')
+    if (!date)                           e.birthday     = t('complete_err_birthday')
+    if (!address.trim())                 e.address      = t('complete_err_address')
+    if (!isChecked)                      e.agreement    = t('complete_err_agreement')
     if (image) {
       const ext = image.split('.').pop()?.toLowerCase()
-      if (!ext || !['jpg', 'jpeg', 'png'].includes(ext)) e.profilePicture = 'Only JPEG or PNG allowed.'
+      if (!ext || !['jpg', 'jpeg', 'png'].includes(ext)) e.profilePicture = t('complete_err_image')
     }
     setErrors(e)
     return Object.keys(e).length === 0
@@ -189,10 +191,10 @@ const CompleteProfile = () => {
       >
         {/* Heading */}
         <Text style={{ marginTop: 80, fontSize: 28, fontFamily: 'PoppinsBold', color: '#18181b' }}>
-          Hello, {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : ''}!
+          {t('complete_title', { name: user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : '' })}
         </Text>
         <Text style={{ fontSize: 14, fontFamily: 'PoppinsRegular', color: '#a1a1aa', marginTop: 4, marginBottom: 32 }}>
-          Complete your profile to proceed
+          {t('complete_subtitle')}
         </Text>
 
         {/* Avatar picker */}
@@ -583,11 +585,11 @@ const CompleteProfile = () => {
             style={{ borderColor: '#155183' }}
           />
           <Text style={{ fontSize: 13, fontFamily: 'PoppinsRegular', color: '#71717a', flex: 1 }}>
-            I agree to the{' '}
+            {t('complete_terms_text')}{' '}
             <Text
               onPress={() => router.push('/(auth)/terms')}
               style={{ color: '#155183', fontFamily: 'PoppinsMedium' }}>
-              Terms of Service
+              {t('complete_terms_link')}
             </Text>
           </Text>
         </View>
@@ -610,7 +612,7 @@ const CompleteProfile = () => {
           }}>
           {busy
             ? <ActivityIndicator color="#ffffff" />
-            : <Text style={{ fontSize: 13, fontFamily: 'PoppinsMedium', color: '#ffffff' }}>Get Started</Text>
+            : <Text style={{ fontSize: 13, fontFamily: 'PoppinsMedium', color: '#ffffff' }}>{t('complete_btn')}</Text>
           }
         </Pressable>
 

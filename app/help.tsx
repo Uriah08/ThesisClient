@@ -1,7 +1,7 @@
 import {
   View, Text, ScrollView, Image, Pressable,
 } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState} from 'react'
 import { router } from 'expo-router'
 import {
   ChevronLeft, CircleCheck, CircleX,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
 import YoutubePlayer from 'react-native-youtube-iframe'
+
 
 // ─── section header ────────────────────────────────────────────────────────────
 type SectionHeaderProps = {
@@ -134,7 +135,7 @@ const HelpCenter = () => {
         flexDirection: 'row', alignItems: 'center', gap: 12,
         paddingTop: 56, paddingHorizontal: 24, paddingBottom: 8,
       }}>
-        <Pressable onPress={() => router.push('/settings')} style={{
+        <Pressable onPress={() => router.push('/')} style={{
           width: 36, height: 36, borderRadius: 18,
           backgroundColor: '#f4f4f5',
           alignItems: 'center', justifyContent: 'center',
